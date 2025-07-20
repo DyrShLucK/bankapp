@@ -1,0 +1,31 @@
+server:
+  port: 8083
+
+spring:
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/realms/bankapp
+  cloud:
+    gateway:
+      loadbalancer:
+        enabled: true
+
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        - id: front-service
+          uri: lb://front-service
+          predicates:
+            - Path=/signup
+          filters:
+            - TokenRelay=front-client
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true

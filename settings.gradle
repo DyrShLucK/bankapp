@@ -1,1 +1,3 @@
 rootProject.name = 'bankapp'
+include 'discovery-service'
+include 'gateway-service'

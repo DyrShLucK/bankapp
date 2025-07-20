@@ -1,0 +1,28 @@
+server:
+  port: 8081
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/api/test
+          filters:
+            - TokenRelay=account-client
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/realms/bankapp
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true

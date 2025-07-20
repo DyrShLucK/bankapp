@@ -1,0 +1,87 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'http://gateway-service:8080'
+paths:
+  /api/signup:
+    post:
+      summary: Регистрация нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationForm'
+      responses:
+        '200':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+              example:
+                success: False
+                cause: 'Логин существует'
+        '400':
+          description: Ошибка валидации (например, логин уже существует)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  schemas:
+    RegistrationForm:
+      type: object
+      properties:
+        login:
+          type: string
+          description: "Уникальный логин пользователя"
+          example: "john_doe"
+        password:
+          type: string
+          format: password
+          description: "Пароль пользователя"
+          example: "securePassword123"
+        confirm_password:
+          type: string
+          format: password
+          description: "Подтверждение пароля"
+          example: "securePassword123"
+        name:
+          type: string
+          description: "ФИО пользователя"
+          example: "Иван Иванов"
+        birthdate:
+          type: string
+          format: date
+          description: "Дата рождения (в формате YYYY-MM-DD)"
+          example: "1990-01-01"
+      required:
+        - login
+        - password
+        - confirm_password
+        - birthdate
+    SignupResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Успешно ли регистрация
+        cause:
+          type: string
+          description: В случаи не верной валидации
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "Описание ошибки"
+          example: "Логин уже существует"
+        timestamp:
+          type: string
+          format: date-time
+          description: "Время возникновения ошибки"
+          example: "2025-07-20T12:34:56Z"
