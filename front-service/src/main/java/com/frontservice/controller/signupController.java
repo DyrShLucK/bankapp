@@ -1,8 +1,7 @@
 package com.frontservice.controller;
 
-import com.frontUi.domain.SignupResponse;
 import com.frontservice.DTO.RegistrationForm;
-import com.frontservice.SignupApi;
+import com.frontservice.service.SignupApi;
 import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.cloud.client.discovery.DiscoveryClient;

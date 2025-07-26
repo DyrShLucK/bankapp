@@ -4,6 +4,19 @@ server:
 spring:
   application:
     name: gateway-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  session:
+    timeout: 30m
+
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true # Для HTTPS
+        domain: .your-domain.com # Общий домен
   cloud:
     gateway:
       discovery:
@@ -23,17 +36,62 @@ spring:
             - Path=/signup
           filters:
             - TokenRelay=bankapp
+        - id: front-service-main
+          uri: lb://front-service
+          predicates:
+            - Path=/bankapp
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttribute: username
+            allowAttributes: username
+        - id: front-service-main2
+          uri: lb://front-service
+          predicates:
+            - Path=/
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
         - id: account-service-signup-post
           uri: lb://account-service
           predicates:
             - Path=/api/signup
           filters:
             - TokenRelay=bankapp
+        - id: account-service-css
+          uri: lb://account-service
+          predicates:
+            - Path=/default-ui.css
+          filters:
+            - TokenRelay=bankapp
+        - id: account-service-mainPage
+          uri: lb://account-service
+          predicates:
+            - Path=/api/getMainPage/**
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttribute: username
+            allowAttributes: username
+        - id: account-service-GetUser
+          uri: lb://account-service
+          predicates:
+            - Path=/api/getUser
+          filters:
+            - TokenRelay=bankapp
+      server:
+        webflux:
+          filter:
+            save-session:
+              enabled: true
+
   security:
     oauth2:
-      resourceserver:
-        jwt:
-          issuer-uri: http://localhost:8082/realms/bankapp
       client:
         provider:
           keycloak:
@@ -43,7 +101,7 @@ spring:
           keycloak:
             client-id: bankapp
             client-secret: jw49iqTeajZDZH7K3IL3iMDMysz2llXQ
-            scope: openid
+            scope: openid,username
           bankapp:
             provider: keycloak
             authorization-grant-type: client_credentials
@@ -51,7 +109,17 @@ spring:
             client-secret: jw49iqTeajZDZH7K3IL3iMDMysz2llXQ
             scope: profile
             client-authentication-method: client_secret_post
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/realms/bankapp
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/bankapp
+            user-name-attribute: username
 
+oauth2:
+  client:
+    registration-id: bankapp
 eureka:
   client:
     service-url:

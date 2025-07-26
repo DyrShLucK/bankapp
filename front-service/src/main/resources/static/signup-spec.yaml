@@ -6,6 +6,41 @@ info:
 servers:
   - url: 'http://gateway-service:8080'
 paths:
+  /api/editUserAccount:
+    post:
+      summary: Обновление данных пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserForm'
+      responses:
+        '200':
+          description: успешное обновление пользователя
+          content:
+            application/json:
+              schema:
+                type: boolean
+  /api/getMainPage:
+    get:
+      summary: Получение главной страницы пользователя
+      responses:
+        '200':
+          description: Успешное получение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MainPageResponse'
+  /api/changePassword:
+    post:
+      summary: Смена пароля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationForm'
   /api/signup:
     post:
       summary: Регистрация нового пользователя
@@ -32,6 +67,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     RegistrationForm:
       type: object
@@ -64,6 +104,7 @@ components:
         - password
         - confirm_password
         - birthdate
+        - name
     SignupResponse:
       type: object
       properties:
@@ -73,6 +114,91 @@ components:
         cause:
           type: string
           description: В случаи не верной валидации
+    UserForm:
+      type: object
+      properties:
+        login:
+          type: string
+          description: "Уникальный логин пользователя"
+          example: "user123"
+        name:
+          type: string
+          description: "ФИО пользователя"
+          example: "Иван Иванов"
+        birthdate:
+            type: string
+            format: date
+            description: "Дата рождения (в формате YYYY-MM-DD)"
+            example: "1990-01-01"
+      required:
+        - login
+        - name
+        - birthdate
+    AccountForm:
+      type: object
+      properties:
+        accountId:
+          type: number
+          format: double
+          description: "Уникальный идентификатор счёта"
+          example: 100
+        userName:
+          type: string
+          description: "логин пользователя"
+          example: "user123"
+        currency:
+          $ref: '#/components/schemas/Currency'
+        balance:
+          type: number
+          format: double
+          description: "Баланс счёта"
+          example: 1000.50
+        isExists:
+          type: boolean
+          description: "существует ли аккаунт"
+      required:
+        - accountId
+        - currency
+        - balance
+        - isExists
+    AccountList:
+      type: array
+      items:
+        $ref: '#/components/schemas/AccountForm'
+    MainPageResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserForm'
+        accounts:
+          $ref: '#/components/schemas/AccountList'
+      required:
+        - user
+        - accounts
+    Currency:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Код валюты (например, RUB, USD)"
+          example: "USD"
+        title:
+          type: string
+          description: "Полное название валюты"
+          example: "Доллар США"
+    PasswordChange:
+      type: object
+      properties:
+        password:
+          type: string
+          format: password
+          description: "Пароль пользователя"
+          example: "securePassword123"
+        confirm_password:
+          type: string
+          format: password
+          description: "Подтверждение пароля"
+          example: "securePassword123"
     Error:
       type: object
       properties:
@@ -85,3 +211,5 @@ components:
           format: date-time
           description: "Время возникновения ошибки"
           example: "2025-07-20T12:34:56Z"
+security:
+  - bearerAuth: []

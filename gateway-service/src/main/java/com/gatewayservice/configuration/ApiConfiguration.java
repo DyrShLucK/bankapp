@@ -1,20 +1,17 @@
-package com.frontservice.configuration;
+package com.gatewayservice.configuration;
 
-import com.frontUi.ApiClient;
-import com.frontUi.api.DefaultApi;
+
+
+import com.gateway.ApiClient;
+import com.gateway.api.DefaultApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpHeaders;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.ReactiveSecurityContextHolder;
-import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.oauth2.client.OAuth2AuthorizeRequest;
 import org.springframework.security.oauth2.client.OAuth2AuthorizedClient;
-import org.springframework.security.oauth2.client.OAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientManager;
 import org.springframework.security.oauth2.core.OAuth2AccessToken;
 import org.springframework.web.reactive.function.client.ClientRequest;
@@ -22,8 +19,6 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
-import java.util.ArrayList;
-import java.util.List;
 @Configuration
 public class ApiConfiguration {
     @Autowired
@@ -49,21 +44,10 @@ public class ApiConfiguration {
             String clientId
     ) {
         return (request, next) ->
-                // Получаем username из Reactor Context
-                Mono.deferContextual(Mono::just)
-                        .map(context -> context.getOrDefault(UserContextWebFilter.USER_NAME_KEY, "anonymous"))
-                        .zipWith(getAccessToken(clientManager, clientId))
-                        .flatMap(tuple -> {
-                            String username = tuple.getT1();
-                            String token = tuple.getT2();
-
-                            ClientRequest newRequest = ClientRequest.from(request)
-                                    .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                                    .header("X-User-Name", username) // Передаём дальше
-                                    .build();
-
-                            return next.exchange(newRequest);
-                        });
+                getAccessToken(clientManager, clientId)
+                        .flatMap(token -> next.exchange(
+                                withBearerToken(request, token)
+                        ));
     }
 
     private Mono<String> getAccessToken(

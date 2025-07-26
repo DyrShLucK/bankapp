@@ -41,8 +41,19 @@ services:
       - "start-dev"
       - "-Dkeycloak.profile.feature.scripts=enabled"
       - "-Dkeycloak.profile.feature.upload_scripts=enabled"
+  redis:
+    image: redis:latest
+    container_name: bankapp-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    networks:
+      - bankapp-network
+    command: redis-server --appendonly yes
 volumes:
   keycloak_data:
+  redis_data:
 
 networks:
   bankapp-network:
