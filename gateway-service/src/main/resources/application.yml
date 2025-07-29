@@ -84,6 +84,97 @@ spring:
             - Path=/api/getUser
           filters:
             - TokenRelay=bankapp
+        - id: front-service-editUserAccount
+          uri: lb://front-service
+          predicates:
+            - Path=/editUserAccounts
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: account-service-EditAccount
+          uri: lb://account-service
+          predicates:
+            - Path=/api/editUserAccounts
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-editUserPassword
+          uri: lb://front-service
+          predicates:
+            - Path=/editPassword
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: account-service-EditPassword
+          uri: lb://account-service
+          predicates:
+            - Path=/api/editPassword
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: ExchangeGenerator-service-getExchange
+          uri: lb://ExchangeGenerator-service
+          predicates:
+            - Path=/api/exchange
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-exchange
+          uri: lb://front-service
+          predicates:
+            - Path=/exchange
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-cash
+          uri: lb://front-service
+          predicates:
+            - Path=/cash
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: cash-service-cash
+          uri: lb://cash-service
+          predicates:
+            - Path=/api/cash
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: account-service-EditPassword
+          uri: lb://account-service
+          predicates:
+            - Path=/api/ToAccountServiceTransfer
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+
       server:
         webflux:
           filter:

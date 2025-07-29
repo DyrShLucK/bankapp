@@ -43,4 +43,7 @@ public class AccountService {
     public void deleteAccount(String userName, Currency currency) {
         accountRepository.findByUserNameAndCurrency(userName, currency).flatMap(accountRepository::delete);
     }
+    public Mono<Account> saveAccount(Account account) {
+        return accountRepository.save(account);
+    }
 }

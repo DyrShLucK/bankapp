@@ -5,12 +5,17 @@ import jakarta.validation.constraints.AssertTrue;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Past;
 import lombok.Data;
+import org.springframework.context.annotation.Bean;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.factory.PasswordEncoderFactories;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 
 import java.time.LocalDate;
 
 @Data
 public class RegistrationForm {
+
     @NotBlank(message = "Логин обязателен")
     private String login;
 

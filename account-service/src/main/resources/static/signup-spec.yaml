@@ -6,7 +6,24 @@ info:
 servers:
   - url: 'http://gateway-service:8080'
 paths:
-  /api/editUserAccount:
+  /api/ToAccountServiceTransfer:
+    post:
+      operationId: transferToAccountService
+      summary: Запрос на снятие обналичивание в account-service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashTransfer'
+      responses:
+        '200':
+          description: Изменение данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCashResponse'
+  /api/editUserAccounts:
     post:
       summary: Обновление данных пользователя
       requestBody:
@@ -14,14 +31,26 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/UserForm'
+              $ref: '#/components/schemas/UpdateUserForm'
       responses:
         '200':
-          description: успешное обновление пользователя
+          description: Изменение данных
           content:
             application/json:
               schema:
-                type: boolean
+                $ref: '#/components/schemas/EditUserResponse'
+  /api/editPassword:
+    post:
+      summary: Смена пароля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+      responses:
+        '200':
+          description: Успешная смена пароля
   /api/getMainPage:
     get:
       summary: Получение главной страницы пользователя
@@ -177,6 +206,14 @@ components:
           $ref: '#/components/schemas/UserForm'
         accounts:
           $ref: '#/components/schemas/AccountList'
+        UserAccountsErrors:
+          type: array
+          items:
+            type: string
+        Currencys:
+          type: array
+          items:
+            $ref: '#/components/schemas/Currency'
       required:
         - user
         - accounts
@@ -206,6 +243,66 @@ components:
         - login
         - role
         - password
+    EditUserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Успешно ли регистрация
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации
+    UpdateUserForm:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "ФИО пользователя"
+          example: "Иван Иванов"
+        birthdate:
+          type: string
+          format: date
+          description: "Дата рождения (в формате YYYY-MM-DD)"
+          example: "1990-01-01"
+        accounts:
+          type: array
+          items:
+            type: string
+    PasswordChange:
+      type: object
+      properties:
+        password:
+          type: string
+          format: password
+          description: "Пароль пользователя"
+          example: "securePassword123"
+        confirm_password:
+          type: string
+          format: password
+          description: "Подтверждение пароля"
+          example: "securePassword123"
+    AccountCashResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации
+    CashTransfer:
+      type: object
+      properties:
+        currencyTo:
+          type: string
+        value:
+          type: number
+          format: double
+        action:
+          type: string
     Error:
       type: object
       properties:

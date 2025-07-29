@@ -1,0 +1,49 @@
+server:
+  port: 8084
+
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        - id: ExchangeGenerator-service
+          uri: lb://ExchangeGenerator-service
+          predicates:
+            - Path=/api/test
+          filters:
+            - TokenRelay=account-client
+
+  security:
+    oauth2:
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/realms/bankapp
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/bankapp
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            client-id: bankapp
+            client-secret: jw49iqTeajZDZH7K3IL3iMDMysz2llXQ
+            scope: openid
+          bankapp:
+            provider: keycloak
+            authorization-grant-type: client_credentials
+            client-id: bankapp
+            client-secret: jw49iqTeajZDZH7K3IL3iMDMysz2llXQ
+            scope: profile
+            client-authentication-method: client_secret_post
+
+
+
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true

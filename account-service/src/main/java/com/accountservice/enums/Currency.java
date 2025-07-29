@@ -1,7 +1,7 @@
 package com.accountservice.enums;
 
 public enum Currency {
-    RUB("Рубль"),
+    RUB("Российский рубль"),
     USD("Доллар США"),
     EUR("Евро");
 

@@ -15,9 +15,6 @@ public class SignupService {
 
     private final UserRepository userRepository;
 
-    public PasswordEncoder passwordEncoder() {
-        return PasswordEncoderFactories.createDelegatingPasswordEncoder();
-    }
     public SignupService(UserRepository userRepository) {
         this.userRepository = userRepository;
     }
@@ -33,7 +30,7 @@ public class SignupService {
             }).switchIfEmpty(Mono.defer(() ->{
                 User user = new User();
                 user.setUsername(form.getLogin());
-                user.setPassword(passwordEncoder().encode(form.getPassword()));
+                user.setPassword(form.getPassword());
                 user.setName(form.getName());
                 user.setBirthday(form.getBirthdate());
                 user.setRole("USER");
@@ -45,5 +42,4 @@ public class SignupService {
             }));
         });
     }
-    public Mono<User> findByUsername(String username){return userRepository.findByUsername(username);}
 }

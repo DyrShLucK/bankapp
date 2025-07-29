@@ -12,7 +12,7 @@ import java.math.BigDecimal;
 @Table
 public class Account {
     @Id
-    private String id;
+    private Long id;
     @Column("userName")
     private String userName;
     @Column("currency")

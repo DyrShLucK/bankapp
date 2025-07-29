@@ -1,0 +1,38 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'http://gateway-service:8080'
+paths:
+  /api/exchange:
+    get:
+      summary: Получение курсов относительно рубля
+      responses:
+        '200':
+          description: Успешное получение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exchange'
+components:
+  schemas:
+    Exchange:
+      type: array
+      items:
+        $ref: '#/components/schemas/Value'
+    Value:
+      type: object
+      properties:
+        title:
+          type: string
+        name:
+          type: string
+        cost:
+          type: number
+          format: double
+
+
+
+

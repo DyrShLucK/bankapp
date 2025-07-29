@@ -59,4 +59,21 @@ public class ApiController implements DefaultApi {
     public Mono<ResponseEntity<UserFormLogin>> apiGetUserPost(Mono<String> body, ServerWebExchange exchange) {
         return  toApiDTO.authUser(body).map(ResponseEntity::ok);
     }
+
+
+    @Override
+    public Mono<ResponseEntity<EditUserResponse>> apiEditUserAccountsPost(Mono<UpdateUserForm> updateUserForm, ServerWebExchange exchange) {
+        System.out.println("apiEditUserAccountsPost");
+        return toApiDTO.editUser(updateUserForm, exchange.getRequest().getHeaders().getFirst("X-User-Name")).map(ResponseEntity::ok);
+    }
+
+    @Override
+    public Mono<ResponseEntity<Void>> apiEditPasswordPost(Mono<PasswordChange> passwordChange, ServerWebExchange exchange) {
+        return toApiDTO.editPassword(passwordChange, exchange.getRequest().getHeaders().getFirst("X-User-Name"));
+    }
+
+    @Override
+    public Mono<ResponseEntity<AccountCashResponse>> transferToAccountService(Mono<CashTransfer> cashTransfer, ServerWebExchange exchange) {
+        return toApiDTO.cash(cashTransfer, exchange.getRequest().getHeaders().getFirst("X-User-Name")).map(ResponseEntity::ok);
+    }
 }

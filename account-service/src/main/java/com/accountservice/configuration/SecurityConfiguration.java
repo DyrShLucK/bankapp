@@ -68,7 +68,7 @@ public class SecurityConfiguration {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/signup").permitAll()
-                        .pathMatchers("/api/getMainPage/**").authenticated()
+                        .pathMatchers("/api/getMainPage/**", "/api/editUserAccounts").authenticated()
                         .anyExchange().permitAll()
                 )
                 .oauth2Login(withDefaults())

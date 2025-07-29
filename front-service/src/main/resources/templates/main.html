@@ -6,7 +6,7 @@
     <script language="JavaScript">
         setInterval(() => {
             var td = document.getElementById('exchange_rates');
-            fetch('http://localhost:8080/api/rates')
+            fetch('http://localhost:8080/exchange')
                 .then(response => response.json())
                 .then(json => {
                     var table = '<table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">';
@@ -16,7 +16,7 @@
                         table += '<tr>';
                         table += '<td>' + rate.title + '</td>';
                         table += '<td>' + rate.name + '</td>';
-                        table += '<td>' + rate.value + '</td>';
+                        table += '<td>' + rate.cost + '</td>';
                         table += '</tr>';
                     });
                     table += '</table>';
@@ -37,7 +37,7 @@
 </a>
 <table style="width:70%;margin-left:auto;margin-right:auto;">
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/editPassword'}">
+        <form method="post" th:action="${'/editPassword'}">
         <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
             <tr>
                 <td style="font-weight:bold;">Логин</td>
@@ -62,7 +62,7 @@
         </form>
     </td>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/editUserAccounts'}">
+        <form method="post" th:action="${'/editUserAccounts'}" >
         <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
             <tr th:if="${userAccountsErrors!=null}" th:each="userAccountsError : ${userAccountsErrors}">
                 <td style="color:red;" th:text="${userAccountsError}"/>
@@ -97,7 +97,7 @@
         </form>
     </td></tr>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/сash'}">
+        <form method="post" th:action="${'/cash'}">
             <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
                 <tr th:if="${cashErrors!=null}" th:each="cashError : ${cashErrors}">
                     <td style="color:red;" th:text="${cashError}"/>
@@ -123,7 +123,7 @@
         </form>
     </td></tr>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/transfer'}">
+        <form method="post" th:action="${'/transfer'}">
             <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
                 <tr th:if="${transferErrors!=null}" th:each="transferError : ${transferErrors}">
                     <td style="color:red;" th:text="${transferError}"/>
