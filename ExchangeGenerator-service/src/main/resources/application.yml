@@ -1,5 +1,5 @@
 server:
-  port: 8086
+  port: 8084
 
 spring:
   cloud:
@@ -9,8 +9,8 @@ spring:
           enabled: true
           lowerCaseServiceId: true
       routes:
-        - id: blocker-service
-          uri: lb://blocker-service
+        - id: ExchangeGenerator-service
+          uri: lb://ExchangeGenerator-service
           predicates:
             - Path=/api/test
           filters:

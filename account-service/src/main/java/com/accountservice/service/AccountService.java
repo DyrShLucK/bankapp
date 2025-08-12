@@ -8,6 +8,7 @@ import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
 import java.math.BigDecimal;
+import java.util.Comparator;
 import java.util.List;
 @Service
 public class AccountService {
@@ -29,7 +30,9 @@ public class AccountService {
         }));
     }
     public Flux<Account> findOrCreateAccounts(String userName) {
-        return accountRepository.findByUserName(userName).switchIfEmpty(createAccounts(userName));
+        return accountRepository.findByUserName(userName)
+                .sort(Comparator.comparing(account -> account.getCurrency().name()))
+                .switchIfEmpty(createAccounts(userName));
     }
     public Flux<Account> createAccounts(String userName) {
         return Flux.fromIterable(List.of(Currency.values())).flatMap(currency -> createAccount(userName, currency));

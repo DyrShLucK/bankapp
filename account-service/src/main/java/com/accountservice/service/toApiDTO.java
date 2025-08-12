@@ -1,35 +1,34 @@
 package com.accountservice.service;
 
-import com.account_service.domain.*;
-import com.account_service.domain.Currency;
+import com.account_service.generated.get.domain.*;
+import com.account_service.generated.post.api.DefaultApi;
+import com.account_service.generated.post.domain.Notification;
 import com.accountservice.model.Account;
 import com.accountservice.model.User;
 import com.accountservice.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.oauth2.client.authentication.OAuth2AuthenticationToken;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
+import reactor.core.scheduler.Schedulers;
 
 import java.math.BigDecimal;
-import java.security.Principal;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Service
 public class toApiDTO {
-
     private final AccountService accountService;
     private final UserRepository userRepository;
+    private final DefaultApi notificationApi;
 
-    public toApiDTO(AccountService accountService, UserRepository userRepository) {
+    public toApiDTO(AccountService accountService, UserRepository userRepository, DefaultApi notificationApi) { // Добавлен параметр в конструктор
         this.accountService = accountService;
         this.userRepository = userRepository;
+        this.notificationApi = notificationApi;
     }
 
     public Mono<MainPageResponse> getMAinPageDTO(String username) {
@@ -39,26 +38,42 @@ public class toApiDTO {
                                 createUserForm(usernameStr),
                                 accountService.findOrCreateAccounts(usernameStr)
                                         .map(this::convertToAccountForm)
-                                        .collectList()
+                                        .collectList(),
+                                getAllUsersExceptCurrent(usernameStr)
                         ).map(tuple -> {
                             MainPageResponse response = createMainPageResponse(tuple.getT1(), tuple.getT2());
                             response.setCurrencys(createCurrency());
+                            response.setUsers(tuple.getT3());
                             return response;
                         })
                 );
     }
-    private List<Currency> createCurrency(){
-        List<Currency> currencies = new ArrayList<>();
 
+    private Mono<List<Users>> getAllUsersExceptCurrent(String currentUsername) {
+        return userRepository.findAll()
+                .filter(user -> !user.getUsername().equals(currentUsername))
+                .map(this::convertToUsersDTO)
+                .collectList();
+    }
+
+    private Users convertToUsersDTO(User user) {
+        Users usersDTO = new Users();
+        usersDTO.setLogin(user.getUsername());
+        usersDTO.setName(user.getName());
+        return usersDTO;
+    }
+
+    private List<com.account_service.generated.get.domain.Currency> createCurrency(){
+        List<com.account_service.generated.get.domain.Currency> currencies = new ArrayList<>();
         for (com.accountservice.enums.Currency enumCurrency : com.accountservice.enums.Currency.values()) {
-            Currency currency = new Currency();
+            com.account_service.generated.get.domain.Currency currency = new com.account_service.generated.get.domain.Currency();
             currency.setName(enumCurrency.name());
             currency.setTitle(enumCurrency.getTitle());
             currencies.add(currency);
         }
-
         return currencies;
     }
+
     private Mono<UserForm> createUserForm(String username) {
         return userRepository.findByUsername(username)
                 .map(user -> {
@@ -75,7 +90,7 @@ public class toApiDTO {
         AccountForm accountForm = new AccountForm();
         accountForm.setAccountId(Double.valueOf(account.getId()));
         accountForm.setUserName(account.getUserName());
-        Currency currency = new Currency();
+        com.account_service.generated.get.domain.Currency currency = new com.account_service.generated.get.domain.Currency();
         currency.setName(account.getCurrency().name());
         currency.setTitle(account.getCurrency().getTitle());
         accountForm.setCurrency(currency);
@@ -84,7 +99,6 @@ public class toApiDTO {
         System.out.println(accountForm.toString());
         return accountForm;
     }
-
 
     private MainPageResponse createMainPageResponse(UserForm userForm, List<AccountForm> accountForms) {
         MainPageResponse response = new MainPageResponse();
@@ -102,18 +116,23 @@ public class toApiDTO {
             return Mono.just(userFormLogin);
         }));
     }
+
     public Mono<EditUserResponse> editUser(Mono<UpdateUserForm> userFormMono, String username) {
         System.out.println("Начало обработки запроса на редактирование пользователя: " + username);
-
         return userFormMono
                 .flatMap(userForm -> processEditUserForm(userForm, username))
-                .doOnSuccess(this::logEditResult);
+                .doOnSuccess(response -> {
+                    logEditResult(response);
+                    System.out.println(response);
+                    if (response != null) {
+                        System.out.println("################################");
+                        sendUserEditNotification(username, response.getSuccess(), response.getCause());
+                    }
+                });
     }
 
     private Mono<EditUserResponse> processEditUserForm(UpdateUserForm userForm, String username) {
         EditUserResponse response = new EditUserResponse();
-
-        // Валидация даты рождения
         if (userForm.getBirthdate() != null) {
             try {
                 LocalDate birthDate = userForm.getBirthdate();
@@ -128,25 +147,21 @@ public class toApiDTO {
                 return Mono.just(response);
             }
         }
-
         return userRepository.findByUsername(username)
                 .switchIfEmpty(Mono.error(new RuntimeException("Пользователь не найден")))
                 .flatMap(user -> {
-                    // Обновляем данные пользователя
+                    boolean userChanged = false;
                     if (userForm.getName() != null && !userForm.getName().trim().isEmpty()) {
                         user.setName(userForm.getName().trim());
+                        userChanged = true;
                     }
-
                     if (userForm.getBirthdate() != null) {
-                        try {
-                            user.setBirthday(userForm.getBirthdate());
-                        } catch (DateTimeParseException e) {
-                            // Игнорируем ошибку парсинга, так как уже проверили выше
-                        }
+                        user.setBirthday(userForm.getBirthdate());
+                        userChanged = true;
                     }
+                    Mono<User> saveUserMono = userChanged ? userRepository.save(user) : Mono.just(user);
 
-                    // Сохраняем обновленного пользователя
-                    return userRepository.save(user)
+                    return saveUserMono
                             .then(processAccounts(user.getUsername(), userForm.getAccounts()))
                             .map(result -> {
                                 if (result.getSuccess()) {
@@ -167,54 +182,47 @@ public class toApiDTO {
 
     private Mono<EditUserResponse> processAccounts(String username, List<String> accountCurrencies) {
         EditUserResponse response = new EditUserResponse();
-
         if (accountCurrencies == null) {
             accountCurrencies = new ArrayList<>();
         }
-
-        // Получаем все существующие аккаунты пользователя
         List<String> finalAccountCurrencies = accountCurrencies;
         return accountService.findOrCreateAccounts(username)
                 .collectList()
                 .flatMap(accounts -> {
                     List<Mono<Account>> accountUpdates = new ArrayList<>();
                     List<String> errorMessages = new ArrayList<>();
-
                     for (Account account : accounts) {
                         String currencyCode = account.getCurrency().name();
                         boolean shouldExist = finalAccountCurrencies.contains(currencyCode);
-
+                        boolean accountChanged = false;
                         if (shouldExist) {
-                            // Включаем аккаунт
                             if (!account.getIsExists()) {
                                 account.setIsExists(true);
-                                accountUpdates.add(accountService.saveAccount(account));
+                                accountChanged = true;
                             }
                         } else {
-                            // Пытаемся отключить аккаунт
                             if (account.getIsExists()) {
                                 if (account.getBalance().compareTo(BigDecimal.ZERO) == 0) {
                                     account.setIsExists(false);
-                                    accountUpdates.add(accountService.saveAccount(account));
+                                    accountChanged = true;
                                 } else {
                                     errorMessages.add("Невозможно отключить аккаунт " + currencyCode + ": на балансе есть средства");
                                 }
                             }
                         }
+                        if(accountChanged) {
+                            accountUpdates.add(accountService.saveAccount(account));
+                        }
                     }
-
                     if (!errorMessages.isEmpty()) {
                         response.setSuccess(false);
                         response.setCause(errorMessages);
                         return Mono.just(response);
                     }
-
-                    // Выполняем все обновления аккаунтов
                     if (accountUpdates.isEmpty()) {
                         response.setSuccess(true);
                         return Mono.just(response);
                     }
-
                     return Flux.fromIterable(accountUpdates)
                             .flatMap(mono -> mono)
                             .then(Mono.fromCallable(() -> {
@@ -246,11 +254,72 @@ public class toApiDTO {
         return passwordChange.flatMap(pass -> userRepository.findByUsername(username)
                 .flatMap(user -> {
                     user.setPassword(pass.getPassword());
-
                     return userRepository.save(user)
-                            .then(Mono.just(ResponseEntity.ok().<Void>build()));
+                            .then(Mono.just(true));
                 })
-                .switchIfEmpty(Mono.just(ResponseEntity.notFound().<Void>build())));
+                .switchIfEmpty(Mono.just(false))
+                .flatMap(success -> {
+                    ResponseEntity<Void> responseEntity = success ? ResponseEntity.ok().<Void>build() : ResponseEntity.notFound().<Void>build();
+                    sendPasswordChangeNotification(username, success, success ? null : "Пользователь не найден");
+                    return Mono.just(responseEntity);
+                })
+                .onErrorResume(throwable -> {
+                    System.err.println("Ошибка при изменении пароля для пользователя " + username + ": " + throwable.getMessage());
+                    sendPasswordChangeNotification(username, false, "Внутренняя ошибка сервера");
+                    return Mono.just(ResponseEntity.status(500).<Void>build()); // Или другой код ошибки
+                })
+        );
+    }
+
+    private void sendUserEditNotification(String username, boolean success, List<String> causes) {
+        try {
+            String message;
+            if (success) {
+                message = "Данные пользователя успешно обновлены.";
+            } else {
+                message = "Ошибка при обновлении данных пользователя: " +
+                        (causes != null && !causes.isEmpty() ? String.join(", ", causes) : "Неизвестная ошибка");
+            }
+
+            Notification notification = new Notification();
+            notification.setUsername(username);
+            notification.setMessage(message);
+            notification.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+            notificationApi.apiNotificationsSetPost(notification)
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .subscribe(
+                            response -> System.out.println("Уведомление об изменении пользователя отправлено успешно для " + username),
+                            error -> System.err.println("Ошибка при отправке уведомления об изменении пользователя для " + username + ": " + error.getMessage())
+                    );
+        } catch (Exception e) {
+            System.err.println("Ошибка при подготовке уведомления об изменении пользователя для " + username + ": " + e.getMessage());
+        }
+    }
+
+    private void sendPasswordChangeNotification(String username, boolean success, String errorMessage) {
+        try {
+            String message;
+            if (success) {
+                message = "Пароль успешно изменен.";
+            } else {
+                message = "Ошибка при изменении пароля: " + (errorMessage != null ? errorMessage : "Неизвестная ошибка");
+            }
+
+            Notification notification = new Notification();
+            notification.setUsername(username);
+            notification.setMessage(message);
+            notification.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+
+            notificationApi.apiNotificationsSetPost(notification)
+                    .subscribeOn(Schedulers.boundedElastic())
+                    .subscribe(
+                            response -> System.out.println("Уведомление о смене пароля отправлено успешно для " + username),
+                            error -> System.err.println("Ошибка при отправке уведомления о смене пароля для " + username + ": " + error.getMessage())
+                    );
+        } catch (Exception e) {
+            System.err.println("Ошибка при подготовке уведомления о смене пароля для " + username + ": " + e.getMessage());
+        }
     }
 
 
@@ -318,5 +387,103 @@ public class toApiDTO {
                     }));
         });
     }
+    public Mono<TransferResponse> transfer(Mono<Transfer> transferMono, String username) {
+        System.out.println(username);
+        return transferMono.flatMap(transfer -> {
+            String fromCurrency = transfer.getFromCurrency();
+            String toCurrency = transfer.getToCurrency();
+            Double value = transfer.getValue();
+            String toLogin = transfer.getToLogin();
+            Double summary = transfer.getSummary();
 
+            TransferResponse validationResponse = validateTransferInput(value, fromCurrency, toCurrency);
+            if (!validationResponse.getSuccess()) {
+                return Mono.just(validationResponse);
+            }
+
+            boolean isInternalTransfer = toLogin == null || toLogin.equals(username);
+
+            String targetLogin = isInternalTransfer ? username : toLogin;
+
+            BigDecimal transferAmount = BigDecimal.valueOf(value);
+            BigDecimal summaryAmount = summary != null ? BigDecimal.valueOf(summary) : BigDecimal.ZERO;
+
+            Mono<Account> senderAccountMono = accountService.findOrCreateAccounts(username)
+                    .filter(account -> fromCurrency.equals(account.getCurrency().name()) && account.getIsExists())
+                    .next();
+
+            Mono<Account> receiverAccountMono = accountService.findOrCreateAccounts(targetLogin)
+                    .filter(account -> toCurrency.equals(account.getCurrency().name()) && account.getIsExists())
+                    .next();
+
+            return Mono.zip(senderAccountMono, receiverAccountMono)
+                    .flatMap(tuple -> {
+                        Account senderAccount = tuple.getT1();
+                        Account receiverAccount = tuple.getT2();
+
+                        if (senderAccount.getBalance().compareTo(transferAmount) < 0) {
+                            TransferResponse response = new TransferResponse();
+                            response.setSuccess(false);
+                            response.setCause(List.of("Недостаточно средств на счете. Баланс: " + senderAccount.getBalance() + ", Требуется: " + transferAmount));
+                            return Mono.just(response);
+                        }
+
+                        senderAccount.setBalance(senderAccount.getBalance().subtract(transferAmount));
+                        receiverAccount.setBalance(receiverAccount.getBalance().add(summaryAmount));
+
+                        return Mono.zip(
+                                accountService.saveAccount(senderAccount),
+                                accountService.saveAccount(receiverAccount)
+                        ).then(Mono.fromCallable(() -> {
+                            TransferResponse response = new TransferResponse();
+                            response.setSuccess(true);
+                            response.setCause(new ArrayList<>());
+                            return response;
+                        }));
+                    })
+                    .onErrorResume(throwable -> {
+                        System.err.println("Ошибка при выполнении перевода: " + throwable.getMessage());
+                        TransferResponse errorResponse = new TransferResponse();
+                        errorResponse.setSuccess(false);
+                        if (throwable.getMessage().contains("не найден")) {
+                            errorResponse.setCause(List.of(throwable.getMessage()));
+                        } else {
+                            errorResponse.setCause(List.of("Ошибка при выполнении перевода: " + throwable.getMessage()));
+                        }
+                        return Mono.just(errorResponse);
+                    })
+                    .switchIfEmpty(Mono.defer(() -> {
+                        TransferResponse errorResponse = new TransferResponse();
+                        errorResponse.setSuccess(false);
+                        errorResponse.setCause(List.of("Один или оба счета не найдены или отключены"));
+                        return Mono.just(errorResponse);
+                    }));
+        });
+    }
+
+    private TransferResponse validateTransferInput(Double value, String fromCurrency, String toCurrency) {
+        TransferResponse response = new TransferResponse();
+
+        if (value == null || value <= 0) {
+            response.setSuccess(false);
+            response.setCause(List.of("Сумма перевода должна быть положительным числом"));
+            return response;
+        }
+
+        if (fromCurrency == null || fromCurrency.isEmpty()) {
+            response.setSuccess(false);
+            response.setCause(List.of("Не указана валюта отправителя"));
+            return response;
+        }
+
+        if (toCurrency == null || toCurrency.isEmpty()) {
+            response.setSuccess(false);
+            response.setCause(List.of("Не указана валюта получателя"));
+            return response;
+        }
+
+        response.setSuccess(true);
+        response.setCause(new ArrayList<>());
+        return response;
+    }
 }

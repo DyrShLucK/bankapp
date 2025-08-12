@@ -1,7 +1,7 @@
 package com.accountservice.service;
 
-import com.account_service.domain.RegistrationForm;
-import com.account_service.domain.SignupResponse;
+import com.account_service.generated.get.domain.RegistrationForm;
+import com.account_service.generated.get.domain.SignupResponse;
 import com.accountservice.model.User;
 import com.accountservice.repository.UserRepository;
 import org.springframework.context.annotation.Bean;

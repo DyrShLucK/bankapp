@@ -37,7 +37,6 @@ public class editAccount {
     @PostMapping("/editUserAccounts")
     public Mono<RedirectView> editAccountsAndUser(Model model, @ModelAttribute UserUpdateForm form, WebSession session) {
 
-        // Логируем полученные данные
         String name = form.getName();
         LocalDate birthdate = form.getBirthdate();
         List<String> account = form.getAccount();

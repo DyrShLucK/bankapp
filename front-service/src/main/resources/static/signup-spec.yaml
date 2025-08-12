@@ -6,6 +6,32 @@ info:
 servers:
   - url: 'http://gateway-service:8080'
 paths:
+  /api/transfer:
+    post:
+      summary: Запрос на перевод средств
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transfer'
+      responses:
+        '200':
+          description: Ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+  /api/notifications:
+    get:
+      summary: получение уведемлений
+      responses:
+        '200':
+          description: получение уведемлений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsGet'
   /api/cash:
     post:
       summary: Запрос на снятие обналичивание
@@ -237,6 +263,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Currency'
+        Users:
+          type: array
+          items:
+            $ref: '#/components/schemas/Users'
       required:
         - user
         - accounts
@@ -297,6 +327,57 @@ components:
           type: number
           format: double
         action:
+          type: string
+    NotificationsGet:
+      type: object
+      properties:
+        Notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+    Transfer:
+      type: object
+      properties:
+        from_currency:
+          type: string
+        to_currency:
+          type: string
+        value:
+          type: number
+          format: double
+        to_login:
+          type: string
+        summary:
+          type: number
+          format: double
+    TransferResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации
+    Users:
+      type: object
+      properties:
+        Login:
+          type: string
+        Name:
           type: string
     Error:
       type: object

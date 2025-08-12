@@ -59,7 +59,7 @@ public class ApiConfiguration {
 
                             ClientRequest newRequest = ClientRequest.from(request)
                                     .header(HttpHeaders.AUTHORIZATION, "Bearer " + token)
-                                    .header("X-User-Name", username) // Передаём дальше
+                                    .header("X-User-Name", username)
                                     .build();
 
                             return next.exchange(newRequest);

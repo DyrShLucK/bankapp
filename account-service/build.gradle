@@ -47,24 +47,42 @@ dependencies {
 
 }
 
-openApiGenerate {
-    generatorName.set("spring")
-    inputSpec.set("$projectDir/src/main/resources/static/signup-spec.yaml")
-    outputDir.set("$projectDir/build/generated")
-    modelPackage.set("com.account-service.domain")
-    apiPackage.set("com.account-service.api")
-    configOptions.set([
-            sourceFolder: "src/main/java",
+
+tasks.register('generateAccountGetClient', org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    generatorName = "spring"
+    inputSpec = "$projectDir/src/main/resources/static/signup-spec.yaml".toString()
+    outputDir = "$projectDir/build/generated".toString()
+    modelPackage = "com.account-service.generated.get.domain"
+    apiPackage = "com.account-service.generated.get.api"
+    configOptions = [
+            sourceFolder : "src/main/java",
             interfaceOnly: "true",
-            library: "spring-boot",
-            useTags: "true",
-            reactive: "true"
-    ])
+            library      : "spring-boot",
+            useTags      : "true",
+            reactive     : "true"
+    ]
 }
+
+// === Второй генератор: POST сервис (webclient) ===
+tasks.register('generateAccountPostClient', org.openapitools.generator.gradle.plugin.tasks.GenerateTask) {
+    generatorName = "java"
+    inputSpec = "$projectDir/src/main/resources/static/account_post-spec.yaml".toString()
+    outputDir = "$projectDir/build/generated".toString()
+    modelPackage = "com.account-service.generated.post.domain"
+    apiPackage = "com.account-service.generated.post.api"
+    library = "webclient"
+    configOptions = [
+            hideGenerationTimestamp: "true",
+            useJakartaEe           : "true",
+            reactive               : "true"
+    ]
+}
+
 sourceSets {
     getByName("main") {
         java {
             srcDir("$buildDir/generated/src/main/java")
+
         }
     }
 }
@@ -77,8 +95,9 @@ dependencyManagement {
     }
 }
 tasks.named('compileJava') {
-    dependsOn 'openApiGenerate'
+    dependsOn 'generateAccountGetClient', 'generateAccountPostClient'
 }
+
 tasks.named('test') {
     useJUnitPlatform()
 }

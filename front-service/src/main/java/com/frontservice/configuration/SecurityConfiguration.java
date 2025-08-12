@@ -66,18 +66,30 @@ public class SecurityConfiguration {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/signup").permitAll()
-                        .pathMatchers("/", "/bankapp", "/editUserAccounts").authenticated()
                         .anyExchange().authenticated()
                 )
                 .oauth2Client(withDefaults())
+                .exceptionHandling(exceptionHandling -> exceptionHandling
+                        .authenticationEntryPoint((exchange, ex) -> {
+                            ServerHttpResponse response = exchange.getResponse();
+                            response.setStatusCode(HttpStatus.FOUND);
+                            response.getHeaders().setLocation(URI.create("/signup"));
+                            return response.setComplete();
+                        })
+                        .accessDeniedHandler((exchange, ex) -> {
+                            ServerHttpResponse response = exchange.getResponse();
+                            response.setStatusCode(HttpStatus.FOUND);
+                            response.getHeaders().setLocation(URI.create("/signup"));
+                            return response.setComplete();
+                        })
+                )
+
                 .oauth2ResourceServer(serverSpec -> serverSpec
                         .jwt(jwtSpec -> {
                             ReactiveJwtAuthenticationConverter jwtAuthenticationConverter = new ReactiveJwtAuthenticationConverter();
                             jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
                                 List<String> roles = jwt.getClaim("roles");
 
-                                System.out.println(roles);
-                                System.out.println(jwt.getTokenValue());
                                 return Flux.fromIterable(roles != null ? roles : List.of())
                                         .map(SimpleGrantedAuthority::new);
                             });

@@ -2,15 +2,14 @@ package com.frontservice.service;
 
 import com.frontUi.api.DefaultApi;
 import com.frontUi.domain.*;
-import com.frontservice.DTO.CashForm;
-import com.frontservice.DTO.PasswordUdateForm;
+import com.frontservice.DTO.*;
 import com.frontservice.DTO.RegistrationForm;
-import com.frontservice.DTO.UserUpdateForm;
 import org.springframework.context.annotation.Bean;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
+import org.springframework.web.bind.annotation.GetMapping;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 
@@ -26,7 +25,6 @@ public class SignupApi {
         updateUserForm.setName(form.getName());
         updateUserForm.setBirthdate(form.getBirthdate());
         updateUserForm.setAccounts(form.getAccount());
-        System.out.println("отправка");
         return defaultApi.apiEditUserAccountsPost(updateUserForm);
     }
     public PasswordEncoder passwordEncoder() {
@@ -58,5 +56,16 @@ public class SignupApi {
         cashTransfer.setAction(cashForm.getAction());
         return defaultApi.apiCashPost(cashTransfer);
     }
-
+    public Mono<NotificationsGet> notification(){
+        return defaultApi.apiNotificationsGet();
+    }
+    public Mono<TransferResponse> transfer(TransferForm transferForm){
+        Transfer transfer = new Transfer();
+        transfer.setValue(transferForm.getValue());
+        transfer.setFromCurrency(transferForm.getFrom_currency());
+        transfer.setToCurrency(transferForm.getTo_currency());
+        transfer.setToLogin(transferForm.getTo_login());
+        System.out.println("dtoTransfer");
+        return defaultApi.apiTransferPost(transfer);
+    }
 }

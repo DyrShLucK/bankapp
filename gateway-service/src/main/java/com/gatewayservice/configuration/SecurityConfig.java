@@ -80,7 +80,7 @@ public class SecurityConfig {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("signup").permitAll()
+                        .pathMatchers("/signup").permitAll()
                         .anyExchange().permitAll()
                 )
                 .formLogin(form -> form

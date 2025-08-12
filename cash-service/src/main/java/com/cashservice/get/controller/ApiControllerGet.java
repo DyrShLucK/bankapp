@@ -18,6 +18,6 @@ public class ApiControllerGet implements DefaultApi {
 
     @Override
     public Mono<ResponseEntity<AccountCashResponse>> processCashWithdrawal(Mono<CashTransfer> cashTransfer, ServerWebExchange exchange) {
-        return cashService.cashFunc(cashTransfer).map(ResponseEntity::ok);
+        return cashService.cashFunc(cashTransfer, exchange.getRequest().getHeaders().getFirst("X-User-Name")).map(ResponseEntity::ok);
     }
 }

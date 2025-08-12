@@ -1,5 +1,5 @@
 server:
-  port: 8084
+  port: 8086
 
 spring:
   cloud:
@@ -9,12 +9,12 @@ spring:
           enabled: true
           lowerCaseServiceId: true
       routes:
-        - id: ExchangeGenerator-service
-          uri: lb://ExchangeGenerator-service
+        - id: blocker-service
+          uri: lb://blocker-service
           predicates:
             - Path=/api/test
           filters:
-            - TokenRelay=account-client
+            - TokenRelay=bankapp-client
 
   security:
     oauth2:

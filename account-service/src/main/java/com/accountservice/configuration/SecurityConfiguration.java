@@ -1,27 +1,14 @@
 package com.accountservice.configuration;
 
-import com.accountservice.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.ApplicationRunner;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
 import org.springframework.http.codec.FormHttpMessageReader;
-import org.springframework.http.server.reactive.ServerHttpResponse;
-import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.reactive.EnableWebFluxSecurity;
 import org.springframework.security.config.web.server.ServerHttpSecurity;
-import org.springframework.security.core.Authentication;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
-import org.springframework.security.core.userdetails.MapReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.ReactiveUserDetailsService;
-import org.springframework.security.core.userdetails.User;
-import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.oauth2.client.AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager;
@@ -30,27 +17,18 @@ import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClient
 import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClientService;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserRequest;
 import org.springframework.security.oauth2.client.oidc.userinfo.OidcUserService;
-import org.springframework.security.oauth2.client.oidc.web.server.logout.OidcClientInitiatedServerLogoutSuccessHandler;
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.client.userinfo.OAuth2UserService;
-import org.springframework.security.oauth2.client.web.reactive.function.client.ServerOAuth2AuthorizedClientExchangeFilterFunction;
+import org.springframework.security.oauth2.client.web.server.AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository;
+import org.springframework.security.oauth2.client.web.server.ServerOAuth2AuthorizedClientRepository;
 import org.springframework.security.oauth2.core.oidc.user.DefaultOidcUser;
 import org.springframework.security.oauth2.core.oidc.user.OidcUser;
-import org.springframework.security.oauth2.server.resource.authentication.JwtAuthenticationConverter;
-import org.springframework.security.oauth2.server.resource.authentication.JwtGrantedAuthoritiesConverter;
 import org.springframework.security.oauth2.server.resource.authentication.ReactiveJwtAuthenticationConverter;
 import org.springframework.security.web.server.SecurityWebFilterChain;
-import org.springframework.security.web.server.authentication.logout.ServerLogoutSuccessHandler;
-import org.springframework.web.reactive.function.client.WebClient;
-import org.springframework.web.server.ServerWebExchange;
-import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Flux;
-import reactor.core.publisher.Mono;
 
-import java.net.URI;
-import java.time.LocalDate;
-import java.time.LocalDateTime;
-import java.util.*;
+import java.util.Collection;
+import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -62,42 +40,25 @@ public class SecurityConfiguration {
     private ReactiveClientRegistrationRepository clientRegistrationRepository;
     @Autowired
     private DiscoveryClient discoveryClient;
+
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/signup").permitAll()
-                        .pathMatchers("/api/getMainPage/**", "/api/editUserAccounts").authenticated()
-                        .anyExchange().permitAll()
+                        .anyExchange().authenticated()
                 )
-                .oauth2Login(withDefaults())
+                .oauth2Client(withDefaults())
                 .oauth2ResourceServer(serverSpec -> serverSpec
                         .jwt(jwtSpec -> {
                             ReactiveJwtAuthenticationConverter jwtAuthenticationConverter = new ReactiveJwtAuthenticationConverter();
                             jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
-                                Map<String, Object> realmAccess = jwt.getClaim("realm_access");
-                                List<String> realmRoles = realmAccess != null
-                                        ? (List<String>) realmAccess.get("roles")
-                                        : Collections.emptyList();
+                                List<String> roles = jwt.getClaim("roles");
 
-                                Map<String, Object> resourceAccess = jwt.getClaim("resource_access");
-                                List<String> clientRoles = Collections.emptyList();
-
-                                if (resourceAccess != null) {
-                                    Map<String, Object> accountResource = (Map<String, Object>) resourceAccess.get("account");
-                                    if (accountResource != null) {
-                                        clientRoles = (List<String>) accountResource.get("roles");
-                                    }
-                                }
-
-                                List<String> allRoles = new ArrayList<>();
-                                allRoles.addAll(realmRoles);
-                                allRoles.addAll(clientRoles);
-                                System.out.println(allRoles);
-                                return Flux.fromIterable(allRoles)
-                                        .map(role -> new SimpleGrantedAuthority("ROLE_" + role));
+                                return Flux.fromIterable(roles != null ? roles : List.of())
+                                        .map(SimpleGrantedAuthority::new);
                             });
+
                             jwtSpec.jwtAuthenticationConverter(jwtAuthenticationConverter);
                         })
                 );
@@ -105,10 +66,58 @@ public class SecurityConfiguration {
     }
 
 
+
     @Bean
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
+    @Bean
+    public FormHttpMessageReader formHttpMessageReader() {
+        return new FormHttpMessageReader();
+    }
+
+    @Bean
+    public OAuth2UserService<OidcUserRequest, OidcUser> oAuth2UserService() {
+        var oidcUserService = new OidcUserService();
+        return userRequest -> {
+            OidcUser oidcUser = oidcUserService.loadUser(userRequest);
+
+            String prefixedUsername = "kc_" + oidcUser.getPreferredUsername();
+
+            List<String> roles = oidcUser.getClaimAsStringList("spring_sec_roles");
+            Collection<GrantedAuthority> authorities = Stream.concat(
+                    oidcUser.getAuthorities().stream(),
+                    roles.stream().map(SimpleGrantedAuthority::new)
+            ).collect(Collectors.toList());
+
+            return new DefaultOidcUser(
+                    authorities,
+                    oidcUser.getIdToken(),
+                    oidcUser.getUserInfo(),
+                    prefixedUsername
+            );
+        };
+    }
+
+    @Bean
+    public ServerOAuth2AuthorizedClientRepository authorizedClientRepository(ReactiveOAuth2AuthorizedClientService authorizedClientService) {
+        return new AuthenticatedPrincipalServerOAuth2AuthorizedClientRepository(authorizedClientService);
+    }
 
 
+    @Bean
+    ReactiveOAuth2AuthorizedClientManager auth2AuthorizedClientManager(
+            ReactiveClientRegistrationRepository clientRegistrationRepository,
+            ReactiveOAuth2AuthorizedClientService authorizedClientService
+    ) {
+        AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager manager = new AuthorizedClientServiceReactiveOAuth2AuthorizedClientManager(clientRegistrationRepository, authorizedClientService);
+
+        manager.setAuthorizedClientProvider(ReactiveOAuth2AuthorizedClientProviderBuilder.builder()
+                .clientCredentials()
+                .refreshToken()
+                .build()
+        );
+
+        return manager;
+    }
 }

@@ -1,0 +1,58 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'http://gateway-service:8080'
+paths:
+  /api/notifications:
+    get:
+      summary: получение уведемлений
+      responses:
+        '200':
+          description: получение уведемлений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsGet'
+  /api/notificationsSet:
+    post:
+      summary: запрос на уведомление
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '200':
+          description: успех
+
+components:
+  schemas:
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+    NotificationsGet:
+      type: object
+      properties:
+        Notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+
+
+
+
+
+

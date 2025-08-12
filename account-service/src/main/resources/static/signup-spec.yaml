@@ -105,6 +105,23 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/UserFormLogin'
+  /api/transferAccountService:
+    post:
+      operationId: transferFromToAccountService
+      summary: перевод между аккаунтами
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transfer'
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+          description: Успешный ответ
 components:
   schemas:
     RegistrationForm:
@@ -214,6 +231,10 @@ components:
           type: array
           items:
             $ref: '#/components/schemas/Currency'
+        Users:
+          type: array
+          items:
+            $ref: '#/components/schemas/Users'
       required:
         - user
         - accounts
@@ -302,6 +323,38 @@ components:
           type: number
           format: double
         action:
+          type: string
+    Transfer:
+      type: object
+      properties:
+        from_currency:
+          type: string
+        to_currency:
+          type: string
+        value:
+          type: number
+          format: double
+        to_login:
+          type: string
+        summary:
+          type: number
+          format: double
+    TransferResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации
+    Users:
+      type: object
+      properties:
+        Login:
+          type: string
+        Name:
           type: string
     Error:
       type: object

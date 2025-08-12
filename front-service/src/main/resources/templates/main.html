@@ -24,6 +24,71 @@
                 })
                 .catch(error => td.innerHTML = 'Ошибка при получении данных курсов валют');
         }, 1000);
+
+
+        const displayedNotifications = new Set();
+
+        setInterval(() => {
+            const userId = 1;
+            fetch(`http://localhost:8080/notifications`)
+                .then(response => response.json())
+                .then(notifications => {
+                    if (notifications && notifications.length > 0) {
+                        notifications.forEach(notification => {
+                            if (!displayedNotifications.has(notification.id)) {
+                                displayedNotifications.add(notification.id);
+                                showNotification(notification);
+                            }
+                        });
+                    }
+                })
+                .catch(error => console.log('Ошибка при получении уведомлений:', error));
+        }, 2000);
+
+        function showNotification(notification) {
+            const notificationDiv = document.createElement('div');
+            notificationDiv.id = `notification-${notification.id}`;
+            notificationDiv.className = 'notification';
+            notificationDiv.style.cssText = `
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background-color: #4CAF50;
+            color: white;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 10px;
+            z-index: 1000;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            opacity: 1;
+            transition: opacity 0.5s;
+        `;
+            notificationDiv.innerHTML = `
+            <strong>Уведомление:</strong> ${notification.message}
+            <br><small>${new Date(notification.timestamp).toLocaleString()}</small>
+            <button onclick="closeNotification('${notification.id}')"
+                    style="float: right; background: none; border: none; color: white; cursor: pointer;">×</button>
+        `;
+
+            document.body.appendChild(notificationDiv);
+
+            setTimeout(() => {
+                closeNotification(notification.id);
+            }, 5000);
+        }
+
+        function closeNotification(notificationId) {
+            const notificationDiv = document.getElementById(`notification-${notificationId}`);
+            if (notificationDiv) {
+                notificationDiv.style.opacity = '0';
+                setTimeout(() => {
+                    if (notificationDiv.parentNode) {
+                        notificationDiv.parentNode.removeChild(notificationDiv);
+                    }
+                    displayedNotifications.delete(Number(notificationId));
+                }, 500);
+            }
+        }
     </script>
 </head>
 
@@ -154,7 +219,7 @@
         </form>
     </td></tr>
     <tr><td style="padding:2px;">
-        <form method="post" th:action="${'/user/'+login+'/transfer'}">
+        <form method="post" th:action="${'/transfer'}">
             <table style="width:100%;margin-left:auto;margin-right:auto;border-radius:2%;padding:10px;background-color:whitesmoke;">
                 <tr th:if="${transferOtherErrors!=null}" th:each="transferOtherError : ${transferOtherErrors}">
                     <td style="color:red;" th:text="${transferOtherError}"/>

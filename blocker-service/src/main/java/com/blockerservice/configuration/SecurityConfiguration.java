@@ -30,9 +30,7 @@ public class SecurityConfiguration {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .pathMatchers("/signup").permitAll()
-                        .pathMatchers("/api/getMainPage/**", "/api/editUserAccounts").authenticated()
-                        .anyExchange().permitAll()
+                        .anyExchange().authenticated()
                 )
                 .oauth2Login(withDefaults())
                 .oauth2ResourceServer(serverSpec -> serverSpec

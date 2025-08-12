@@ -1,10 +1,7 @@
 package com.frontservice.controller;
 
 import com.frontUi.api.DefaultApi;
-import com.frontUi.domain.AccountForm;
-import com.frontUi.domain.Currency;
-import com.frontUi.domain.MainPageResponse;
-import com.frontUi.domain.UserForm;
+import com.frontUi.domain.*;
 import com.frontservice.service.mainpageGetService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.server.reactive.ServerHttpRequest;
@@ -48,12 +45,14 @@ public class mainController {
             UserForm user = dto.getUser();
             List<AccountForm> accounts = dto.getAccounts();
             List<Currency> currency = dto.getCurrencys();
+            List<Users> users = dto.getUsers();
             model.addAttribute("login", user.getLogin());
             System.out.println("login: " + user.getLogin());
             model.addAttribute("name", user.getName());
             model.addAttribute("birthdate", user.getBirthdate().toString());
             model.addAttribute("accounts", accounts);
             model.addAttribute("currency", currency);
+            model.addAttribute("users", users);
             return Mono.just("main");
         });
     }
@@ -66,21 +65,20 @@ public class mainController {
         Map<String, String> attributeGroups = Map.of(
                 "userAccountsErrors", "userAccountsSuccess",
                 "passwordErrors", "passwordSuccess",
-                "cashErrors", "cashSuccess"
+                "cashErrors", "cashSuccess",
+                "transferErrors", "transferSuccess",
+                "transferOtherErrors", "transferOtherSuccess"
         );
 
-        // Обрабатываем каждую группу
         attributeGroups.forEach((errorAttr, successAttr) ->
                 processAttributeGroup(model, flashAttributes, errorAttr, successAttr)
         );
 
-        // Удаляем flash атрибуты из сессии
         session.getAttributes().remove("jakarta.servlet.flash.mapping.output");
     }
 
     private void processAttributeGroup(Model model, Map<String, Object> flashAttributes,
                                        String errorAttribute, String successAttribute) {
-        // Проверяем ошибки
         Object errorsObj = flashAttributes.get(errorAttribute);
         if (errorsObj instanceof List) {
             List<?> errors = (List<?>) errorsObj;

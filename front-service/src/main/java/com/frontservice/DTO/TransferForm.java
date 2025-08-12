@@ -4,7 +4,8 @@ import lombok.Data;
 
 @Data
 public class TransferForm {
-    public String from_currency;
-    public String to_currency;
-    public double value;
+    private String from_currency;
+    private String to_currency;
+    private Double value;
+    private String to_login;
 }

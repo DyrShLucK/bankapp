@@ -1,8 +1,8 @@
 package com.accountservice.controller;
 
 
-import com.account_service.api.DefaultApi;
-import com.account_service.domain.*;
+import com.account_service.generated.get.api.DefaultApi;
+import com.account_service.generated.get.domain.*;
 import com.accountservice.repository.UserRepository;
 import com.accountservice.service.SignupService;
 import com.accountservice.service.toApiDTO;
@@ -37,8 +37,6 @@ public class ApiController implements DefaultApi {
     public Mono<ResponseEntity<SignupResponse>> apiSignupPost(Mono<RegistrationForm> registrationForm, ServerWebExchange exchange) {
         return signupService.signup(registrationForm).map(ResponseEntity::ok);
     }
-
-
 
     @Override
     public Mono<ResponseEntity<MainPageResponse>> apiGetMainPageGet(ServerWebExchange exchange) {
@@ -75,5 +73,10 @@ public class ApiController implements DefaultApi {
     @Override
     public Mono<ResponseEntity<AccountCashResponse>> transferToAccountService(Mono<CashTransfer> cashTransfer, ServerWebExchange exchange) {
         return toApiDTO.cash(cashTransfer, exchange.getRequest().getHeaders().getFirst("X-User-Name")).map(ResponseEntity::ok);
+    }
+
+    @Override
+    public Mono<ResponseEntity<TransferResponse>> transferFromToAccountService(Mono<Transfer> transfer, ServerWebExchange exchange) {
+        return toApiDTO.transfer(transfer, exchange.getRequest().getHeaders().getFirst("X-User-Name")).map(ResponseEntity::ok);
     }
 }
