@@ -1,0 +1,51 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'http://gateway-service:8080'
+paths:
+  /api/transfer:
+    post:
+      summary: Запрос на перевод средств
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transfer'
+      responses:
+        '200':
+          description: Ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+components:
+  schemas:
+    Transfer:
+      type: object
+      properties:
+        from_currency:
+          type: string
+        to_currency:
+          type: string
+        value:
+          type: number
+          format: double
+        to_login:
+          type: string
+        summary:
+          type: number
+          format: double
+    TransferResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации

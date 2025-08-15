@@ -1,0 +1,395 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'http://gateway-service:8080'
+paths:
+  /api/transfer:
+    post:
+      summary: Запрос на перевод средств
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Transfer'
+      responses:
+        '200':
+          description: Ответ
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransferResponse'
+  /api/notifications:
+    get:
+      summary: получение уведемлений
+      responses:
+        '200':
+          description: получение уведемлений
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/NotificationsGet'
+  /api/cash:
+    post:
+      summary: Запрос на снятие обналичивание
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashTransfer'
+      responses:
+        '200':
+          description: Изменение данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCashResponse'
+  /api/exchange:
+    get:
+      summary: Получение курсов относительно рубля
+      responses:
+        '200':
+          description: Успешное получение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Exchange'
+  /api/editUserAccounts:
+    post:
+      summary: Обновление данных пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UpdateUserForm'
+      responses:
+        '200':
+          description: Изменение данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EditUserResponse'
+  /api/getMainPage:
+    get:
+      summary: Получение главной страницы пользователя
+      responses:
+        '200':
+          description: Успешное получение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/MainPageResponse'
+  /api/editPassword:
+    post:
+      summary: Смена пароля
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/PasswordChange'
+      responses:
+        '200':
+          description: Успешная смена пароля
+  /api/signup:
+    post:
+      summary: Регистрация нового пользователя
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/RegistrationForm'
+      responses:
+        '200':
+          description: Успешная регистрация
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SignupResponse'
+              example:
+                success: False
+                cause: 'Логин существует'
+        '400':
+          description: Ошибка валидации (например, логин уже существует)
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    RegistrationForm:
+      type: object
+      properties:
+        login:
+          type: string
+          description: "Уникальный логин пользователя"
+          example: "john_doe"
+        password:
+          type: string
+          format: password
+          description: "Пароль пользователя"
+          example: "securePassword123"
+        confirm_password:
+          type: string
+          format: password
+          description: "Подтверждение пароля"
+          example: "securePassword123"
+        name:
+          type: string
+          description: "ФИО пользователя"
+          example: "Иван Иванов"
+        birthdate:
+          type: string
+          format: date
+          description: "Дата рождения (в формате YYYY-MM-DD)"
+          example: "1990-01-01"
+      required:
+        - login
+        - password
+        - confirm_password
+        - birthdate
+        - name
+    SignupResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Успешно ли регистрация
+        cause:
+          type: string
+          description: В случаи не верной валидации
+    EditUserResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+          description: Успешно ли регистрация
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации
+    UpdateUserForm:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "ФИО пользователя"
+          example: "Иван Иванов"
+        birthdate:
+          type: string
+          format: date
+          description: "Дата рождения (в формате YYYY-MM-DD)"
+          example: "1990-01-01"
+        accounts:
+          type: array
+          items:
+            type: string
+
+    UserForm:
+      type: object
+      properties:
+        login:
+          type: string
+          description: "Уникальный логин пользователя"
+          example: "user123"
+        name:
+          type: string
+          description: "ФИО пользователя"
+          example: "Иван Иванов"
+        birthdate:
+            type: string
+            format: date
+            description: "Дата рождения (в формате YYYY-MM-DD)"
+            example: "1990-01-01"
+      required:
+        - login
+        - name
+        - birthdate
+    AccountForm:
+      type: object
+      properties:
+        accountId:
+          type: number
+          format: double
+          description: "Уникальный идентификатор счёта"
+          example: 100
+        userName:
+          type: string
+          description: "логин пользователя"
+          example: "user123"
+        currency:
+          $ref: '#/components/schemas/Currency'
+        balance:
+          type: number
+          format: double
+          description: "Баланс счёта"
+          example: 1000.50
+        isExists:
+          type: boolean
+          description: "существует ли аккаунт"
+      required:
+        - accountId
+        - currency
+        - balance
+        - isExists
+    AccountList:
+      type: array
+      items:
+        $ref: '#/components/schemas/AccountForm'
+    MainPageResponse:
+      type: object
+      properties:
+        user:
+          $ref: '#/components/schemas/UserForm'
+        accounts:
+          $ref: '#/components/schemas/AccountList'
+        UserAccountsErrors:
+          type: array
+          items:
+            type: string
+        Currencys:
+          type: array
+          items:
+            $ref: '#/components/schemas/Currency'
+        Users:
+          type: array
+          items:
+            $ref: '#/components/schemas/Users'
+      required:
+        - user
+        - accounts
+    Currency:
+      type: object
+      properties:
+        name:
+          type: string
+          description: "Код валюты (например, RUB, USD)"
+          example: "USD"
+        title:
+          type: string
+          description: "Полное название валюты"
+          example: "Доллар США"
+    PasswordChange:
+      type: object
+      properties:
+        password:
+          type: string
+          format: password
+          description: "Пароль пользователя"
+          example: "securePassword123"
+        confirm_password:
+          type: string
+          format: password
+          description: "Подтверждение пароля"
+          example: "securePassword123"
+    Exchange:
+      type: array
+      items:
+        $ref: '#/components/schemas/Value'
+    Value:
+      type: object
+      properties:
+        title:
+          type: string
+        name:
+          type: string
+        cost:
+          type: number
+          format: double
+    AccountCashResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации
+    CashTransfer:
+      type: object
+      properties:
+        currencyTo:
+          type: string
+        value:
+          type: number
+          format: double
+        action:
+          type: string
+    NotificationsGet:
+      type: object
+      properties:
+        Notifications:
+          type: array
+          items:
+            $ref: '#/components/schemas/Notification'
+    Notification:
+      type: object
+      properties:
+        id:
+          type: integer
+        username:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: datetime
+    Transfer:
+      type: object
+      properties:
+        from_currency:
+          type: string
+        to_currency:
+          type: string
+        value:
+          type: number
+          format: double
+        to_login:
+          type: string
+        summary:
+          type: number
+          format: double
+    TransferResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации
+    Users:
+      type: object
+      properties:
+        Login:
+          type: string
+        Name:
+          type: string
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          description: "Описание ошибки"
+          example: "Логин уже существует"
+        timestamp:
+          type: string
+          format: date-time
+          description: "Время возникновения ошибки"
+          example: "2025-07-20T12:34:56Z"
+security:
+  - bearerAuth: []

@@ -1,0 +1,9 @@
+server:
+  port: 8083
+
+spring:
+  config:
+    import: configserver:http://localhost:8888
+  cloud:
+    config:
+      uri: configserver:http://localhost:8888

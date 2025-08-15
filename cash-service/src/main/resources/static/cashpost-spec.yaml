@@ -1,0 +1,86 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'http://gateway-service:8080'
+paths:
+  /api/ToAccountServiceTransfer:
+    post:
+      operationId: transferToAccountService
+      summary: Запрос на снятие обналичивание в account-service
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CashTransfer'
+      responses:
+        '200':
+          description: Изменение данных
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AccountCashResponse'
+  /api/blocker:
+    get:
+      summary: Блокировка подозрительных операций
+      responses:
+        '200':
+          description: Успешное получение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BlockerResponse'
+  /api/notificationsSet:
+    post:
+      summary: запрос на уведомление
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Notification'
+      responses:
+        '200':
+          description: успех
+components:
+  schemas:
+    AccountCashResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        cause:
+          type: array
+          items:
+            type: string
+          description: В случаи не верной валидации
+    CashTransfer:
+      type: object
+      properties:
+        currencyTo:
+          type: string
+        value:
+          type: number
+          format: double
+        action:
+          type: string
+    BlockerResponse:
+      type: object
+      properties:
+        success:
+          type: boolean
+        cause:
+          type: string
+    Notification:
+      type: object
+      properties:
+        username:
+          type: string
+        message:
+          type: string
+        timestamp:
+          type: string
+          format: datetime

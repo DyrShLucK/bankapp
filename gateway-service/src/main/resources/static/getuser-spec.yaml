@@ -1,0 +1,43 @@
+openapi: 3.0.3
+info:
+  title: Title
+  description: Title
+  version: 1.0.0
+servers:
+  - url: 'http://gateway-service:8080'
+paths:
+  /api/getUser:
+    post:
+      summary: получение user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: "user123"
+              description: "Логин пользователя в виде строки"
+      responses:
+        '200':
+          description: Успешное получение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserFormLogin'
+components:
+  schemas:
+    UserFormLogin:
+      type: object
+      properties:
+        login:
+          type: string
+          description: "Уникальный логин пользователя"
+          example: "user123"
+        role:
+          type: string
+        password:
+          type: string
+      required:
+        - login
+        - role
+        - password
