@@ -19,9 +19,7 @@ public class ApiService {
     }
 
     public Mono<TransferResponse> getTransferResponse(Mono<Transfer> transfer, String username) {
-        System.out.println("get transfer response");
         return apiPostService.blocker().flatMap(blockerResponse -> {
-            System.out.println("blocker response");
             if (!blockerResponse.getSuccess()) {
                 TransferResponse errorResponse = new TransferResponse();
                 errorResponse.setSuccess(false);
@@ -32,8 +30,6 @@ public class ApiService {
 
                         apiPostService.getexchange(Mono.just(transfer1))
                                 .flatMap(transferValue -> {
-                                    System.out.println(transfer1);
-                                    System.out.println(transferValue);
                                     transfer1.setSummary(transferValue.getSummary());
                                     return apiPostService.toAccountService(Mono.just(transfer1));
                                 })
@@ -49,7 +45,7 @@ public class ApiService {
                                     if (response.getSuccess()) {
                                         Notification notification = new Notification();
                                         notification.setUsername(username);
-                                        notification.setMessage("Перевод успешно выполнен: " + transfer1.getValue() + " " + transfer1.getFromCurrency() + " -> " + transfer1.getToCurrency() + ". " + transferType + transfer1.getSummary());
+                                        notification.setMessage("Перевод успешно выполнен: " + transfer1.getValue() + " " + transfer1.getFromCurrency() + " -> " + transfer1.getSummary() + transfer1.getToCurrency() + ". " + transferType );
                                         notification.setTimestamp(java.time.LocalDateTime.now().toString());
 
                                         return apiPostService.notification(notification)

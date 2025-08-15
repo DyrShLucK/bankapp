@@ -13,8 +13,6 @@ public class ExchangeGet {
         this.defaultApi = defaultApi;
     }
     public Mono<Double> getExchange(String from, String to) {
-        System.out.println(from);
-        System.out.println(to);
         return defaultApi.apiExchangeGet()
                 .collectList()
                 .map(exchangeList -> {
@@ -29,7 +27,6 @@ public class ExchangeGet {
                             toRate = value.getCost();
                         }
                     }
-                    System.out.println(toRate/fromRate);
                     return toRate / fromRate;
                 });
     }

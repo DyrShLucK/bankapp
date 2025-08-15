@@ -6,3 +6,10 @@ CREATE TABLE IF NOT EXISTS users (
     birthday DATE,
     role VARCHAR(255)
     );
+CREATE TABLE IF NOT EXISTS account (
+                                       id BIGSERIAL PRIMARY KEY,
+                                       username VARCHAR(255) NOT NULL,
+    currency VARCHAR(10) NOT NULL,
+    balance NUMERIC(19, 2) DEFAULT 0.00,
+    isexists BOOLEAN NOT NULL
+    );

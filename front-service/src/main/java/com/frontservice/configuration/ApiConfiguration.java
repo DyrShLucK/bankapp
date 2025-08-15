@@ -26,6 +26,8 @@ import java.util.ArrayList;
 import java.util.List;
 @Configuration
 public class ApiConfiguration {
+    @Value("${api.gateway.url:http://localhost:8080}")
+    private String defaultGatewayUrl;
     @Autowired
     DiscoveryClient discoveryClient;
     @Bean
@@ -36,11 +38,23 @@ public class ApiConfiguration {
     public DefaultApi defaultApi(WebClient.Builder webClientBuilder,
                                  ReactiveOAuth2AuthorizedClientManager clientManager,
                                  @Value("${oauth2.client.registration-id}") String clientId) {
+        String gatewayUrl;
+
+        try {
+            List<ServiceInstance> instances = discoveryClient.getInstances("gateway-service");
+            if (instances != null && !instances.isEmpty()) {
+                gatewayUrl = instances.getFirst().getUri().toString();
+            } else {
+                gatewayUrl = defaultGatewayUrl;
+            }
+        } catch (Exception e) {
+            gatewayUrl = defaultGatewayUrl;
+        }
         ApiClient apiClient = new ApiClient(
                 webClientBuilder
                         .filter(oauthFilter(clientManager, clientId))
                         .build()
-        ).setBasePath(discoveryClient.getInstances("gateway-service").getFirst().getUri().toString());
+        ).setBasePath(gatewayUrl);
         return new DefaultApi(apiClient);
 
     }
@@ -49,7 +63,6 @@ public class ApiConfiguration {
             String clientId
     ) {
         return (request, next) ->
-                // Получаем username из Reactor Context
                 Mono.deferContextual(Mono::just)
                         .map(context -> context.getOrDefault(UserContextWebFilter.USER_NAME_KEY, "anonymous"))
                         .zipWith(getAccessToken(clientManager, clientId))

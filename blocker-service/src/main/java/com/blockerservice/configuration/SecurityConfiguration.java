@@ -55,7 +55,6 @@ public class SecurityConfiguration {
                                 List<String> allRoles = new ArrayList<>();
                                 allRoles.addAll(realmRoles);
                                 allRoles.addAll(clientRoles);
-                                System.out.println(allRoles);
                                 return Flux.fromIterable(allRoles)
                                         .map(role -> new SimpleGrantedAuthority("ROLE_" + role));
                             });

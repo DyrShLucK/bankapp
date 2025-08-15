@@ -3,7 +3,9 @@ package com.gatewayservice.configuration;
 import com.gateway.api.DefaultApi;
 import com.gateway.domain.UserFormLogin;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -166,7 +168,8 @@ public class SecurityConfig {
 //                    .subscribe();
 //        };
 //    }
-
+    @Value("${api.gateway.url:http://localhost:8080}")
+    private String defaultGatewayUrl;
     @Bean
     public ReactiveUserDetailsService userDetailsService(DefaultApi defaultApi) {
         return username -> defaultApi.apiGetUserPost(username).map(user -> toUserDetails(user, username));
@@ -218,8 +221,19 @@ public class SecurityConfig {
     private ServerLogoutSuccessHandler oidcLogoutSuccessHandler() {
         OidcClientInitiatedServerLogoutSuccessHandler handler =
                 new OidcClientInitiatedServerLogoutSuccessHandler(clientRegistrationRepository);
+        String gatewayUrl;
 
-        handler.setPostLogoutRedirectUri(discoveryClient.getInstances("gateway-service").getFirst().getUri().toString());
+        try {
+            List<ServiceInstance> instances = discoveryClient.getInstances("gateway-service");
+            if (instances != null && !instances.isEmpty()) {
+                gatewayUrl = instances.getFirst().getUri().toString();
+            } else {
+                gatewayUrl = defaultGatewayUrl;
+            }
+        } catch (Exception e) {
+            gatewayUrl = defaultGatewayUrl;
+        }
+        handler.setPostLogoutRedirectUri(gatewayUrl);
 
         return handler;
     }

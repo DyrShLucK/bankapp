@@ -17,7 +17,6 @@ public class ApiController implements DefaultApi {
 
     @Override
     public Mono<ResponseEntity<TransferResponse>> apiTransferPost(Mono<Transfer> transfer, ServerWebExchange exchange) {
-        System.out.println("apiTransferPost");
         return apiService.getTransferResponse(transfer, exchange.getRequest().getHeaders().getFirst("X-User-Name")).map(ResponseEntity::ok);
     }
 }

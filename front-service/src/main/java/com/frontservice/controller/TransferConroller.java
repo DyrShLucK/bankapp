@@ -25,10 +25,8 @@ public class TransferConroller {
     @PostMapping("/transfer")
     public Mono<RedirectView> transfer(@ModelAttribute TransferForm form, WebSession session, ServerWebExchange exchange) {
         String currentUserLogin = exchange.getRequest().getHeaders().getFirst("X-User-Name");
-        System.out.println("transfer");
         return signupApi.transfer(form).flatMap(dto -> {
             Map<String, Object> flashAttributes = new HashMap<>();
-            System.out.println("transfer2");
             if (form.getTo_login() != null && form.getTo_login().equals(currentUserLogin)) {
                 flashAttributes.put("transferErrors", dto.getCause());
             } else {

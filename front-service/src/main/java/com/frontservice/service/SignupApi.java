@@ -65,7 +65,6 @@ public class SignupApi {
         transfer.setFromCurrency(transferForm.getFrom_currency());
         transfer.setToCurrency(transferForm.getTo_currency());
         transfer.setToLogin(transferForm.getTo_login());
-        System.out.println("dtoTransfer");
         return defaultApi.apiTransferPost(transfer);
     }
 }

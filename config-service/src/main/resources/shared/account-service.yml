@@ -1,0 +1,12 @@
+
+spring:
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/bankapp
+    username: postgres
+    password: 12345
+    pool:
+      validation-query: SELECT 1
+      idle-timeout: 30s
+      max-life-time: 5m
+      max-size: 10
+      initial-size: 5

@@ -6,6 +6,7 @@ import com.gateway.ApiClient;
 import com.gateway.api.DefaultApi;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.cloud.client.ServiceInstance;
 import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,6 +20,8 @@ import org.springframework.web.reactive.function.client.ExchangeFilterFunction;
 import org.springframework.web.reactive.function.client.WebClient;
 import reactor.core.publisher.Mono;
 
+import java.util.List;
+
 @Configuration
 public class ApiConfiguration {
     @Autowired
@@ -27,17 +30,30 @@ public class ApiConfiguration {
     public ApiClient apiClient() {
         return new ApiClient(WebClient.builder().build());
     }
+    @Value("${api.gateway.url:http://localhost:8080}")
+    private String defaultGatewayUrl;
     @Bean
     public DefaultApi defaultApi(WebClient.Builder webClientBuilder,
                                  ReactiveOAuth2AuthorizedClientManager clientManager,
                                  @Value("${oauth2.client.registration-id}") String clientId) {
+        String gatewayUrl;
+
+        try {
+            List<ServiceInstance> instances = discoveryClient.getInstances("gateway-service");
+            if (instances != null && !instances.isEmpty()) {
+                gatewayUrl = instances.getFirst().getUri().toString();
+            } else {
+                gatewayUrl = defaultGatewayUrl;
+            }
+        } catch (Exception e) {
+            gatewayUrl = defaultGatewayUrl;
+        }
         ApiClient apiClient = new ApiClient(
                 webClientBuilder
                         .filter(oauthFilter(clientManager, clientId))
                         .build()
-        ).setBasePath(discoveryClient.getInstances("gateway-service").getFirst().getUri().toString());
+        ).setBasePath(gatewayUrl);
         return new DefaultApi(apiClient);
-
     }
     private ExchangeFilterFunction oauthFilter(
             ReactiveOAuth2AuthorizedClientManager clientManager,

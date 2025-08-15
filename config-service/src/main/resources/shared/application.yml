@@ -1,0 +1,42 @@
+
+
+spring:
+  security:
+    oauth2:
+      client:
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/bankapp
+            user-name-attribute: preferred_username
+        registration:
+          keycloak:
+            client-id: bankapp
+            client-secret: evcmNKzZn9IerG43xH69A0Mh9MGAqFxP
+            scope: openid,username
+          bankapp:
+            provider: keycloak
+            authorization-grant-type: client_credentials
+            client-id: bankapp
+            client-secret: evcmNKzZn9IerG43xH69A0Mh9MGAqFxP
+            scope: profile
+            client-authentication-method: client_secret_post
+      resourceserver:
+        jwt:
+          issuer-uri: http://localhost:8082/realms/bankapp
+        provider:
+          keycloak:
+            issuer-uri: http://localhost:8082/realms/bankapp
+            user-name-attribute: username
+oauth2:
+  client:
+    registration-id: bankapp
+eureka:
+  client:
+    service-url:
+      defaultZone: http://localhost:8761/eureka
+    register-with-eureka: true
+    fetch-registry: true
+api:
+  gateway:
+    url: http://localhost:8080
+

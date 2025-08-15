@@ -16,22 +16,6 @@ import java.util.List;
 
 @RestController
 public class notificationController {
-//    @GetMapping("/notifications")
-//    public Mono<List<Notification>> notifications() {
-//        Notification notification = new Notification();
-//        notification.setId(1L);
-//        notification.setTimestamp(LocalDateTime.now());
-//        notification.setMessage("Hello World");
-//        notification.setUserId(12L);
-//        return Mono.just(List.of(notification));
-//    }
-//    @Data
-//    public class Notification {
-//        private Long id;
-//        private Long userId;
-//        private String message;
-//        private LocalDateTime timestamp;
-//    }
     @Autowired
     SignupApi signupApi;
     @GetMapping("/notifications")

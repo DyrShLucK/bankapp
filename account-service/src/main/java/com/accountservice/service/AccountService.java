@@ -37,15 +37,6 @@ public class AccountService {
     public Flux<Account> createAccounts(String userName) {
         return Flux.fromIterable(List.of(Currency.values())).flatMap(currency -> createAccount(userName, currency));
     }
-    public Flux<Account> findByUserName(String userName) {
-        return accountRepository.findByUserName(userName);
-    }
-    public Mono<Account> findByUserNameAndCurrency(String userName, Currency currency) {
-        return accountRepository.findByUserNameAndCurrency(userName, currency);
-    }
-    public void deleteAccount(String userName, Currency currency) {
-        accountRepository.findByUserNameAndCurrency(userName, currency).flatMap(accountRepository::delete);
-    }
     public Mono<Account> saveAccount(Account account) {
         return accountRepository.save(account);
     }

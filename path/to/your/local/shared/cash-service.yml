@@ -1,0 +1,14 @@
+spring:
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        - id: cash-service
+          uri: lb://cash-service
+          predicates:
+            - Path=/api/test
+          filters:
+            - TokenRelay=bankapp-client

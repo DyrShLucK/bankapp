@@ -40,9 +40,6 @@ public class editAccount {
         String name = form.getName();
         LocalDate birthdate = form.getBirthdate();
         List<String> account = form.getAccount();
-        System.out.println("NAME: " + (name != null ? name : "null"));
-        System.out.println("BIRTHDATE: " + (birthdate != null ? birthdate : "null"));
-        System.out.println("ACCOUNTS: " + account);
 
         return signupApi.editAccountsAndUser(form)
         .flatMap(dto -> {

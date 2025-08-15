@@ -21,9 +21,6 @@ public class cashController {
     SignupApi signupApi;
     @PostMapping("/cash")
     public Mono<RedirectView> CashTransfer(Model model, @ModelAttribute CashForm form, WebSession session) {
-        System.out.println(form.getCurrency());
-        System.out.println(form.getValue());
-        System.out.println(form.getAction());
 
         return signupApi.cash(form)
                 .flatMap(dto -> {

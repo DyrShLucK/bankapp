@@ -1,24 +1,189 @@
+x-common-env: &common-env
+  EUREKA_CLIENT_SERVICE_URL_DEFAULTZONE: http://discovery-service:8761/eureka/
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/bankapp
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_USER_NAME_ATTRIBUTE: preferred_username
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID: bankapp
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET: evcmNKzZn9IerG43xH69A0Mh9MGAqFxP
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_SCOPE: openid,username
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_PROVIDER: keycloak
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_AUTHORIZATION_GRANT_TYPE: client_credentials
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_CLIENT_ID: bankapp
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_CLIENT_SECRET: evcmNKzZn9IerG43xH69A0Mh9MGAqFxP
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_SCOPE: profile
+  SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_CLIENT_AUTHENTICATION_METHOD: client_secret_post
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bankapp
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/bankapp
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_PROVIDER_KEYCLOAK_USER_NAME_ATTRIBUTE: username
+  OAUTH2_CLIENT_REGISTRATION_ID: bankapp
+  API_GATEWAY_URL: http://host.docker.internal:8080
+  SPRING_CONFIG_IMPORT: optional:configserver:http://host.docker.internal:8888
+  SPRING_PROFILES_ACTIVE: docker
+
 services:
+
+  config-service:
+    build: ./config-service
+    container_name: config-service
+    ports:
+      - "8888:8888"
+    environment:
+      EUREKA_INSTANCE_HOSTNAME: config-service
+    networks:
+      - bankapp-network
+    volumes:
+      - ./path/to/your/local/shared:/app/shared
+
+
+
   discovery-service:
     build: ./discovery-service
     container_name: discovery-service
     ports:
       - "8761:8761"
     environment:
+      - SPRING_CONFIG_IMPORT=configserver:http://host.docker.internal:8888
+      - spring.config.import=optional:configserver:http://host.docker.internal:8888
+      - spring.config.import=optional:configserver:http://host.docker.internal:8888
       - EUREKA_INSTANCE_HOSTNAME=discovery-service
+      - SPRING_PROFILES_ACTIVE=docker
     networks:
       - bankapp-network
+    depends_on:
+      - config-service
+      - postgres
+      - redis
+      - keycloak
+
 
   gateway-service:
+    environment:
+      <<: *common-env
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_DATA_REDIS: host.docker.internal
+      EUREKA_INSTANCE_HOSTNAME: gateway-service
     build: ./gateway-service
     container_name: gateway-service
     ports:
       - "8080:8080"
-    environment:
-      - SPRING_CLOUD_GATEWAY_DISCOVERY_LOCATOR_ENABLED=true
-      - EUREKA_CLIENT_SERVICE-URL_DEFAULTZONE=http://discovery-service:8761/eureka/
     depends_on:
       - discovery-service
+    networks:
+      - bankapp-network
+  account-service:
+    build: ./account-service
+    container_name: account-service
+    ports:
+      - "8081:8081"
+    environment:
+      <<: *common-env
+      SPRING_R2DBC_URL: r2dbc:postgresql://postgres:5432/bankapp
+      SPRING_R2DBC_USERNAME: postgres
+      SPRING_R2DBC_PASSWORD: 12345
+      EUREKA_INSTANCE_HOSTNAME: account-service
+    depends_on:
+      - gateway-service
+
+    networks:
+      - bankapp-network
+  blocker-service:
+    build: ./blocker-service
+    container_name: blocker-service
+    ports:
+      - "8086:8086"
+    environment:
+      <<: *common-env
+      EUREKA_INSTANCE_HOSTNAME: blocker-service
+    depends_on:
+      - gateway-service
+    networks:
+      - bankapp-network
+
+
+  cash-service:
+    build: ./cash-service
+    container_name: cash-service
+    ports:
+      - "8085:8085"
+    environment:
+      <<: *common-env
+      EUREKA_INSTANCE_HOSTNAME: cash-service
+    depends_on:
+      - gateway-service
+    networks:
+      - bankapp-network
+
+
+  exchange-service:
+    build: ./exchange-service
+    container_name: exchange-service
+    ports:
+      - "8088:8088"
+    environment:
+      <<: *common-env
+      EUREKA_INSTANCE_HOSTNAME: exchange-service
+    depends_on:
+      - gateway-service
+    networks:
+      - bankapp-network
+
+
+  exchangegenerator-service:
+    build: ./ExchangeGenerator-service
+    container_name: ExchangeGenerator-service
+    ports:
+      - "8084:8084"
+    environment:
+      <<: *common-env
+      EUREKA_INSTANCE_HOSTNAME: ExchangeGenerator-service
+    depends_on:
+      - gateway-service
+    networks:
+      - bankapp-network
+
+
+  front-service:
+    build: ./front-service
+    container_name: front-service
+    ports:
+      - "8083:8083"
+    environment:
+      <<: *common-env
+      SPRING_REDIS_HOST: redis
+      SPRING_REDIS_PORT: 6379
+      SPRING_DATA_REDIS: host.docker.internal
+      EUREKA_INSTANCE_HOSTNAME: front-service
+    depends_on:
+      - gateway-service
+    networks:
+      - bankapp-network
+
+
+
+  notifications-service:
+    build: ./notifications-service
+    container_name: notifications-service
+    ports:
+      - "8087:8087"
+    environment:
+      <<: *common-env
+      EUREKA_INSTANCE_HOSTNAME: notifications-service
+    depends_on:
+      - gateway-service
+    networks:
+      - bankapp-network
+
+
+  transfer-service:
+    build: ./transfer-service
+    container_name: transfer-service
+    ports:
+      - "8089:8089"
+    environment:
+      <<: *common-env
+      EUREKA_INSTANCE_HOSTNAME: transfer-service
+    depends_on:
+      - gateway-service
     networks:
       - bankapp-network
 
@@ -41,6 +206,8 @@ services:
       - "start-dev"
       - "-Dkeycloak.profile.feature.scripts=enabled"
       - "-Dkeycloak.profile.feature.upload_scripts=enabled"
+    depends_on:
+      - config-service
   redis:
     image: redis:latest
     container_name: bankapp-redis
@@ -51,7 +218,31 @@ services:
     networks:
       - bankapp-network
     command: redis-server --appendonly yes
+    depends_on:
+      - config-service
+  postgres:
+    image: postgres:16
+    container_name: bankapp-postgres
+    environment:
+      POSTGRES_DB: bankapp
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 12345
+    depends_on:
+      - config-service
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - bankapp-network
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 volumes:
+  postgres_data:
   keycloak_data:
   redis_data:
 
