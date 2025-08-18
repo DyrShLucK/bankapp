@@ -16,6 +16,6 @@ public class ApiController implements DefaultApi {
     BlockerService blockerService;
     @Override
     public Mono<ResponseEntity<BlockerResponse>> apiBlockerGet(ServerWebExchange exchange) {
-        return blockerService.getBlocker().map(ResponseEntity::ok);
+        return blockerService.checkSuspiciousOperation().map(ResponseEntity::ok);
     }
 }

@@ -1,4 +1,4 @@
-package com.exchangeservice.configuration;
+package com.securitylib.config;
 
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;

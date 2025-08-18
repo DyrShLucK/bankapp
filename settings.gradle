@@ -1,4 +1,5 @@
 rootProject.name = 'bankapp'
+include 'Security-lib'
 include 'discovery-service'
 include 'gateway-service'
 include 'account-service'

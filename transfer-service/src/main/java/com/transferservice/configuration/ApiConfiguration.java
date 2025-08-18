@@ -1,5 +1,6 @@
 package com.transferservice.configuration;
 
+import com.securitylib.config.UserContextWebFilter;
 import com.transfer_service.generated.post.ApiClient;
 import com.transfer_service.generated.post.api.DefaultApi;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -59,7 +60,6 @@ public class ApiConfiguration {
             String clientId
     ) {
         return (request, next) ->
-                // Получаем username из Reactor Context
                 Mono.deferContextual(Mono::just)
                         .map(context -> context.getOrDefault(UserContextWebFilter.USER_NAME_KEY, "anonymous"))
                         .zipWith(getAccessToken(clientManager, clientId))

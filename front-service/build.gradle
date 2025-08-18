@@ -15,15 +15,18 @@ java {
     }
 }
 
-repositories {
-    mavenCentral()
-}
 
 ext {
     set('springCloudVersion', "2025.0.0")
 }
 
+repositories {
+    mavenCentral()
+    mavenLocal()
+}
+
 dependencies {
+    implementation project(':Security-lib')
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
     implementation 'org.springframework.boot:spring-boot-starter-security'

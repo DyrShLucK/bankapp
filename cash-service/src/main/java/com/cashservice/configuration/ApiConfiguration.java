@@ -2,6 +2,7 @@ package com.cashservice.configuration;
 
 import com.cash_service.generated.post.ApiClient;
 import com.cash_service.generated.post.api.DefaultApi;
+import com.securitylib.config.UserContextWebFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;
@@ -58,7 +59,6 @@ public class ApiConfiguration {
             String clientId
     ) {
         return (request, next) ->
-                // Получаем username из Reactor Context
                 Mono.deferContextual(Mono::just)
                         .map(context -> context.getOrDefault(UserContextWebFilter.USER_NAME_KEY, "anonymous"))
                         .zipWith(getAccessToken(clientManager, clientId))
