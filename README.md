@@ -32,7 +32,6 @@
 - PostgreSQL
 - Docker
 - Docker Compose
-- Maven (мультипроект)
 
 ## Требования к системе
 - Java 21
@@ -48,4 +47,5 @@
 
 ### Запуск через Docker
 ```bash
+
 docker-compose up --build
