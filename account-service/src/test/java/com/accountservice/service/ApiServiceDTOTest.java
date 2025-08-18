@@ -10,8 +10,10 @@ import com.accountservice.repository.UserRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -23,7 +25,7 @@ import java.time.LocalDate;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
-@Disabled
+@ExtendWith(MockitoExtension.class)
 @DirtiesContext(classMode = DirtiesContext.ClassMode.AFTER_EACH_TEST_METHOD)
 class ApiServiceDTOTest {
 
@@ -64,7 +66,6 @@ class ApiServiceDTOTest {
         when(accountService.findOrCreateAccounts(username)).thenReturn(Flux.just(account));
         when(userRepository.findAll()).thenReturn(Flux.empty());
 
-        when(notificationApi.apiNotificationsSetPost(any(Notification.class))).thenReturn(Mono.empty());
 
         Mono<MainPageResponse> result = apiServiceDTO.getMAinPageDTO(username);
 
@@ -141,6 +142,7 @@ class ApiServiceDTOTest {
         cashTransfer.setAction("PUT");
 
         Account account = new Account();
+        account.setId(1L);
         account.setCurrency(com.accountservice.enums.Currency.USD);
         account.setBalance(BigDecimal.valueOf(50));
         account.setIsExists(true);
@@ -164,6 +166,7 @@ class ApiServiceDTOTest {
         cashTransfer.setAction("GET");
 
         Account account = new Account();
+        account.setId(1L);
         account.setCurrency(com.accountservice.enums.Currency.USD);
         account.setBalance(BigDecimal.valueOf(50));
         account.setIsExists(true);
@@ -188,6 +191,7 @@ class ApiServiceDTOTest {
         transfer.setValue(50.0);
 
         Account senderAccount = new Account();
+        senderAccount.setId(1L);
         senderAccount.setCurrency(com.accountservice.enums.Currency.USD);
         senderAccount.setBalance(BigDecimal.valueOf(100));
         senderAccount.setIsExists(true);

@@ -1,0 +1,29 @@
+server:
+  port: 8083
+
+
+spring:
+  cloud:
+    config:
+      enabled: false
+  config:
+    name: application
+  r2dbc:
+    url: r2dbc:postgresql://localhost:5432/bankapp
+    username: postgres
+    password: 12345
+    pool:
+      validation-query: SELECT 1
+      idle-timeout: 30s
+      max-life-time: 5m
+      max-size: 10
+      initial-size: 5
+oauth2:
+  client:
+    registration-id: bankapp
+api:
+  gateway:
+    url: http://localhost:8080
+eureka:
+  client:
+    enabled: false

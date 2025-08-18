@@ -1,7 +1,6 @@
-package com.exchangeservice.configuration;
+package com.securitylib.config;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.cloud.client.discovery.DiscoveryClient;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.codec.FormHttpMessageReader;
@@ -38,8 +37,6 @@ import static org.springframework.security.config.Customizer.withDefaults;
 public class SecurityConfiguration {
     @Autowired
     private ReactiveClientRegistrationRepository clientRegistrationRepository;
-    @Autowired
-    private DiscoveryClient discoveryClient;
 
     @Bean
     public SecurityWebFilterChain securityWebFilterChain(ServerHttpSecurity http) {

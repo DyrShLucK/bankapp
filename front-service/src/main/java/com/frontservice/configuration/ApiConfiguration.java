@@ -2,6 +2,7 @@ package com.frontservice.configuration;
 
 import com.frontUi.ApiClient;
 import com.frontUi.api.DefaultApi;
+import com.securitylib.config.UserContextWebFilter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.client.ServiceInstance;

@@ -16,9 +16,11 @@ java {
 
 repositories {
     mavenCentral()
+    mavenLocal()
 }
 
 dependencies {
+    implementation project(':Security-lib')
     implementation 'org.springframework.boot:spring-boot-starter-oauth2-client'
     implementation 'org.springframework.boot:spring-boot-starter-webflux'
     implementation 'org.springframework.cloud:spring-cloud-starter-netflix-eureka-client'
@@ -31,6 +33,10 @@ dependencies {
     testImplementation 'io.projectreactor:reactor-test'
     testImplementation 'org.springframework.security:spring-security-test'
     implementation 'org.springframework.cloud:spring-cloud-starter-config'
+    implementation 'io.github.resilience4j:resilience4j-reactor:2.1.0'
+    implementation 'io.github.resilience4j:resilience4j-circuitbreaker:2.1.0'
+    implementation 'io.github.resilience4j:resilience4j-spring-boot2:2.1.0'
+    implementation 'org.springframework.boot:spring-boot-starter-actuator'
 
 
     implementation 'org.springframework.boot:spring-boot-starter'
