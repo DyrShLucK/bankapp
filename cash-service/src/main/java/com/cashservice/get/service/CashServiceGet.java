@@ -20,7 +20,7 @@ public class CashServiceGet {
         this.cashServicePost = cashServicePost;
     }
 
-    public Mono<AccountCashResponse> cashFunc(Mono<CashTransfer> cashTransfer, String username) {
-        return cashServicePost.getAccountserviceResponceCash(cashTransfer, username);
+    public Mono<AccountCashResponse> cashFunc(Mono<CashTransfer> cashTransfer, String username,  String sessionId) {
+        return cashServicePost.getAccountserviceResponceCash(cashTransfer, username, sessionId);
     }
 }

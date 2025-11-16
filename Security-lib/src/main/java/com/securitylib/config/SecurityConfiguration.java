@@ -43,7 +43,10 @@ public class SecurityConfiguration {
         http
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
-                        .anyExchange().authenticated()
+                        .pathMatchers("/signup").permitAll()
+                        .pathMatchers("/login").permitAll()
+                        .pathMatchers("/logout").permitAll()
+                        .anyExchange().permitAll()
                 )
                 .oauth2Client(withDefaults())
                 .oauth2ResourceServer(serverSpec -> serverSpec
@@ -51,7 +54,6 @@ public class SecurityConfiguration {
                             ReactiveJwtAuthenticationConverter jwtAuthenticationConverter = new ReactiveJwtAuthenticationConverter();
                             jwtAuthenticationConverter.setJwtGrantedAuthoritiesConverter(jwt -> {
                                 List<String> roles = jwt.getClaim("roles");
-
                                 return Flux.fromIterable(roles != null ? roles : List.of())
                                         .map(SimpleGrantedAuthority::new);
                             });
@@ -77,6 +79,7 @@ public class SecurityConfiguration {
     public OAuth2UserService<OidcUserRequest, OidcUser> oAuth2UserService() {
         var oidcUserService = new OidcUserService();
         return userRequest -> {
+            System.out.println("Secutity");
             OidcUser oidcUser = oidcUserService.loadUser(userRequest);
 
             String prefixedUsername = "kc_" + oidcUser.getPreferredUsername();

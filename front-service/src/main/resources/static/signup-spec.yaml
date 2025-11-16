@@ -6,9 +6,36 @@ info:
 servers:
   - url: 'http://gateway-service:8080'
 paths:
+  /api/getUser:
+    post:
+      summary: получение user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: string
+              example: "user123"
+              description: "Логин пользователя в виде строки"
+      responses:
+        '200':
+          description: Успешное получение
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserFormLogin'
   /api/transfer:
     post:
       summary: Запрос на перевод средств
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -25,6 +52,15 @@ paths:
   /api/notifications:
     get:
       summary: получение уведемлений
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       responses:
         '200':
           description: получение уведемлений
@@ -35,6 +71,15 @@ paths:
   /api/cash:
     post:
       summary: Запрос на снятие обналичивание
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -61,6 +106,15 @@ paths:
   /api/editUserAccounts:
     post:
       summary: Обновление данных пользователя
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -77,6 +131,15 @@ paths:
   /api/getMainPage:
     get:
       summary: Получение главной страницы пользователя
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       responses:
         '200':
           description: Успешное получение
@@ -87,6 +150,15 @@ paths:
   /api/editPassword:
     post:
       summary: Смена пароля
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -123,6 +195,10 @@ paths:
                 $ref: '#/components/schemas/Error'
 components:
   securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: SESSION
     bearerAuth:
       type: http
       scheme: bearer
@@ -209,10 +285,10 @@ components:
           description: "ФИО пользователя"
           example: "Иван Иванов"
         birthdate:
-            type: string
-            format: date
-            description: "Дата рождения (в формате YYYY-MM-DD)"
-            example: "1990-01-01"
+          type: string
+          format: date
+          description: "Дата рождения (в формате YYYY-MM-DD)"
+          example: "1990-01-01"
       required:
         - login
         - name
@@ -391,5 +467,20 @@ components:
           format: date-time
           description: "Время возникновения ошибки"
           example: "2025-07-20T12:34:56Z"
+    UserFormLogin:
+      type: object
+      properties:
+        login:
+          type: string
+          description: "Уникальный логин пользователя"
+          example: "user123"
+        role:
+          type: string
+        password:
+          type: string
+      required:
+        - login
+        - role
+        - password
 security:
   - bearerAuth: []

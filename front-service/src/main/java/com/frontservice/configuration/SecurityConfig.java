@@ -1,7 +1,7 @@
-package com.gatewayservice.configuration;
+package com.frontservice.configuration;
 
-import com.gateway.api.DefaultApi;
-import com.gateway.domain.UserFormLogin;
+import com.frontUi.api.DefaultApi;
+import com.frontUi.domain.UserFormLogin;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -153,7 +153,7 @@ public class SecurityConfig {
         return http.build();
     }
 
-//    public ApplicationRunner initUsers(PasswordEncoder encoder) {
+    //    public ApplicationRunner initUsers(PasswordEncoder encoder) {
 //        return args -> {
 //            userRepository.findByUsername("user")
 //                    .switchIfEmpty(userRepository.save(
@@ -222,7 +222,6 @@ public class SecurityConfig {
         OidcClientInitiatedServerLogoutSuccessHandler handler =
                 new OidcClientInitiatedServerLogoutSuccessHandler(clientRegistrationRepository);
         String gatewayUrl;
-
         try {
             List<ServiceInstance> instances = discoveryClient.getInstances("gateway-service");
             if (instances != null && !instances.isEmpty()) {

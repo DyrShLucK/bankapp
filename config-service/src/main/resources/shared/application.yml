@@ -1,6 +1,19 @@
 
 
 spring:
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  session:
+    timeout: 30m
+
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true
+        domain: .your-domain.com
   security:
     oauth2:
       client:
@@ -11,13 +24,13 @@ spring:
         registration:
           keycloak:
             client-id: bankapp
-            client-secret: evcmNKzZn9IerG43xH69A0Mh9MGAqFxP
+            client-secret: txXtYYzndfecQVWeWcfBVuIZ3nTld56y
             scope: openid,username
           bankapp:
             provider: keycloak
             authorization-grant-type: client_credentials
             client-id: bankapp
-            client-secret: evcmNKzZn9IerG43xH69A0Mh9MGAqFxP
+            client-secret: txXtYYzndfecQVWeWcfBVuIZ3nTld56y
             scope: profile
             client-authentication-method: client_secret_post
       resourceserver:

@@ -10,6 +10,15 @@ paths:
     post:
       operationId: transferToAccountService
       summary: Запрос на снятие обналичивание в account-service
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -26,6 +35,15 @@ paths:
   /api/editUserAccounts:
     post:
       summary: Обновление данных пользователя
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -42,6 +60,15 @@ paths:
   /api/editPassword:
     post:
       summary: Смена пароля
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -54,6 +81,15 @@ paths:
   /api/getMainPage:
     get:
       summary: Получение главной страницы пользователя
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       responses:
         '200':
           description: Успешное получение
@@ -61,7 +97,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/MainPageResponse'
-
   /api/signup:
     post:
       summary: Регистрация нового пользователя
@@ -109,6 +144,15 @@ paths:
     post:
       operationId: transferFromToAccountService
       summary: перевод между аккаунтами
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -123,6 +167,15 @@ paths:
                 $ref: '#/components/schemas/TransferResponse'
           description: Успешный ответ
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: SESSION
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
   schemas:
     RegistrationForm:
       type: object
@@ -177,10 +230,10 @@ components:
           description: "ФИО пользователя"
           example: "Иван Иванов"
         birthdate:
-            type: string
-            format: date
-            description: "Дата рождения (в формате YYYY-MM-DD)"
-            example: "1990-01-01"
+          type: string
+          format: date
+          description: "Дата рождения (в формате YYYY-MM-DD)"
+          example: "1990-01-01"
       required:
         - login
         - name
@@ -368,3 +421,5 @@ components:
           format: date-time
           description: "Время возникновения ошибки"
           example: "2025-07-20T12:34:56Z"
+security:
+  - bearerAuth: []

@@ -1,0 +1,162 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: bankapp-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/proxy-cookie-domain: "bankapp.local $host"
+    nginx.ingress.kubernetes.io/proxy-cookie-path: "/ /"
+    nginx.ingress.kubernetes.io/affinity: "cookie"
+    nginx.ingress.kubernetes.io/session-cookie-name: "route"
+    nginx.ingress.kubernetes.io/session-cookie-expires: "172800"
+    nginx.ingress.kubernetes.io/session-cookie-max-age: "172800"
+    # Для передачи заголовков от клиента к бэкенду
+    nginx.ingress.kubernetes.io/proxy-set-headers: "X-User-Name: $http_x_user_name"
+
+    # Для добавления заголовков от бэкенда
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_pass_request_headers on;
+      proxy_set_header X-Real-IP $remote_addr;
+spec:
+  rules:
+    - host: bankapp.local
+      http:
+        paths:
+          # Account Service routes
+
+          - path: /default-ui.css(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: account-service
+                port:
+                  number: 8081
+
+
+          # Front Service routes
+          - path: /login
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+          - path: /test
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+          - path: /testTM
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+          - path: /main
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+          - path: /mainTM
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+          - path: /logout
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+          - path: /signup
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+
+          - path: /bankapp
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+          - path: /test
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+
+          - path: /editUserAccounts(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+
+          - path: /editPassword(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+
+          - path: /exchange(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+
+          - path: /cash(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+
+          - path: /notifications(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+
+          - path: /transfer(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+
+          - path: / # root path
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: front-service
+                port:
+                  number: 8083
+          - path: /auth(/|$)(.*)
+            pathType: ImplementationSpecific
+            backend:
+              service:
+                name: keycloak-service
+                port:
+                  number: 8082

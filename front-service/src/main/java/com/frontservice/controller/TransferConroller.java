@@ -22,10 +22,13 @@ import java.util.Map;
 public class TransferConroller {
     @Autowired
     SignupApi signupApi;
+
     @PostMapping("/transfer")
     public Mono<RedirectView> transfer(@ModelAttribute TransferForm form, WebSession session, ServerWebExchange exchange) {
+        String sessionId = exchange.getRequest().getCookies().getFirst("SESSION").getValue();
         String currentUserLogin = exchange.getRequest().getHeaders().getFirst("X-User-Name");
-        return signupApi.transfer(form).flatMap(dto -> {
+
+        return signupApi.transfer(form, sessionId).flatMap(dto -> {
             Map<String, Object> flashAttributes = new HashMap<>();
             if (form.getTo_login() != null && form.getTo_login().equals(currentUserLogin)) {
                 flashAttributes.put("transferErrors", dto.getCause());
@@ -35,7 +38,6 @@ public class TransferConroller {
             session.getAttributes().put("jakarta.servlet.flash.mapping.output", flashAttributes);
             RedirectView redirectView = new RedirectView("/bankapp", HttpStatusCode.valueOf(301));
             return Mono.just(redirectView);
-
         });
     }
 }

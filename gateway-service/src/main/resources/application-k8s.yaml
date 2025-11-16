@@ -1,0 +1,263 @@
+server:
+  port: 8080
+
+spring:
+  application:
+    name: gateway-service
+  data:
+    redis:
+      host: localhost
+      port: 6379
+  session:
+    timeout: 30m
+
+  servlet:
+    session:
+      cookie:
+        same-site: none
+        secure: true
+        domain: .your-domain.com
+  cloud:
+    gateway:
+      discovery:
+        locator:
+          enabled: true
+          lowerCaseServiceId: true
+      routes:
+        # Account Service
+        - id: account-service
+          uri: lb://account-service
+          predicates:
+            - Path=/api/test
+          filters:
+            - TokenRelay=bankapp
+        - id: front-service-signup-get
+          uri: lb://front-service
+          predicates:
+            - Path=/signup
+          filters:
+            - TokenRelay=bankapp
+        - id: front-service-main
+          uri: lb://front-service
+          predicates:
+            - Path=/bankapp
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttribute: username
+            allowAttributes: username
+        - id: front-service-main2
+          uri: lb://front-service
+          predicates:
+            - Path=/
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: account-service-signup-post
+          uri: lb://account-service
+          predicates:
+            - Path=/api/signup
+          filters:
+            - TokenRelay=bankapp
+        - id: account-service-css
+          uri: lb://account-service
+          predicates:
+            - Path=/default-ui.css
+          filters:
+            - TokenRelay=bankapp
+        - id: account-service-mainPage
+          uri: lb://account-service
+          predicates:
+            - Path=/api/getMainPage/**
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttribute: username
+            allowAttributes: username
+        - id: account-service-GetUser
+          uri: lb://account-service
+          predicates:
+            - Path=/api/getUser
+          filters:
+            - TokenRelay=bankapp
+        - id: front-service-editUserAccount
+          uri: lb://front-service
+          predicates:
+            - Path=/editUserAccounts
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: account-service-EditAccount
+          uri: lb://account-service
+          predicates:
+            - Path=/api/editUserAccounts
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-editUserPassword
+          uri: lb://front-service
+          predicates:
+            - Path=/editPassword
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: account-service-EditPassword
+          uri: lb://account-service
+          predicates:
+            - Path=/api/editPassword
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: ExchangeGenerator-service-getExchange
+          uri: lb://ExchangeGenerator-service
+          predicates:
+            - Path=/api/exchange
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-exchange
+          uri: lb://front-service
+          predicates:
+            - Path=/exchange
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-cash
+          uri: lb://front-service
+          predicates:
+            - Path=/cash
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: cash-service-cash
+          uri: lb://cash-service
+          predicates:
+            - Path=/api/cash
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: account-service-EditPassword
+          uri: lb://account-service
+          predicates:
+            - Path=/api/ToAccountServiceTransfer
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: blocker-service
+          uri: lb://blocker-service
+          predicates:
+            - Path=/api/blocker
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-nitification
+          uri: lb://front-service
+          predicates:
+            - Path=/notifications
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: notifications-service
+          uri: lb://notifications-service
+          predicates:
+            - Path=/api/notifications
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: notifications-service-notification
+          uri: lb://notifications-service
+          predicates:
+            - Path=/api/notificationsSet
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-transfer
+          uri: lb://front-service
+          predicates:
+            - Path=/transfer
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id:   transfer-service-transfer
+          uri: lb://transfer-service
+          predicates:
+            - Path=/api/transfer
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: account-service-Transfer
+          uri: lb://account-service
+          predicates:
+            - Path=/api/transferAccountService
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: exchange-service-Transfer
+          uri: lb://exchange-service
+          predicates:
+            - Path=/api/excangeservice
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+
+      server:
+        webflux:
+          filter:
+            save-session:
+              enabled: true

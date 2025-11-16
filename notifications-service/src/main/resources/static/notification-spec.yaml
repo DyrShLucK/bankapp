@@ -9,6 +9,15 @@ paths:
   /api/notifications:
     get:
       summary: получение уведемлений
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       responses:
         '200':
           description: получение уведемлений

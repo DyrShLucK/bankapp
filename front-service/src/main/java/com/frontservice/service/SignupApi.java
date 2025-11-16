@@ -20,13 +20,15 @@ public class SignupApi {
     public SignupApi(DefaultApi defaultApi) {
         this.defaultApi = defaultApi;
     }
-    public Mono<EditUserResponse> editAccountsAndUser(UserUpdateForm form){
+
+    public Mono<EditUserResponse> editAccountsAndUser(UserUpdateForm form, String sessionId){
         UpdateUserForm updateUserForm = new UpdateUserForm();
         updateUserForm.setName(form.getName());
         updateUserForm.setBirthdate(form.getBirthdate());
         updateUserForm.setAccounts(form.getAccount());
-        return defaultApi.apiEditUserAccountsPost(updateUserForm);
+        return defaultApi.apiEditUserAccountsPost(sessionId, updateUserForm);
     }
+
     public PasswordEncoder passwordEncoder() {
         return PasswordEncoderFactories.createDelegatingPasswordEncoder();
     }
@@ -40,31 +42,36 @@ public class SignupApi {
         form.setLogin(registrationForm.getLogin());
         return  defaultApi.apiSignupPost(form);
     }
-    public Mono<Void> editPassword(PasswordUdateForm form) {
+
+    public Mono<Void> editPassword(PasswordUdateForm form, String sessionId) {
         PasswordChange passwordChange = new PasswordChange();
         passwordChange.setPassword(passwordEncoder().encode(form.getPassword()));
         passwordChange.setConfirmPassword(passwordEncoder().encode(form.getConfirm_password()));
-        return defaultApi.apiEditPasswordPost(passwordChange);
+        return defaultApi.apiEditPasswordPost(sessionId, passwordChange);
     }
+
     public Flux<Value> getExchange(){
         return defaultApi.apiExchangeGet();
     }
-    public Mono<AccountCashResponse> cash(CashForm cashForm){
+
+    public Mono<AccountCashResponse> cash(CashForm cashForm, String sessionId){
         CashTransfer cashTransfer = new CashTransfer();
         cashTransfer.setCurrencyTo(cashForm.getCurrency());
         cashTransfer.setValue(cashForm.getValue());
         cashTransfer.setAction(cashForm.getAction());
-        return defaultApi.apiCashPost(cashTransfer);
+        return defaultApi.apiCashPost(sessionId, cashTransfer);
     }
-    public Mono<NotificationsGet> notification(){
-        return defaultApi.apiNotificationsGet();
+
+    public Mono<NotificationsGet> notification(String sessionId){
+        return defaultApi.apiNotificationsGet(sessionId);
     }
-    public Mono<TransferResponse> transfer(TransferForm transferForm){
+
+    public Mono<TransferResponse> transfer(TransferForm transferForm, String sessionId){
         Transfer transfer = new Transfer();
         transfer.setValue(transferForm.getValue());
         transfer.setFromCurrency(transferForm.getFrom_currency());
         transfer.setToCurrency(transferForm.getTo_currency());
         transfer.setToLogin(transferForm.getTo_login());
-        return defaultApi.apiTransferPost(transfer);
+        return defaultApi.apiTransferPost(sessionId, transfer);
     }
 }

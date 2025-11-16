@@ -10,6 +10,15 @@ paths:
     post:
       operationId: transferToAccountService
       summary: Запрос на снятие обналичивание в account-service
+      security:
+        - cookieAuth: [ ]
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:

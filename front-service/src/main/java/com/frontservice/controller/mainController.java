@@ -2,13 +2,19 @@ package com.frontservice.controller;
 
 import com.frontUi.api.DefaultApi;
 import com.frontUi.domain.*;
+import org.eclipse.angus.mail.util.DecodingException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
+import org.springframework.util.MultiValueMap;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.reactive.function.client.WebClientResponseException;
 import org.springframework.web.server.ServerWebExchange;
 import org.springframework.web.server.WebSession;
 import reactor.core.publisher.Mono;
@@ -20,30 +26,46 @@ import java.util.stream.Stream;
 
 @Controller
 public class mainController {
+
     @Autowired
     DefaultApi defaultApi;
 
+    private static final Logger log = LoggerFactory.getLogger(mainController.class);
+
     @GetMapping({"/", "/bankapp"})
-    public Mono<String> main(Model model, ServerWebExchange exchange, Principal principal, Authentication authentication, WebSession session) {
+    public Mono<String> main(Model model, ServerWebExchange exchange) {
+        // Получаем SESSION cookie из входящего запроса
+        HttpCookie sessionCookie = exchange.getRequest().getCookies().getFirst("SESSION");
 
+        if (sessionCookie == null) {
+            log.warn("SESSION cookie отсутствует, перенаправление на логин");
+            return Mono.just("redirect:/login");
+        }
 
+        String sessionId = sessionCookie.getValue();
+        log.info("Получен SESSION cookie: {}", sessionId);
 
-        return defaultApi.apiGetMainPageGet().flatMap(dto -> {
-            Map<String, Object> flashAttributes = (Map<String, Object>) session.getAttributes().get("jakarta.servlet.flash.mapping.output");
-            processAllFlashAttributes(model, flashAttributes, session);
-
-            UserForm user = dto.getUser();
-            List<AccountForm> accounts = dto.getAccounts();
-            List<Currency> currency = dto.getCurrencys();
-            List<Users> users = dto.getUsers();
-            model.addAttribute("login", user.getLogin());
-            model.addAttribute("name", user.getName());
-            model.addAttribute("birthdate", user.getBirthdate().toString());
-            model.addAttribute("accounts", accounts);
-            model.addAttribute("currency", currency);
-            model.addAttribute("users", users);
-            return Mono.just("main");
-        });
+        // Передаем cookie в вызов account-service как параметр
+        return defaultApi.apiGetMainPageGet(sessionId) // Передаем sessionId как аргумент
+                .flatMap(dto -> {
+                    UserForm user = dto.getUser();
+                    List<AccountForm> accounts = dto.getAccounts();
+                    List<Currency> currency = dto.getCurrencys();
+                    List<Users> users = dto.getUsers();
+                    // Обработка DTO как раньше
+                    model.addAttribute("login", dto.getUser().getLogin());
+                    model.addAttribute("name", dto.getUser().getName());
+                    model.addAttribute("birthdate", user.getBirthdate().toString());
+                    model.addAttribute("accounts", accounts);
+                    model.addAttribute("currency", currency);
+                    model.addAttribute("users", users);
+                    // ... другие атрибуты
+                    return Mono.just("main");
+                })
+                .onErrorResume(error -> {
+                    log.error("Ошибка при получении главной страницы", error);
+                    return Mono.just("redirect:/login");
+                });
     }
 
     private void processAllFlashAttributes(Model model, Map<String, Object> flashAttributes, WebSession session) {

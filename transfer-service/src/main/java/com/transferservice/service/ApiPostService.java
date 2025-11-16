@@ -12,17 +12,19 @@ import reactor.core.publisher.Mono;
 @Service
 public class ApiPostService {
     private final DefaultApi defaultApi;
+
     public ApiPostService(DefaultApi defaultApi) {
         this.defaultApi = defaultApi;
     }
-    public Mono<TransferValue> getexchange(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono) {
+
+    public Mono<TransferValue> getexchange(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono, String sessionId) {
         return transferFormMono.flatMap(transferForm ->{
             Transfer transfer = new Transfer();
             transfer.setFromCurrency(transferForm.getFromCurrency());
             transfer.setToCurrency(transferForm.getToCurrency());
             transfer.setValue(transferForm.getValue());
             transfer.setToLogin(transferForm.getToLogin());
-            return defaultApi.excangeservice(transfer).flatMap(value -> {
+            return defaultApi.excangeservice(sessionId, transfer).flatMap(value -> {
                 if (value.getSuccess()){
                     return Mono.just(value);
                 }else {
@@ -30,9 +32,9 @@ public class ApiPostService {
                 }
             });
         });
-
     }
-    public Mono<TransferResponse> toAccountService(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono) {
+
+    public Mono<TransferResponse> toAccountService(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono, String sessionId) {
         return transferFormMono.flatMap(transfer -> {
             Transfer transfer2 = new Transfer();
             transfer2.setFromCurrency(transfer.getFromCurrency());
@@ -40,7 +42,7 @@ public class ApiPostService {
             transfer2.setValue(transfer.getValue());
             transfer2.setToLogin(transfer.getToLogin());
             transfer2.setSummary(transfer.getSummary());
-            return defaultApi.apiTransferAccountServicePost(transfer2).flatMap(transferResponse -> {
+            return defaultApi.transferToAccountService(sessionId, transfer2).flatMap(transferResponse -> {
                 TransferResponse transferResponse2 = new TransferResponse();
                 transferResponse2.setSuccess(transferResponse.getSuccess());
                 transferResponse2.setCause(transferResponse.getCause());
@@ -48,9 +50,11 @@ public class ApiPostService {
             });
         });
     }
+
     public Mono<Void> notification(Notification notification) {
         return defaultApi.apiNotificationsSetPost(notification);
     }
+
     public Mono<BlockerResponse> blocker() {
         return defaultApi.apiBlockerGet();
     }

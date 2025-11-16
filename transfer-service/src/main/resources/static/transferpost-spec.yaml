@@ -10,6 +10,15 @@ paths:
     post:
       operationId: excangeservice
       summary: Запрос на перевод из одно валюты в другую
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -25,7 +34,17 @@ paths:
                 $ref: '#/components/schemas/TransferValue'
   /api/transferAccountService:
     post:
+      operationId: transferToAccountService
       summary: перевод между аккаунтами
+      security:
+        - cookieAuth: []
+      parameters:
+        - name: SESSION
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: "ID сессии пользователя"
       requestBody:
         required: true
         content:
@@ -62,6 +81,11 @@ paths:
         '200':
           description: успех
 components:
+  securitySchemes:
+    cookieAuth:
+      type: apiKey
+      in: cookie
+      name: SESSION
   schemas:
     Transfer:
       type: object
@@ -115,4 +139,3 @@ components:
         timestamp:
           type: string
           format: datetime
-

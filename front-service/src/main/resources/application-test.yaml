@@ -7,3 +7,7 @@ spring:
   cloud:
     config:
       uri: configserver:http://localhost:8888
+logging:
+  level:
+    org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG
+    org.springframework.web.reactive.function.client.WebClient: DEBUG

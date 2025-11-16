@@ -7,17 +7,22 @@ import com.accountservice.model.Account;
 import com.accountservice.model.User;
 import com.accountservice.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.core.scheduler.Schedulers;
 
+import java.io.ByteArrayInputStream;
+import java.io.ObjectInputStream;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.format.DateTimeParseException;
 import java.util.*;
+
 
 @Service
 public class ApiServiceDTO {
@@ -474,4 +479,6 @@ public class ApiServiceDTO {
         response.setCause(new ArrayList<>());
         return response;
     }
+
+
 }

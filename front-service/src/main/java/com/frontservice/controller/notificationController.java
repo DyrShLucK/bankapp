@@ -8,6 +8,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
 
 import java.time.LocalDateTime;
@@ -18,9 +19,11 @@ import java.util.List;
 public class notificationController {
     @Autowired
     SignupApi signupApi;
+
     @GetMapping("/notifications")
-    public Mono<List<Notification>> notifications() {
-        return signupApi.notification()
+    public Mono<List<Notification>> notifications(ServerWebExchange exchange) {
+        String sessionId = exchange.getRequest().getCookies().getFirst("SESSION").getValue();
+        return signupApi.notification(sessionId)
                 .map(NotificationsGet::getNotifications)
                 .defaultIfEmpty(new ArrayList<>());
     }

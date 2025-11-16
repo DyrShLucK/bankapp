@@ -1,0 +1,111 @@
+apiVersion: gateway.networking.k8s.io/v1
+kind: HTTPRoute
+metadata:
+  name: bankapp-routes
+  namespace: default
+spec:
+  parentRefs:
+    - name: my-gateway
+      namespace: default
+
+  rules:
+    # === Account Service ===
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/test
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/signup
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /default-ui.css
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/getMainPage
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/getUser
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/editUserAccounts
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/editPassword
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/ToAccountServiceTransfer
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/transferAccountService
+      backendRefs:
+        - name: account-service
+          port: 8081
+
+    # === Exchange Generator Service ===
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/exchange
+      backendRefs:
+        - name: exchange-generator-service
+          port: 8084
+
+    # === Cash Service ===
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/cash
+      backendRefs:
+        - name: cash-service
+          port: 8085
+
+    # === Blocker Service ===
+    - matches:
+        - path:
+            type: PathPrefix
+            value: /api/blocker
+      backendRefs:
+        - name: blocker-service
+          port: 8086
+

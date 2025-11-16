@@ -2,10 +2,8 @@ package com.transferservice.service;
 
 import com.transfer_service.generated.get.domain.Transfer;
 import com.transfer_service.generated.get.domain.TransferResponse;
-import com.transfer_service.generated.post.ApiClient;
 import com.transfer_service.generated.post.domain.Notification;
 import org.springframework.stereotype.Service;
-import org.springframework.web.reactive.result.method.annotation.ResponseBodyResultHandler;
 import reactor.core.publisher.Mono;
 
 import java.util.List;
@@ -18,7 +16,7 @@ public class ApiService {
         this.apiPostService = apiPostService;
     }
 
-    public Mono<TransferResponse> getTransferResponse(Mono<Transfer> transfer, String username) {
+    public Mono<TransferResponse> getTransferResponse(Mono<Transfer> transfer, String username, String sessionId) {
         return apiPostService.blocker().flatMap(blockerResponse -> {
             if (!blockerResponse.getSuccess()) {
                 TransferResponse errorResponse = new TransferResponse();
@@ -27,11 +25,10 @@ public class ApiService {
                 return Mono.just(errorResponse);
             } else {
                 return transfer.flatMap(transfer1 ->
-
-                        apiPostService.getexchange(Mono.just(transfer1))
+                        apiPostService.getexchange(Mono.just(transfer1), sessionId)
                                 .flatMap(transferValue -> {
                                     transfer1.setSummary(transferValue.getSummary());
-                                    return apiPostService.toAccountService(Mono.just(transfer1));
+                                    return apiPostService.toAccountService(Mono.just(transfer1), sessionId);
                                 })
                                 .flatMap(response -> {
                                     String transferType;

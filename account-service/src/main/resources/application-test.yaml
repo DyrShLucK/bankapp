@@ -6,3 +6,14 @@ spring:
   cloud:
     config:
       uri: configserver:http://localhost:8888
+  data:
+    redis:
+      host: redis
+      port: 6379
+    session:
+      store-type: redis
+      timeout: 60m
+logging:
+  level:
+    org.springframework.web.reactive.function.client.ExchangeFunctions: DEBUG
+    org.springframework.web.reactive.function.client.WebClient: DEBUG

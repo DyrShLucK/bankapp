@@ -10,6 +10,15 @@ paths:
         post:
           operationId: processCashWithdrawal
           summary: Запрос на снятие обналичивание
+          security:
+            - cookieAuth: [ ]
+          parameters:
+            - name: SESSION
+              in: cookie
+              required: true
+              schema:
+                type: string
+              description: "ID сессии пользователя"
           requestBody:
             required: true
             content:

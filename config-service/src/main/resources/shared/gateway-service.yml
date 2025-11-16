@@ -63,8 +63,8 @@ spring:
             - Path=/api/signup
           filters:
             - TokenRelay=bankapp
-        - id: account-service-css
-          uri: lb://account-service
+        - id: front-service-css
+          uri: lb://front-service
           predicates:
             - Path=/default-ui.css
           filters:
@@ -89,6 +89,26 @@ spring:
           uri: lb://front-service
           predicates:
             - Path=/editUserAccounts
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-login
+          uri: lb://front-service
+          predicates:
+            - Path=/login
+          filters:
+            - TokenRelay=bankapp
+          metadata:
+            allowedHeaders: X-User-Name
+            allowAttributes: username
+            allowAttribute: username
+        - id: front-service-logout
+          uri: lb://front-service
+          predicates:
+            - Path=/logout
           filters:
             - TokenRelay=bankapp
           metadata:
