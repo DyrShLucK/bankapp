@@ -33,7 +33,7 @@ public class mainController {
     private static final Logger log = LoggerFactory.getLogger(mainController.class);
 
     @GetMapping({"/", "/bankapp"})
-    public Mono<String> main(Model model, ServerWebExchange exchange) {
+    public Mono<String> main(Model model, ServerWebExchange exchange, WebSession session) {
         // Получаем SESSION cookie из входящего запроса
         HttpCookie sessionCookie = exchange.getRequest().getCookies().getFirst("SESSION");
 
@@ -48,18 +48,19 @@ public class mainController {
         // Передаем cookie в вызов account-service как параметр
         return defaultApi.apiGetMainPageGet(sessionId) // Передаем sessionId как аргумент
                 .flatMap(dto -> {
+                    Map<String, Object> flashAttributes = (Map<String, Object>) session.getAttributes().get("jakarta.servlet.flash.mapping.output");
+                    processAllFlashAttributes(model, flashAttributes, session);
+
                     UserForm user = dto.getUser();
                     List<AccountForm> accounts = dto.getAccounts();
                     List<Currency> currency = dto.getCurrencys();
                     List<Users> users = dto.getUsers();
-                    // Обработка DTO как раньше
                     model.addAttribute("login", dto.getUser().getLogin());
                     model.addAttribute("name", dto.getUser().getName());
                     model.addAttribute("birthdate", user.getBirthdate().toString());
                     model.addAttribute("accounts", accounts);
                     model.addAttribute("currency", currency);
                     model.addAttribute("users", users);
-                    // ... другие атрибуты
                     return Mono.just("main");
                 })
                 .onErrorResume(error -> {

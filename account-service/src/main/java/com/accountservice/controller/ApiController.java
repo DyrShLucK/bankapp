@@ -89,7 +89,7 @@ public class ApiController implements DefaultApi {
                                     .secure(true)  // Обязательно true в продакшене с HTTPS
                                     .path("/")
                                     .maxAge(3600)
-                                    .domain("bankapp.local")  // Укажите ваш домен
+                                    .domain("bankapp.internal")  // Укажите ваш домен
                                     .sameSite("Lax")  // Важно для кросс-доменных запросов
                                     .build();
 

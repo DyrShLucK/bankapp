@@ -28,11 +28,11 @@ public class ApiController implements DefaultApi {
 
     @Override
     public Mono<ResponseEntity<NotificationsGet>> apiNotificationsGet(@jakarta.annotation.Nullable String SESSION, ServerWebExchange exchange) {
-        String username = extractUsernameFromSession(SESSION);
-        if (username == null) {
+
+        if (SESSION == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        return apiService.getNotifications(username).map(ResponseEntity::ok);
+        return apiService.getNotifications(SESSION).map(ResponseEntity::ok);
     }
 
     @Override

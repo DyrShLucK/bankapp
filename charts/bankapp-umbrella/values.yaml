@@ -1,0 +1,105 @@
+# Глобальные настройки для всех сервисов
+global:
+  # Настройки окружения (dev, test, prod)
+  environment: dev
+  # Общие настройки образов
+  image:
+    repository: ""  # Замените на ваш registry
+    pullPolicy: IfNotPresent
+    tag: "latest"
+  service:
+    type: ClusterIP
+
+services:
+  account-service:
+    enabled: true
+    fullnameOverride: "account-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/account-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8081
+
+  blocker-service:
+    enabled: true
+    fullnameOverride: "blocker-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/blocker-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8082
+
+  cash-service:
+    enabled: true
+    fullnameOverride: "cash-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/cash-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8083
+
+  exchange-service:
+    enabled: true
+    fullnameOverride: "exchange-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/exchange-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8084
+
+  ExchangeGenerator-service:
+    enabled: true
+    fullnameOverride: "exchangegenerator-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/exchangegenerator-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8085
+    ingress:
+      enabled: false  # Генератор обычно не нуждается в ingress
+
+  front-service:
+    enabled: true
+    fullnameOverride: "front-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/front-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8080
+
+  gateway-service:
+    enabled: true
+    fullnameOverride: "gateway-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/gateway-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8086
+
+  notification-service:
+    enabled: true
+    fullnameOverride: "notification-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/notification-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8087
+
+  transfer-service:
+    enabled: true
+    fullnameOverride: "transfer-service"
+    image:
+      repository: "{{ .Values.global.image.repository }}/transfer-service"
+      tag: "{{ .Values.global.image.tag }}"
+    service:
+      port: 8088
+
+# Настройки зависимостей
+dependencies:
+  redis:
+    enabled: true
+    fullnameOverride: "redis"
+  config:
+    name: "bankapp-config"
+  secret:
+    name: "bankapp-secret"

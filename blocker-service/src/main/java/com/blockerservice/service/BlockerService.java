@@ -53,7 +53,7 @@ public class BlockerService {
     private String simulateOperation() {
         LocalTime now = LocalTime.now();
 
-        if (now.getHour() >= 2 && now.getHour() < 4) {
+        if (now.getHour() >= 1 && now.getHour() < 2) {
             throw new RuntimeException("Suspicious time activity");
         }
 

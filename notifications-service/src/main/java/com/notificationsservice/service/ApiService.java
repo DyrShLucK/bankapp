@@ -34,7 +34,6 @@ public class ApiService {
     public Mono<Void> setNotification(Mono<Notification> notificationMono) {
         return notificationMono.flatMap(n -> {
             String usernameFromNotification = n.getUsername();
-
             if (usernameFromNotification == null || usernameFromNotification.isEmpty()) {
                 return Mono.empty();
             }

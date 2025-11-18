@@ -1,0 +1,31 @@
+global:
+  environment: test
+  namespace: bankapp-test
+  image:
+    tag: "test-latest"
+
+# Можно отключить некоторые сервисы для тестов
+services:
+  account-service:
+    enabled: true
+  blocker-service:
+    enabled: true
+  cash-service:
+    enabled: true
+  exchange-service:
+    enabled: true
+  ExchangeGenerator-service:
+    enabled: false
+  front-service:
+    enabled: true
+  gateway-service:
+    enabled: true
+  notification-service:
+    enabled: true
+  transfer-service:
+    enabled: true
+
+# Тестовые настройки
+dependencies:
+  redis:
+    enabled: true

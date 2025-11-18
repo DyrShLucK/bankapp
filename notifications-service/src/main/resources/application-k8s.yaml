@@ -1,0 +1,9 @@
+server:
+  port: 8087
+spring:
+  cloud:
+    config:
+      enabled: false
+eureka:
+  client:
+    enabled: false

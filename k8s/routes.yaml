@@ -7,7 +7,7 @@ spec:
   parentRefs:
     - name: my-gateway
       namespace: default
-
+  hostnames: ["bankapp.local"]
   rules:
     # === Account Service ===
     - matches:

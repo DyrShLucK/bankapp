@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bankapp-dev
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bankapp-test
+---
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: bankapp-prod

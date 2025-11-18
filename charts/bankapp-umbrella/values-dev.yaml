@@ -1,0 +1,31 @@
+global:
+  environment: dev
+  namespace: bankapp-dev
+  image:
+    tag: "dev-latest"
+
+# Включаем все сервисы для разработки
+services:
+  account-service:
+    enabled: true
+  blocker-service:
+    enabled: true
+  cash-service:
+    enabled: true
+  exchange-service:
+    enabled: true
+  ExchangeGenerator-service:
+    enabled: true
+  front-service:
+    enabled: true
+  gateway-service:
+    enabled: true
+  notification-service:
+    enabled: true
+  transfer-service:
+    enabled: true
+
+# Отключаем агрессивные настройки для разработки
+dependencies:
+  redis:
+    enabled: true

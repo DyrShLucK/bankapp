@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
@@ -21,9 +22,9 @@ public class notificationController {
     SignupApi signupApi;
 
     @GetMapping("/notifications")
-    public Mono<List<Notification>> notifications(ServerWebExchange exchange) {
-        String sessionId = exchange.getRequest().getCookies().getFirst("SESSION").getValue();
-        return signupApi.notification(sessionId)
+    public Mono<List<Notification>> notifications(
+            @RequestParam("login") String login) {
+        return signupApi.notification(login)
                 .map(NotificationsGet::getNotifications)
                 .defaultIfEmpty(new ArrayList<>());
     }
