@@ -2,14 +2,15 @@ FROM jenkins/jenkins:lts-jdk17
 
 USER root
 
+# Установка зависимостей
 RUN apt-get update && apt-get install -y \
     git \
-    maven \
     curl \
     unzip \
     ca-certificates \
     gnupg \
     lsb-release \
+    openjdk-21-jdk \
     && rm -rf /var/lib/apt/lists/*
 
 # Установка Helm
@@ -31,5 +32,9 @@ RUN jenkins-plugin-cli --plugin-file /usr/share/jenkins/ref/plugins.txt
 
 # Инициализация groovy-скриптов
 COPY init.groovy.d/ /usr/share/jenkins/ref/init.groovy.d/
+
+# Настройка Java 21 как основной версии
+RUN update-alternatives --set java /usr/lib/jvm/java-21-openjdk-amd64/bin/java
+ENV JAVA_HOME /usr/lib/jvm/java-21-openjdk-amd64
 
 USER jenkins
