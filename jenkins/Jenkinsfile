@@ -12,119 +12,48 @@ pipeline {
 
     stages {
         stage('Fix Permissions') {
-            steps {
-                script {
-                    sh '''
-                    # Даем права на выполнение всем gradlew файлам
-                    find . -name gradlew -exec chmod +x {} \\;
-                    # Даем права на выполнение скриптам в Security-lib
-                    chmod +x Security-lib/gradlew || true
-                    '''
+                    steps {
+                        script {
+                            sh '''
+                            # Даем права на выполнение gradlew
+                            chmod +x gradlew
+                            '''
+                        }
+                    }
                 }
-            }
-        }
 
-        stage('Build Security Library') {
-            steps {
-                dir('Security-lib') {
-                    sh './gradlew clean build'
+                stage('Build & Test All Projects') {
+                    steps {
+                        // Собираем и тестируем ВСЕ проекты из корня
+                        sh './gradlew clean test'
+                    }
                 }
-            }
-        }
 
-        stage('Build & Unit Tests') {
-            parallel {
-                stage('Account Service') {
+                stage('Build All Services') {
                     steps {
-                        dir('account-service') {
-                            sh '../gradlew clean test'
-                        }
+                        // Собираем все JAR файлы из корня
+                        sh './gradlew clean build'
                     }
                 }
-                stage('Front Service') {
-                    steps {
-                        dir('front-service') {
-                            sh '../gradlew clean test'
-                        }
-                    }
-                }
-                stage('Cash Service') {
-                    steps {
-                        dir('cash-service') {
-                            sh '../gradlew clean test'
-                        }
-                    }
-                }
-                stage('Transfer Service') {
-                    steps {
-                        dir('transfer-service') {
-                            sh '../gradlew clean test'
-                        }
-                    }
-                }
-                stage('Blocker Service') {
-                    steps {
-                        dir('blocker-service') {
-                            sh '../gradlew clean test'
-                        }
-                    }
-                }
-                stage('Exchange Service') {
-                    steps {
-                        dir('exchange-service') {
-                            sh '../gradlew clean test'
-                        }
-                    }
-                }
-                stage('Exchange Generator Service') {
-                    steps {
-                        dir('exchangegenerator-service') {
-                            sh '../gradlew clean test'
-                        }
-                    }
-                }
-                stage('Notifications Service') {
-                    steps {
-                        dir('notifications-service') {
-                            sh '../gradlew clean test'
-                        }
-                    }
-                }
-            }
-        }
 
-        stage('Build All Services') {
-            steps {
-                sh '../gradlew clean build'
-            }
-        }
+                stage('Build Docker Images') {
+                    steps {
+                        script {
+                            def services = [
+                                'account-service', 'blocker-service', 'cash-service',
+                                'exchange-service', 'exchangegenerator-service', 'front-service',
+                                'notifications-service', 'transfer-service'
+                            ]
 
-        stage('Build Docker Images') {
-            steps {
-                script {
-                    def services = [
-                        'account-service', 'blocker-service', 'cash-service',
-                        'exchange-service', 'exchangegenerator-service', 'front-service',
-                        'notifications-service', 'transfer-service'
-                    ]
-
-                    for (def service : services) {
-                        dir("build/libs") {
-                            sh """
-                            # Создаем директорию для сервиса если нет
-                            mkdir -p ${service}/build/libs
-                            # Копируем JAR файл
-                            cp ${service}-*.jar ${service}/build/libs/
-                            """
-                        }
-
-                        dir("${service}") {
-                            sh "docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} ."
+                            for (def service : services) {
+                                // JAR файлы будут в поддиректориях build/libs каждого сервиса
+                                dir("${service}") {
+                                    sh "docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} ."
+                                }
+                            }
                         }
                     }
                 }
-            }
-        }
 
         stage('Push Docker Images') {
             steps {
