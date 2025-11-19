@@ -27,7 +27,7 @@ pipeline {
         stage('Build Security Library') {
             steps {
                 dir('Security-lib') {
-                    sh './gradlew clean build'
+                    sh './gradlew clean build publishToMavenLocal'
                 }
             }
         }
@@ -95,7 +95,7 @@ pipeline {
 
         stage('Build All Services') {
             steps {
-                sh './gradlew clean build'
+                sh '../gradlew clean build'
             }
         }
 
