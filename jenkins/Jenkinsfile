@@ -26,6 +26,8 @@ pipeline {
                     steps {
                         // Собираем и тестируем ВСЕ проекты из корня
                         sh 'ls exchangegenerator-service/'
+                        sh 'cat settings.gradle'
+                        sh 'ls'
                         sh './gradlew exchangegenerator-service:clean'
                         sh './gradlew clean test'
                     }
