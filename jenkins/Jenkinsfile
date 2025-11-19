@@ -10,65 +10,39 @@ pipeline {
         NAMESPACE_PROD  = 'bankapp-prod'
     }
 
-    stage('Build & Unit Tests') {
-        parallel {
-            stage('Account Service') {
-                steps {
-                    dir('account-service') {
-                        sh './gradlew clean test'
+    stages {
+        stage('Build & Unit Tests') {
+            parallel {
+                stage('Account Service') {
+                    steps {
+                        dir('account-service') {
+                            sh './gradlew clean test'
+                        }
                     }
                 }
-            }
-            stage('Front Service') {
-                steps {
-                    dir('front-service') {
-                        sh './gradlew clean test'
+                stage('Front Service') {
+                    steps {
+                        dir('front-service') {
+                            sh './gradlew clean test'
+                        }
                     }
                 }
-            }
-            stage('Cash Service') {
-                steps {
-                    dir('cash-service') {
-                        sh './gradlew clean test'
+                stage('Cash Service') {
+                    steps {
+                        dir('cash-service') {
+                            sh './gradlew clean test'
+                        }
                     }
                 }
-            }
-            stage('Transfer Service') {
-                steps {
-                    dir('transfer-service') {
-                        sh './gradlew clean test'
-                    }
-                }
-            }
-        }
-    }
-
-    stage('Build Docker Images') {
-        steps {
-            script {
-                def services = [
-                    'account-service',
-                    'blocker-service',
-                    'cash-service',
-                    'exchange-service',
-                    'exchangegenerator-service',
-                    'front-service',
-                    'notifications-service',
-                    'transfer-service'
-                ]
-
-                for (def service : services) {
-                    dir("${service}") {
-                        sh './gradlew build'
-
-                        sh """
-                        docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} .
-                        """
+                stage('Transfer Service') {
+                    steps {
+                        dir('transfer-service') {
+                            sh './gradlew clean test'
+                        }
                     }
                 }
             }
         }
-    }
 
         stage('Build Docker Images') {
             steps {
@@ -86,7 +60,10 @@ pipeline {
 
                     for (def service : services) {
                         dir("${service}") {
-                            sh "docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} ."
+                            sh './gradlew build'
+                            sh """
+                            docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} .
+                            """
                         }
                     }
                 }
