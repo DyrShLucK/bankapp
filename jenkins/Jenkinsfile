@@ -25,8 +25,9 @@ pipeline {
                 stage('Build & Test All Projects') {
                     steps {
                         // Собираем и тестируем ВСЕ проекты из корня
+                        sh 'ls exchangegenerator-service/'
+                        sh './gradlew exchangegenerator-service:clean'
                         sh './gradlew clean test'
-                        sh './gradlew exchangegenerator-service:clean test'
                     }
                 }
 
