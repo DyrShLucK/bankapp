@@ -24,20 +24,13 @@ pipeline {
 
                 stage('Build & Test All Projects') {
                     steps {
-                        // Собираем и тестируем ВСЕ проекты из корня
-                        sh 'ls exchangegenerator-service/'
-                        sh 'cat settings.gradle'
-                        sh 'ls'
-                        sh './gradlew exchangegenerator-service:clean'
                         sh './gradlew clean test'
                     }
                 }
 
                 stage('Build All Services') {
                     steps {
-                        // Собираем все JAR файлы из корня
                         sh './gradlew clean build'
-                         sh './gradlew exchangegenerator-service:clean build'
                     }
                 }
 
@@ -51,7 +44,6 @@ pipeline {
                             ]
 
                             for (def service : services) {
-                                // JAR файлы будут в поддиректориях build/libs каждого сервиса
                                 dir("${service}") {
                                     sh "docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} ."
                                 }
@@ -85,16 +77,13 @@ pipeline {
         stage('Install Dependencies to DEV') {
             steps {
                 sh """
-                helm repo add bitnami https://charts.bitnami.com/bitnami
-                helm repo update
-
-                helm upgrade --install postgres bitnami/postgresql \\
+                helm upgrade --install postgres oci://registry-1.docker.io/bitnamicharts/postgresql \\
                   --namespace ${NAMESPACE_DEV} --create-namespace \\
                   --set auth.database=bankapp \\
                   --set auth.username=postgres \\
                   --set auth.password=${DB_PASSWORD}
 
-                helm upgrade --install redis bitnami/redis \\
+                helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \\
                   --namespace ${NAMESPACE_DEV} --create-namespace \\
                   --set auth.enabled=false
                 """
