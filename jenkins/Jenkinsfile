@@ -15,28 +15,28 @@ pipeline {
             parallel {
                 stage('Account Service') {
                     steps {
-                        dir('charts/account-service') {
+                        dir('account-service') {
                             sh 'mvn clean test || echo "Tests skipped - no Maven project found"'
                         }
                     }
                 }
                 stage('Front Service') {
                     steps {
-                        dir('charts/front-service') {
+                        dir('front-service') {
                             sh 'mvn clean test || echo "Tests skipped - no Maven project found"'
                         }
                     }
                 }
                 stage('Cash Service') {
                     steps {
-                        dir('charts/cash-service') {
+                        dir('cash-service') {
                             sh 'mvn clean test || echo "Tests skipped - no Maven project found"'
                         }
                     }
                 }
                 stage('Transfer Service') {
                     steps {
-                        dir('charts/transfer-service') {
+                        dir('transfer-service') {
                             sh 'mvn clean test || echo "Tests skipped - no Maven project found"'
                         }
                     }
@@ -54,12 +54,12 @@ pipeline {
                         'exchange-service',
                         'exchangegenerator-service',
                         'front-service',
-                        'notification-service',
+                        'notifications-service',
                         'transfer-service'
                     ]
 
                     for (def service : services) {
-                        dir("charts/${service}") {
+                        dir("${service}") {
                             sh "docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} ."
                         }
                     }
@@ -82,7 +82,7 @@ pipeline {
                             'exchange-service',
                             'exchangegenerator-service',
                             'front-service',
-                            'notification-service',
+                            'notifications-service',
                             'transfer-service'
                         ]
 
