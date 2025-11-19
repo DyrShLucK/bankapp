@@ -12,20 +12,20 @@ pipeline {
 
     stages {
         stage('Helm Deploy to DEV') {
-                    steps {
-                        sh """
-                        helm upgrade --install bankapp-dev charts/bankapp-umbrella \\
-                          --namespace ${NAMESPACE_DEV} --create-namespace \\
-                          -f charts/bankapp-umbrella/values-dev.yaml \\
-                          --set global.image.repository=${DOCKER_REGISTRY} \\
-                          --set global.image.tag=${IMAGE_TAG} \\
-                          --set infrastructure.keycloak.enabled=true \\
-                          --set infrastructure.ingress.enabled=true \\
-                          --atomic \\
-                          --timeout 5m
-                        """
-                    }
-                }
+            steps {
+                sh """
+                helm upgrade --install bankapp-dev charts/bankapp-umbrella \\
+                  --namespace ${NAMESPACE_DEV} --create-namespace \\
+                  -f charts/bankapp-umbrella/values-dev.yaml \\
+                  --set global.image.repository=${DOCKER_REGISTRY} \\
+                  --set global.image.tag=${IMAGE_TAG} \\
+                  --set infrastructure.keycloak.enabled=true \\
+                  --set infrastructure.ingress.enabled=true \\
+                  --atomic \\
+                  --timeout 5m
+                """
+            }
+        }
         stage('Fix Permissions') {
                     steps {
                         script {
@@ -89,21 +89,7 @@ pipeline {
             }
         }
 
-        stage('Helm Deploy to DEV') {
-            steps {
-                sh """
-                helm upgrade --install bankapp-dev charts/bankapp-umbrella \\
-                  --namespace ${NAMESPACE_DEV} --create-namespace \\
-                  -f charts/bankapp-umbrella/values-dev.yaml \\
-                  --set global.image.repository=${DOCKER_REGISTRY} \\
-                  --set global.image.tag=${IMAGE_TAG} \\
-                  --set infrastructure.keycloak.enabled=true \\
-                  --set infrastructure.ingress.enabled=true \\
-                  --atomic \\
-                  --timeout 5m
-                """
-            }
-        }
+
 
         stage('Helm Test') {
             steps {
