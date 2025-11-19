@@ -26,8 +26,6 @@ pipeline {
                         """
                     }
                 }
-        }
-
         stage('Fix Permissions') {
                     steps {
                         script {
@@ -91,21 +89,7 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies to DEV') {
-            steps {
-                sh """
-                helm upgrade --install postgres oci://registry-1.docker.io/bitnamicharts/postgresql \\
-                  --namespace ${NAMESPACE_DEV} --create-namespace \\
-                  --set auth.database=bankapp \\
-                  --set auth.username=postgres \\
-                  --set auth.password=${DB_PASSWORD}
 
-                helm upgrade --install redis oci://registry-1.docker.io/bitnamicharts/redis \\
-                  --namespace ${NAMESPACE_DEV} --create-namespace \\
-                  --set auth.enabled=false
-                """
-            }
-        }
 
         stage('Create DB Secrets for DEV') {
             steps {
