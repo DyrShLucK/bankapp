@@ -11,6 +11,15 @@ pipeline {
     }
 
     stages {
+        stage('Fix Permissions') {
+            steps {
+                script {
+                    sh '''
+                    find . -name gradlew -exec chmod +x {} \\;
+                    '''
+                }
+            }
+        }
         stage('Build & Unit Tests') {
             parallel {
                 stage('Account Service') {
