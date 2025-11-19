@@ -41,7 +41,7 @@ pipeline {
                         script {
                             def services = [
                                 'account-service', 'blocker-service', 'cash-service',
-                                'exchange-service', 'exchangegenerator-service', 'front-service',
+                                'exchange-service', 'ExchangeGenerator-service', 'front-service',
                                 'notifications-service', 'transfer-service'
                             ]
 
