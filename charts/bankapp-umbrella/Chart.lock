@@ -1,0 +1,27 @@
+dependencies:
+- name: account-service
+  repository: file://../account-service
+  version: 0.1.0
+- name: blocker-service
+  repository: file://../blocker-service
+  version: 0.1.0
+- name: cash-service
+  repository: file://../cash-service
+  version: 0.1.0
+- name: exchange-service
+  repository: file://../exchange-service
+  version: 0.1.0
+- name: exchangegenerator-service
+  repository: file://../ExchangeGenerator-service
+  version: 0.1.0
+- name: front-service
+  repository: file://../front-service
+  version: 0.1.0
+- name: notification-service
+  repository: file://../notification-service
+  version: 0.1.0
+- name: transfer-service
+  repository: file://../transfer-service
+  version: 0.1.0
+digest: sha256:0d8290f2eba43f3276d461fa9ec153e943d623f1039d3e44e12c78234fa176b7
+generated: "2025-11-18T20:14:43.5180098+03:00"

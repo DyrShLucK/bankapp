@@ -4,7 +4,7 @@ global:
   environment: dev
   # Общие настройки образов
   image:
-    repository: ""  # Замените на ваш registry
+    repository: ""
     pullPolicy: IfNotPresent
     tag: "latest"
   service:
@@ -27,7 +27,7 @@ services:
       repository: "{{ .Values.global.image.repository }}/blocker-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
-      port: 8082
+      port: 8086
 
   cash-service:
     enabled: true
@@ -36,7 +36,7 @@ services:
       repository: "{{ .Values.global.image.repository }}/cash-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
-      port: 8083
+      port: 8085
 
   exchange-service:
     enabled: true
@@ -45,7 +45,7 @@ services:
       repository: "{{ .Values.global.image.repository }}/exchange-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
-      port: 8084
+      port: 8088
 
   ExchangeGenerator-service:
     enabled: true
@@ -54,9 +54,9 @@ services:
       repository: "{{ .Values.global.image.repository }}/exchangegenerator-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
-      port: 8085
+      port: 8084
     ingress:
-      enabled: false  # Генератор обычно не нуждается в ingress
+      enabled: false
 
   front-service:
     enabled: true
@@ -65,16 +65,7 @@ services:
       repository: "{{ .Values.global.image.repository }}/front-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
-      port: 8080
-
-  gateway-service:
-    enabled: true
-    fullnameOverride: "gateway-service"
-    image:
-      repository: "{{ .Values.global.image.repository }}/gateway-service"
-      tag: "{{ .Values.global.image.tag }}"
-    service:
-      port: 8086
+      port: 8083
 
   notification-service:
     enabled: true
@@ -92,7 +83,7 @@ services:
       repository: "{{ .Values.global.image.repository }}/transfer-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
-      port: 8088
+      port: 8089
 
 # Настройки зависимостей
 dependencies:

@@ -1,3 +1,4 @@
+{{- if .Values.infrastructure.namespaces.enabled }}
 apiVersion: v1
 kind: Namespace
 metadata:
@@ -12,3 +13,4 @@ apiVersion: v1
 kind: Namespace
 metadata:
   name: bankapp-prod
+  {{- end }}

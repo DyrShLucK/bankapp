@@ -29,10 +29,6 @@ dependencies:
     version: "0.1.0"
     repository: "file://../front-service"
     condition: front-service.enabled
-  - name: gateway-service
-    version: "0.1.0"
-    repository: "file://../gateway-service"
-    condition: gateway-service.enabled
   - name: notification-service
     version: "0.1.0"
     repository: "file://../notification-service"

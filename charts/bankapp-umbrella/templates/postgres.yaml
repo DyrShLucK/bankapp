@@ -1,7 +1,9 @@
+{{- if .Values.infrastructure.postgres.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: postgres-init-scripts
+  namespace: {{ .Values.global.namespace }}
 data:
   init-db.sql: |
     CREATE TABLE IF NOT EXISTS users (
@@ -20,37 +22,36 @@ data:
         balance NUMERIC(19, 2) DEFAULT 0.00,
         isexists BOOLEAN NOT NULL
         );
+
 ---
-# 2. Secret с паролем (можно использовать и environment, но так безопаснее)
 apiVersion: v1
 kind: Secret
 metadata:
   name: postgres-secret
+  namespace: {{ .Values.global.namespace }}
 type: Opaque
 data:
-  # echo -n "12345" | base64 → MTIzNDU=
-  POSTGRES_PASSWORD: MTIzNDU=
+  POSTGRES_PASSWORD: {{ .Values.infrastructure.postgres.password | b64enc | quote }}
 
 ---
-# 3. PersistentVolumeClaim (если хочешь сохранять данные между перезапусками)
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:
   name: postgres-pvc
+  namespace: {{ .Values.global.namespace }}
 spec:
   accessModes:
     - ReadWriteOnce
   resources:
     requests:
       storage: 1Gi
-  # Minikube использует dynamic provisioning по умолчанию — этого хватит
 
 ---
-# 4. Deployment PostgreSQL
 apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: postgres
+  namespace: {{ .Values.global.namespace }}
 spec:
   replicas: 1
   selector:
@@ -64,7 +65,7 @@ spec:
       containers:
         - name: postgres
           image: postgres:16
-          imagePullPolicy: IfNotPresent
+          imagePullPolicy: {{ .Values.global.image.pullPolicy }}
           ports:
             - containerPort: 5432
           env:
@@ -91,11 +92,11 @@ spec:
             name: postgres-init-scripts
 
 ---
-
 apiVersion: v1
 kind: Service
 metadata:
   name: postgres
+  namespace: {{ .Values.global.namespace }}
 spec:
   selector:
     app: postgres
@@ -104,3 +105,4 @@ spec:
       port: 5432
       targetPort: 5432
   type: ClusterIP
+  {{- end }}

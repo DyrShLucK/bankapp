@@ -95,7 +95,22 @@ services:
       limits:
         memory: "512Mi"
         cpu: "500m"
-
+infrastructure:
+  postgres:
+    enabled: true
+    password: "12345"
+  redis:
+    enabled: true
+  keycloak:
+    enabled: true
+  configmap:
+    enabled: true
+  secret:
+    enabled: true
+  namespaces:
+    enabled: true
+  ingress:
+    enabled: true
 dependencies:
   redis:
     enabled: true

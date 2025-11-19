@@ -2,9 +2,11 @@ global:
   environment: dev
   namespace: bankapp-dev
   image:
+    repository: "your-registry"  # Замените на ваш registry
+    pullPolicy: IfNotPresent
     tag: "dev-latest"
 
-# Включаем все сервисы для разработки
+# Включаем все сервисы
 services:
   account-service:
     enabled: true
@@ -25,7 +27,22 @@ services:
   transfer-service:
     enabled: true
 
-# Отключаем агрессивные настройки для разработки
-dependencies:
+# Включаем инфраструктуру
+infrastructure:
+  postgres:
+    enabled: true
+    password: "12345"
   redis:
+    enabled: true
+  keycloak:
+    enabled: true
+    import:
+      enabled: true
+  configmap:
+    enabled: true
+  secret:
+    enabled: true
+  namespaces:
+    enabled: false
+  ingress:
     enabled: true

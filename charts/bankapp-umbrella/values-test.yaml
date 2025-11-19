@@ -24,7 +24,22 @@ services:
     enabled: true
   transfer-service:
     enabled: true
-
+infrastructure:
+  postgres:
+    enabled: true
+    password: "12345"
+  redis:
+    enabled: true
+  keycloak:
+    enabled: true
+  configmap:
+    enabled: true
+  secret:
+    enabled: true
+  namespaces:
+    enabled: true
+  ingress:
+    enabled: true
 # Тестовые настройки
 dependencies:
   redis:

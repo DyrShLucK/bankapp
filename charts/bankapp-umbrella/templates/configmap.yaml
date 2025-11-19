@@ -1,11 +1,18 @@
+{{- if .Values.infrastructure.configmap.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: bankapp-config
-  namespace: default
+  namespace: {{ .Values.global.namespace }}
+  labels:
+    app.kubernetes.io/managed-by: Helm
+    helm.sh/chart: bankapp-umbrella
+  annotations:
+    meta.helm.sh/release-name: "{{ .Release.Name }}"
+    meta.helm.sh/release-namespace: "{{ .Release.Namespace }}"
 data:
   # OAuth2 и Keycloak
-  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak-service:8080/realms/bankapp
+  SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/bankapp
   SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_USER_NAME_ATTRIBUTE: preferred_username
   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_ID: bankapp
   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_SCOPE: openid,username
@@ -13,8 +20,8 @@ data:
   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_AUTHORIZATION_GRANT_TYPE: client_credentials
   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_SCOPE: profile
   SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_BANKAPP_CLIENT_AUTHENTICATION_METHOD: client_secret_post
-  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak-service:8080/realms/bankapp
-  SPRING_SECURITY_OAUTH2_RESOURCESERVER_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak-service:8080/realms/bankapp
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI: http://keycloak:8080/realms/bankapp
+  SPRING_SECURITY_OAUTH2_RESOURCESERVER_PROVIDER_KEYCLOAK_ISSUER_URI: http://keycloak:8080/realms/bankapp
   SPRING_SECURITY_OAUTH2_RESOURCESERVER_PROVIDER_KEYCLOAK_USER_NAME_ATTRIBUTE: username
   OAUTH2_CLIENT_REGISTRATION_ID: bankapp
 
@@ -56,3 +63,4 @@ data:
 
   # ИЛИ ДЛЯ ВСЕГО WEB-REACTIVE ПАКЕТА
   LOGGING_LEVEL_ORG_SPRINGFRAMEWORK_WEB_REACTIVE: WARN
+  {{- end }}

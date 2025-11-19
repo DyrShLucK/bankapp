@@ -1,8 +1,14 @@
+{{- if .Values.infrastructure.ingress.enabled }}
 apiVersion: v1
 kind: ConfigMap
 metadata:
   name: nginx-ingress-controller
   namespace: ingress-nginx
+  labels:
+    app.kubernetes.io/managed-by: Helm
+  annotations:
+    meta.helm.sh/release-name: "{{ .Release.Name }}"
 data:
   allow-snippet-annotations: "true"
   annotations-risk-level: "Critical"
+  {{- end }}

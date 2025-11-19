@@ -1,0 +1,12 @@
+{{- if .Values.infrastructure.keycloak.enabled }}
+  {{- if .Values.infrastructure.keycloak.import.enabled }}
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: keycloak-import-config
+  namespace: {{ .Values.global.namespace }}
+data:
+  realm-bankapp.json: |
+    {{- .Files.Get "../realm-bankapp.json" | nindent 4 }}
+  {{- end }}
+  {{- end }}

@@ -1,17 +1,19 @@
+{{- if .Values.infrastructure.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
-metadata:
+metadata:  # ← Правильно
   name: bankapp-ingress
+  namespace: {{ .Values.global.namespace }}
   annotations:
-    # CORS настройки
+  # CORS настройки
     nginx.ingress.kubernetes.io/enable-cors: "true"
-    nginx.ingress.kubernetes.io/cors-allow-origin: "https://bankapp.local"
+    nginx.ingress.kubernetes.io/cors-allow-origin: "https://{{ .Values.global.namespace }}.local"
     nginx.ingress.kubernetes.io/cors-allow-methods: "GET, POST, PUT, DELETE, OPTIONS"
     nginx.ingress.kubernetes.io/cors-allow-headers: "DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,Authorization,X-User-Name"
     nginx.ingress.kubernetes.io/cors-allow-credentials: "true"
     nginx.ingress.kubernetes.io/cors-max-age: "1728000"
 
-    nginx.ingress.kubernetes.io/proxy-cookie-domain: "bankapp.local $host"
+    nginx.ingress.kubernetes.io/proxy-cookie-domain: "{{ .Values.global.namespace }}.local $host"
     nginx.ingress.kubernetes.io/proxy-cookie-path: "/ /"
     nginx.ingress.kubernetes.io/affinity: "cookie"
     nginx.ingress.kubernetes.io/session-cookie-name: "route"
@@ -25,67 +27,60 @@ spec:
       http:
         paths:
           # Account Service routes
-          - path: /api/test
-            pathType: ImplementationSpecific
-            backend:
-              service:
-                name: account-service
-                port:
-                  number: 8081
           - path: /api/signup
             pathType: ImplementationSpecific
             backend:
               service:
-                name: account-service
+                name: {{ .Release.Name }}-account-service
                 port:
                   number: 8081
           - path: /api/getMainPage
             pathType: ImplementationSpecific
             backend:
               service:
-                name: account-service
+                name: {{ .Release.Name }}-account-service
                 port:
                   number: 8081
           - path: /api/getUser
             pathType: ImplementationSpecific
             backend:
               service:
-                name: account-service
+                name: {{ .Release.Name }}-account-service
                 port:
                   number: 8081
           - path: /api/editUserAccounts
             pathType: ImplementationSpecific
             backend:
               service:
-                name: account-service
+                name: {{ .Release.Name }}-account-service
                 port:
                   number: 8081
           - path: /api/editPassword
             pathType: ImplementationSpecific
             backend:
               service:
-                name: account-service
+                name: {{ .Release.Name }}-account-service
                 port:
                   number: 8081
           - path: /api/ToAccountServiceTransfer
             pathType: ImplementationSpecific
             backend:
               service:
-                name: account-service
+                name: {{ .Release.Name }}-account-service
                 port:
                   number: 8081
           - path: /api/transferAccountService
             pathType: ImplementationSpecific
             backend:
               service:
-                name: account-service
+                name: {{ .Release.Name }}-account-service
                 port:
                   number: 8081
           - path: /default-ui.css(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: account-service
+                name: {{ .Release.Name }}-account-service
                 port:
                   number: 8081
 
@@ -94,7 +89,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: exchangegenerator-service # Убедитесь, что имя сервиса правильно
+                name: {{ .Release.Name }}-exchangegenerator-service # Убедитесь, что имя сервиса правильно
                 port:
                   number: 8084 # Убедитесь, что порт сервиса правильный
 
@@ -103,7 +98,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: cash-service # Убедитесь, что имя сервиса правильно
+                name: {{ .Release.Name }}-cash-service # Убедитесь, что имя сервиса правильно
                 port:
                   number: 8085 # Убедитесь, что порт сервиса правильный
 
@@ -112,7 +107,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: blocker-service # Убедитесь, что имя сервиса правильно
+                name: {{ .Release.Name }}-blocker-service # Убедитесь, что имя сервиса правильно
                 port:
                   number: 8086 # Убедитесь, что порт сервиса правильный
           # Notifications Service routes
@@ -120,14 +115,14 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: notification-service # Убедитесь, что имя сервиса правильно
+                name: {{ .Release.Name }}-notification-service # Убедитесь, что имя сервиса правильно
                 port:
                   number: 8087 # Убедитесь, что порт сервиса правильный
           - path: /api/notificationsSet
             pathType: ImplementationSpecific
             backend:
               service:
-                name: notification-service # Убедитесь, что имя сервиса правильно
+                name: {{ .Release.Name }}-notification-service # Убедитесь, что имя сервиса правильно
                 port:
                   number: 8087 # Убедитесь, что порт сервиса правильный
 
@@ -136,7 +131,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: transfer-service # Убедитесь, что имя сервиса правильно
+                name: {{ .Release.Name }}-transfer-service # Убедитесь, что имя сервиса правильно
                 port:
                   number: 8089 # Убедитесь, что порт сервиса правильный
           # Transfer Service routes
@@ -144,7 +139,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: exchage-service-exchange-service # Убедитесь, что имя сервиса правильно
+                name: {{ .Release.Name }}-exchange-service # Убедитесь, что имя сервиса правильно
                 port:
                   number: 8088 # Убедитесь, что порт сервиса правильный
 
@@ -158,105 +153,105 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /test
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /testTM
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /main
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /mainTM
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /logout
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /signup
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /bankapp
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /editUserAccounts(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /editPassword(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /exchange
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /cash(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /notifications(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: /transfer(/|$)(.*)
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
           - path: / # root path
             pathType: ImplementationSpecific
             backend:
               service:
-                name: front-service
+                name: {{ .Release.Name }}-front-service
                 port:
                   number: 8083
 
@@ -265,6 +260,7 @@ spec:
             pathType: ImplementationSpecific
             backend:
               service:
-                name: keycloak-service
+                name: keycloak
                 port:
                   number: 8082
+  {{- end }}
