@@ -1,210 +1,61 @@
-pipeline {
-    agent any
-
-    environment {
-        DOCKER_REGISTRY = credentials('DOCKER_REGISTRY')
-        DB_PASSWORD     = credentials('DB_PASSWORD')
-        GITHUB_USERNAME = credentials('GITHUB_USERNAME')
-        IMAGE_TAG       = "${env.BUILD_NUMBER}"
-        NAMESPACE_DEV   = 'bankapp-dev'
-        NAMESPACE_PROD  = 'bankapp-prod'
+stage('Build & Unit Tests') {
+    parallel {
+        stage('Account Service') {
+            steps {
+                dir('account-service') {
+                    sh './gradlew clean test'
+                }
+            }
+        }
+        stage('Front Service') {
+            steps {
+                dir('front-service') {
+                    sh './gradlew clean test'
+                }
+            }
+        }
+        stage('Cash Service') {
+            steps {
+                dir('cash-service') {
+                    sh './gradlew clean test'
+                }
+            }
+        }
+        stage('Transfer Service') {
+            steps {
+                dir('transfer-service') {
+                    sh './gradlew clean test'
+                }
+            }
+        }
     }
+}
 
-    stages {
-        stage('Build & Unit Tests') {
-            parallel {
-                stage('Account Service') {
-                    steps {
-                        dir('account-service') {
-                            sh 'mvn clean test || echo "Tests skipped - no Maven project found"'
-                        }
-                    }
-                }
-                stage('Front Service') {
-                    steps {
-                        dir('front-service') {
-                            sh 'mvn clean test || echo "Tests skipped - no Maven project found"'
-                        }
-                    }
-                }
-                stage('Cash Service') {
-                    steps {
-                        dir('cash-service') {
-                            sh 'mvn clean test || echo "Tests skipped - no Maven project found"'
-                        }
-                    }
-                }
-                stage('Transfer Service') {
-                    steps {
-                        dir('transfer-service') {
-                            sh 'mvn clean test || echo "Tests skipped - no Maven project found"'
-                        }
-                    }
-                }
-            }
-        }
+stage('Build Docker Images') {
+    steps {
+        script {
+            def services = [
+                'account-service',
+                'blocker-service',
+                'cash-service',
+                'exchange-service',
+                'exchangegenerator-service',
+                'front-service',
+                'notifications-service',
+                'transfer-service'
+            ]
 
-        stage('Build Docker Images') {
-            steps {
-                script {
-                    def services = [
-                        'account-service',
-                        'blocker-service',
-                        'cash-service',
-                        'exchange-service',
-                        'exchangegenerator-service',
-                        'front-service',
-                        'notifications-service',
-                        'transfer-service'
-                    ]
+            for (def service : services) {
+                dir("${service}") {
+                    // Сначала собираем JAR файл
+                    sh './gradlew build'
 
-                    for (def service : services) {
-                        dir("${service}") {
-                            sh "docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} ."
-                        }
-                    }
-                }
-            }
-        }
-
-        stage('Push Docker Images') {
-            steps {
-                withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                    // Потом собираем Docker образ
                     sh """
-                    echo \$GHCR_TOKEN | docker login ghcr.io -u ${GITHUB_USERNAME} --password-stdin
+                    docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} .
                     """
-
-                    script {
-                        def services = [
-                            'account-service',
-                            'blocker-service',
-                            'cash-service',
-                            'exchange-service',
-                            'exchangegenerator-service',
-                            'front-service',
-                            'notifications-service',
-                            'transfer-service'
-                        ]
-
-                        for (def service : services) {
-                            sh "docker push ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG}"
-                        }
-                    }
                 }
             }
-        }
-
-        stage('Install Dependencies to DEV') {
-            steps {
-                sh """
-                # Добавляем репозитории Helm
-                helm repo add bitnami https://charts.bitnami.com/bitnami
-                helm repo update
-
-                # Устанавливаем PostgreSQL
-                helm upgrade --install postgres bitnami/postgresql \\
-                  --namespace ${NAMESPACE_DEV} --create-namespace \\
-                  --set auth.database=bankapp \\
-                  --set auth.username=postgres \\
-                  --set auth.password=${DB_PASSWORD}
-
-                # Устанавливаем Redis
-                helm upgrade --install redis bitnami/redis \\
-                  --namespace ${NAMESPACE_DEV} --create-namespace \\
-                  --set auth.enabled=false
-                """
-            }
-        }
-
-        stage('Create DB Secrets for DEV') {
-            steps {
-                sh """
-                kubectl create secret generic bankapp-secret \\
-                  --from-literal=SPRING_R2DBC_PASSWORD=${DB_PASSWORD} \\
-                  --from-literal=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET=your-keycloak-secret \\
-                  -n ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
-                """
-            }
-        }
-
-        stage('Helm Deploy to DEV') {
-            steps {
-                sh """
-                helm upgrade --install bankapp-dev charts/bankapp-umbrella \\
-                  --namespace ${NAMESPACE_DEV} --create-namespace \\
-                  -f charts/bankapp-umbrella/values-dev.yaml \\
-                  --set global.image.repository=${DOCKER_REGISTRY} \\
-                  --set global.image.tag=${IMAGE_TAG} \\
-                  --set infrastructure.keycloak.enabled=true \\
-                  --set infrastructure.ingress.enabled=true \\
-                  --atomic \\
-                  --timeout 5m
-                """
-            }
-        }
-
-        stage('Helm Test') {
-            steps {
-                sh "helm test bankapp-dev --namespace ${NAMESPACE_DEV}"
-            }
-        }
-
-        stage('Manual Approval for PROD') {
-            steps {
-                input message: 'Deploy to PROD environment?', ok: 'Yes, deploy'
-            }
-        }
-
-        stage('Install Dependencies to PROD') {
-            steps {
-                sh """
-                helm upgrade --install postgres bitnami/postgresql \\
-                  --namespace ${NAMESPACE_PROD} --create-namespace \\
-                  --set auth.database=bankapp \\
-                  --set auth.username=postgres \\
-                  --set auth.password=${DB_PASSWORD}
-
-                helm upgrade --install redis bitnami/redis \\
-                  --namespace ${NAMESPACE_PROD} --create-namespace \\
-                  --set auth.enabled=false
-                """
-            }
-        }
-
-        stage('Create DB Secrets for PROD') {
-            steps {
-                sh """
-                kubectl create secret generic bankapp-secret \\
-                  --from-literal=SPRING_R2DBC_PASSWORD=${DB_PASSWORD} \\
-                  --from-literal=SPRING_SECURITY_OAUTH2_CLIENT_REGISTRATION_KEYCLOAK_CLIENT_SECRET=your-keycloak-secret \\
-                  -n ${NAMESPACE_PROD} --dry-run=client -o yaml | kubectl apply -f -
-                """
-            }
-        }
-
-        stage('Helm Deploy to PROD') {
-            steps {
-                sh """
-                helm upgrade --install bankapp-prod charts/bankapp-umbrella \\
-                  --namespace ${NAMESPACE_PROD} --create-namespace \\
-                  -f charts/bankapp-umbrella/values-prod.yaml \\
-                  --set global.image.repository=${DOCKER_REGISTRY} \\
-                  --set global.image.tag=${IMAGE_TAG} \\
-                  --set infrastructure.keycloak.enabled=true \\
-                  --set infrastructure.ingress.enabled=true \\
-                  --atomic \\
-                  --timeout 5m
-                """
-            }
-        }
-    }
-
-    post {
-        success {
-            echo "Pipeline completed successfully!"
-        }
-        failure {
-            echo "Pipeline failed!"
         }
     }
 }
