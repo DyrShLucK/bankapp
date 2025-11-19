@@ -15,7 +15,9 @@ pipeline {
             steps {
                 script {
                     sh '''
+                    # Даем права на выполнение всем gradlew файлам
                     find . -name gradlew -exec chmod +x {} \\;
+                    # Даем права на выполнение скриптам в Security-lib
                     chmod +x Security-lib/gradlew || true
                     '''
                 }
@@ -93,9 +95,7 @@ pipeline {
 
         stage('Build All Services') {
             steps {
-                script {
-                    sh './gradlew clean build'
-                }
+                sh './gradlew clean build'
             }
         }
 
@@ -103,22 +103,23 @@ pipeline {
             steps {
                 script {
                     def services = [
-                        'account-service',
-                        'blocker-service',
-                        'cash-service',
-                        'exchange-service',
-                        'exchangegenerator-service',
-                        'front-service',
-                        'notifications-service',
-                        'transfer-service'
+                        'account-service', 'blocker-service', 'cash-service',
+                        'exchange-service', 'exchangegenerator-service', 'front-service',
+                        'notifications-service', 'transfer-service'
                     ]
 
-
+                    for (def service : services) {
+                        dir("build/libs") {
+                            sh """
+                            # Создаем директорию для сервиса если нет
+                            mkdir -p ${service}/build/libs
+                            # Копируем JAR файл
+                            cp ${service}-*.jar ${service}/build/libs/
+                            """
+                        }
 
                         dir("${service}") {
-                            sh """
-                            docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} .
-                            """
+                            sh "docker build -t ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG} ."
                         }
                     }
                 }
@@ -134,14 +135,9 @@ pipeline {
 
                     script {
                         def services = [
-                            'account-service',
-                            'blocker-service',
-                            'cash-service',
-                            'exchange-service',
-                            'exchangegenerator-service',
-                            'front-service',
-                            'notifications-service',
-                            'transfer-service'
+                            'account-service', 'blocker-service', 'cash-service',
+                            'exchange-service', 'exchangegenerator-service', 'front-service',
+                            'notifications-service', 'transfer-service'
                         ]
 
                         for (def service : services) {
@@ -155,18 +151,15 @@ pipeline {
         stage('Install Dependencies to DEV') {
             steps {
                 sh """
-                # Добавляем репозитории Helm
                 helm repo add bitnami https://charts.bitnami.com/bitnami
                 helm repo update
 
-                # Устанавливаем PostgreSQL
                 helm upgrade --install postgres bitnami/postgresql \\
                   --namespace ${NAMESPACE_DEV} --create-namespace \\
                   --set auth.database=bankapp \\
                   --set auth.username=postgres \\
                   --set auth.password=${DB_PASSWORD}
 
-                # Устанавливаем Redis
                 helm upgrade --install redis bitnami/redis \\
                   --namespace ${NAMESPACE_DEV} --create-namespace \\
                   --set auth.enabled=false
