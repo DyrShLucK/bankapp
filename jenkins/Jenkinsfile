@@ -25,6 +25,10 @@ pipeline {
                 stage('Build & Test All Projects') {
                     steps {
                         // Собираем и тестируем ВСЕ проекты из корня
+                        sh 'ls exchangegenerator-service/'
+                        sh 'cat settings.gradle'
+                        sh 'ls'
+                        sh './gradlew exchangegenerator-service:clean'
                         sh './gradlew clean test'
                     }
                 }
@@ -33,6 +37,7 @@ pipeline {
                     steps {
                         // Собираем все JAR файлы из корня
                         sh './gradlew clean build'
+                         sh './gradlew exchangegenerator-service:clean build'
                     }
                 }
 
