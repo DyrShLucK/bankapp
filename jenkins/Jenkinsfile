@@ -95,7 +95,6 @@ pipeline {
             steps {
                 script {
                     echo "Waiting for services to be ready..."
-                    sleep 180
                     sh "helm test bankapp-dev --namespace ${NAMESPACE_DEV} --logs || true"
                 }
             }
@@ -110,6 +109,7 @@ pipeline {
         stage('Helm Deploy to PROD') {
             steps {
                 sh """
+                kubectl delete configmap nginx-ingress-controller -n ingress-nginx --ignore-not-found
                 helm upgrade --install bankapp-prod charts/bankapp-umbrella \\
                   --namespace ${NAMESPACE_PROD} --create-namespace \\
                   -f charts/bankapp-umbrella/values-prod.yaml \\
