@@ -29,10 +29,19 @@ public class ApiController implements DefaultApi {
     @Override
     public Mono<ResponseEntity<NotificationsGet>> apiNotificationsGet(@jakarta.annotation.Nullable String SESSION, ServerWebExchange exchange) {
 
+        System.out.println("Входящий запрос: SESSION = " + SESSION);
+        System.out.println("Заголовки запроса: " + exchange.getRequest().getHeaders());
+        System.out.println("Параметры запроса: " + exchange.getRequest().getQueryParams());
+
         if (SESSION == null) {
+            System.out.println("SESSION отсутствует, возвращаем 401");
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        return apiService.getNotifications(SESSION).map(ResponseEntity::ok);
+
+        return apiService.getNotifications(SESSION)
+                .doOnNext(response -> System.out.println("Ответ от apiService: " + response))
+                .map(ResponseEntity::ok)
+                .doOnNext(response -> System.out.println("Отправляемый ответ: " + response));
     }
 
     @Override

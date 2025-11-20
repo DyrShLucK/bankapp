@@ -24,8 +24,13 @@ public class notificationController {
     @GetMapping("/notifications")
     public Mono<List<Notification>> notifications(
             @RequestParam("login") String login) {
+
+        System.out.println("Входящий запрос: login = " + login);
+
         return signupApi.notification(login)
+                .doOnNext(response -> System.out.println("Ответ от signupApi: " + response))
                 .map(NotificationsGet::getNotifications)
+                .doOnNext(notifications -> System.out.println("Возвращаемые уведомления: " + notifications))
                 .defaultIfEmpty(new ArrayList<>());
     }
 }
