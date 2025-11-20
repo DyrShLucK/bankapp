@@ -106,23 +106,6 @@ pipeline {
             }
         }
 
-        stage('Helm Deploy to PROD') {
-            steps {
-                sh """
-                kubectl delete configmap nginx-ingress-controller -n ingress-nginx --ignore-not-found
-                helm upgrade --install bankapp-prod charts/bankapp-umbrella \\
-                  --namespace ${NAMESPACE_PROD} --create-namespace \\
-                  -f charts/bankapp-umbrella/values-prod.yaml \\
-                  --set global.image.repository=${DOCKER_REGISTRY} \\
-                  --set global.image.tag=${IMAGE_TAG} \\
-                  --set infrastructure.keycloak.enabled=true \\
-                  --set infrastructure.keycloak.import.enabled=true \\
-                  --set infrastructure.ingress.enabled=true \\
-                  --timeout 5m
-                """
-            }
-        }
-    }
 
     post {
         success {
