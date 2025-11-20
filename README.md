@@ -52,12 +52,13 @@ d
 
 docker-compose up --build
 ```
-Запуск в Kubernetes (Minikube)
-Предварительные требования
-Установленный Minikube
-Установленный kubectl
-Установленный Helm
-Достаточно ресурсов на хосте (рекомендуется минимум 4 CPU и 8GB RAM)
+- Запуск в Kubernetes (Minikube)
+- Предварительные требования
+- Установленный Minikube
+- Установленный kubectl
+- Установленный Helm
+- Достаточно ресурсов на хосте (рекомендуется минимум 4 CPU и 8GB RAM)
+- в hosts поставить bankapp.local для своего ip и bankapp.internal для ip minikube
 1. ## Запуск Minikube
 ```bash
 minikube start --driver=docker 
@@ -81,7 +82,7 @@ helm install bankapp-dev ./charts/bankapp-umbrella \
   --timeout 2m0s \
   --debug
 ```
-4.## Проверка статуса
+4. ## Проверка статуса
 ```bash
 kubectl get pods -n bankapp-dev
 kubectl get ingress -n bankapp-dev
@@ -145,7 +146,10 @@ kubectl logs -l app=keycloak -n bankapp-dev -f
 ```bash
 kubectl port-forward -n bankapp-dev svc/keycloak 8081:8080
 ```
-# после запуска надо настроить keycloak и вписать в secret  после перезапустить сервисы
+# если конфигурация для keycloak не преминилась, то после запуска надо настроить keycloak и вписать в secret  после перезапустить сервисы
+
+
+# Для з работы пропишите minikube tunnel и зайдите на bankapp.local
 
 ## Схема CI/CD пайплайна
 - Сборка и тестирование - Gradle собирает проект и выполняет тесты

@@ -34,7 +34,6 @@ public class mainController {
 
     @GetMapping({"/", "/bankapp"})
     public Mono<String> main(Model model, ServerWebExchange exchange, WebSession session) {
-        // Получаем SESSION cookie из входящего запроса
         HttpCookie sessionCookie = exchange.getRequest().getCookies().getFirst("SESSION");
 
         if (sessionCookie == null) {
