@@ -106,33 +106,6 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies to PROD') {
-            steps {
-                sh """
-                helm upgrade --install postgres bitnami/postgresql \\
-                  --namespace ${NAMESPACE_PROD} --create-namespace \\
-                  --set auth.database=bankapp \\
-                  --set auth.username=postgres \\
-                  --set auth.password=${DB_PASSWORD}
-
-                helm upgrade --install redis bitnami/redis \\
-                  --namespace ${NAMESPACE_PROD} --create-namespace \\
-                  --set auth.enabled=false
-                """
-            }
-        }
-
-        stage('Create DB Secrets for PROD') {
-            steps {
-                sh """
-                kubectl create secret generic bankapp-secret \\
-                  --from-literal=SPRING_R2DBC_PASSWORD=${DB_PASSWORD} \\
-                  --from-literal=keycloak-client-secret=your-keycloak-secret \\
-                  -n ${NAMESPACE_PROD} --dry-run=client -o yaml | kubectl apply -f -
-                """
-            }
-        }
-
         stage('Helm Deploy to PROD') {
             steps {
                 sh """
