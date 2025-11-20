@@ -84,7 +84,7 @@ pipeline {
                   --set global.image.tag=${IMAGE_TAG} \\
                   --set infrastructure.keycloak.enabled=true \\
                   --set infrastructure.ingress.enabled=true \\
-                  --debug \\
+                  --atomic \\
                   --timeout 5m
                 """
             }
@@ -92,7 +92,11 @@ pipeline {
 
         stage('Helm Test') {
             steps {
-                sh "helm test bankapp-dev --namespace ${NAMESPACE_DEV}"
+                script {
+                    echo "Waiting for services to be ready..."
+                    sleep 180
+                    sh "helm test bankapp-dev --namespace ${NAMESPACE_DEV}"
+                }
             }
         }
 
