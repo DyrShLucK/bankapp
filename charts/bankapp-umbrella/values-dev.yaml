@@ -2,7 +2,7 @@ global:
   environment: dev
   namespace: bankapp-dev
   image:
-    repository: "your-registry"  # Замените на ваш registry
+    repository: ""  # Замените на ваш registry
     pullPolicy: IfNotPresent
     tag: "dev-latest"
 

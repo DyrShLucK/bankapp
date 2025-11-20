@@ -2,99 +2,32 @@ global:
   environment: prod
   namespace: bankapp-prod
   image:
+    repository: ""
+    pullPolicy: IfNotPresent
     tag: "prod-latest"
-  ingress:
-    annotations:
-      nginx.ingress.kubernetes.io/rewrite-target: /$2
-      nginx.ingress.kubernetes.io/use-regex: "true"
-      nginx.ingress.kubernetes.io/ssl-redirect: "true"
-    tls:
-      - secretName: bankapp-prod-tls
-        hosts:
-          - bankapp.example.com
 
+# Включаем все сервисы
 services:
   account-service:
     enabled: true
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
   blocker-service:
     enabled: true
-    resources:
-      requests:
-        memory: "128Mi"
-        cpu: "50m"
-      limits:
-        memory: "256Mi"
-        cpu: "250m"
   cash-service:
     enabled: true
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
   exchange-service:
     enabled: true
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
   ExchangeGenerator-service:
     enabled: true
-    resources:
-      requests:
-        memory: "128Mi"
-        cpu: "50m"
-      limits:
-        memory: "256Mi"
-        cpu: "250m"
   front-service:
     enabled: true
-    resources:
-      requests:
-        memory: "512Mi"
-        cpu: "200m"
-      limits:
-        memory: "1Gi"
-        cpu: "1"
   gateway-service:
     enabled: true
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
   notification-service:
     enabled: true
-    resources:
-      requests:
-        memory: "128Mi"
-        cpu: "50m"
-      limits:
-        memory: "256Mi"
-        cpu: "250m"
   transfer-service:
     enabled: true
-    resources:
-      requests:
-        memory: "256Mi"
-        cpu: "100m"
-      limits:
-        memory: "512Mi"
-        cpu: "500m"
+
+# Включаем инфраструктуру
 infrastructure:
   postgres:
     enabled: true
@@ -103,25 +36,13 @@ infrastructure:
     enabled: true
   keycloak:
     enabled: true
+    import:
+      enabled: true
   configmap:
     enabled: true
   secret:
     enabled: true
   namespaces:
-    enabled: true
+    enabled: false
   ingress:
     enabled: true
-dependencies:
-  redis:
-    enabled: true
-    redis:
-      persistence:
-        enabled: true
-        size: 8Gi
-      resources:
-        requests:
-          memory: "256Mi"
-          cpu: "100m"
-        limits:
-          memory: "512Mi"
-          cpu: "500m"
