@@ -82,6 +82,7 @@ pipeline {
                   -f charts/bankapp-umbrella/values-dev.yaml \\
                   --set global.image.repository=${DOCKER_REGISTRY} \\
                   --set global.image.tag=${IMAGE_TAG} \\
+                  --set global.image.pullPolicy=Always \\
                   --set infrastructure.keycloak.enabled=true \\
                   --set infrastructure.keycloak.import.enabled=true \\
                   --set infrastructure.ingress.enabled=true \\
