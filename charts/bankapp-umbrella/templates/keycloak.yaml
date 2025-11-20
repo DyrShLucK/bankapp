@@ -45,7 +45,7 @@ spec:
             - name: KEYCLOAK_ADMIN_PASSWORD
               value: "admin"
             - name: KEYCLOAK_FRONTEND_URL
-              value: "http://localhost:8082"
+              value: "http://localhost:8080"
             - name: KEYCLOAK_HOSTNAME
               value: "keycloak"
           args:

@@ -7,6 +7,6 @@ metadata:
   namespace: {{ .Values.global.namespace }}
 data:
   realm-bankapp.json: |
-    {{- .Files.Get "../realm-bankapp.json" | nindent 4 }}
+    {{- .Files.Get "../bankapp.json" | nindent 4 }}
   {{- end }}
   {{- end }}
