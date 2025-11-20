@@ -41,9 +41,7 @@
 
 ## Запуск приложения
 соберите все вместе
-```bash
-./gradlew build
-```
+
 d
 - затем используйте докер
 - или запустите все микросервисы из корневой папки
@@ -53,3 +51,107 @@ d
 ```bash
 
 docker-compose up --build
+```
+Запуск в Kubernetes (Minikube)
+Предварительные требования
+Установленный Minikube
+Установленный kubectl
+Установленный Helm
+Достаточно ресурсов на хосте (рекомендуется минимум 4 CPU и 8GB RAM)
+1. ## Запуск Minikube
+```bash
+minikube start --driver=docker 
+```
+2. ## Сборка и загрузка Docker-образов
+### Сборка образов
+```bash
+./gradlew build
+```
+#### Загрузка образов в registry
+```bash
+docker-compose push
+```
+3. ## Установка приложения через Helm
+```bash
+helm install bankapp-dev ./charts/bankapp-umbrella \
+  -f ./charts/bankapp-umbrella/values-dev.yaml \
+  --namespace bankapp-dev \
+  --create-namespace \
+  --atomic \
+  --timeout 2m0s \
+  --debug
+```
+4.## Проверка статуса
+```bash
+kubectl get pods -n bankapp-dev
+kubectl get ingress -n bankapp-dev
+minikube service list
+```
+5. ## Доступ к приложению
+### Получить URL для доступа к приложению
+```bash
+minikube service bankapp-dev-front-service -n bankapp-dev --url
+```
+
+# Настройка Jenkins
+# Jenkins разворачивается через Docker Compose в папке jenkins/:
+
+```bash
+cd jenkins
+docker-compose up -d
+```
+# Для доступа к Jenkins UI используйте: http://localhost:8080
+
+## Основные команды для управления
+# Очистка и перезапуск
+```bash
+kubectl delete configmap nginx-ingress-controller -n ingress-nginx --ignore-not-found
+kubectl delete namespace bankapp-dev --ignore-not-found
+kubectl delete all --all -n bankapp-dev --ignore-not-found
+helm uninstall bankapp-dev --namespace default --ignore-not-found
+```
+# Перезапуск отдельных сервисов
+```bash
+kubectl rollout restart deployment/bankapp-dev-account-service -n bankapp-dev
+kubectl rollout restart deployment/bankapp-dev-blocker-service -n bankapp-dev
+kubectl rollout restart deployment/bankapp-dev-cash-service -n bankapp-dev
+kubectl rollout restart deployment/bankapp-dev-exchange-service -n bankapp-dev
+kubectl rollout restart deployment/bankapp-dev-exchangegenerator-service -n bankapp-dev
+kubectl rollout restart deployment/bankapp-dev-front-service -n bankapp-dev
+kubectl rollout restart deployment/bankapp-dev-notification-service -n bankapp-dev
+kubectl rollout restart deployment/bankapp-dev-transfer-service -n bankapp-dev
+```
+
+# Перезапуск Keycloak
+```bash
+kubectl rollout restart deployment/keycloak -n bankapp-dev
+```
+# Редактирование секретов
+```bash
+# Редактирование секретов
+kubectl edit secret bankapp-secret -n bankapp-dev
+```
+
+# Редактирование конфигмапов
+```bash
+kubectl edit configmap bankapp-config -n bankapp-dev
+```
+# Просмотр логов в реальном времени
+```bash
+kubectl logs -l app=keycloak -n bankapp-dev -f
+```
+
+# Проброс порта для локального доступа
+```bash
+kubectl port-forward -n bankapp-dev svc/keycloak 8081:8080
+```
+# после запуска надо настроить keycloak и вписать в secret  после перезапустить сервисы
+
+## Схема CI/CD пайплайна
+- Сборка и тестирование - Gradle собирает проект и выполняет тесты
+- Сборка Docker-образов - Сборка образов для всех микросервисов
+- Загрузка в registry - Загрузка образов в GitHub Container Registry
+- Развертывание в DEV - Установка в Minikube через Helm
+- Тестирование - Запуск тестов развернутого приложения
+- Ручное подтверждение - Ручное подтверждение для продакшена
+- Развертывание в PROD - Установка в продакшен-окружение

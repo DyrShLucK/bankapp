@@ -96,6 +96,7 @@ pipeline {
             steps {
                 script {
                     echo "Waiting for services to be ready..."
+                    sh "sleep 300"
                     sh "helm test bankapp-dev --namespace ${NAMESPACE_DEV} --logs || true"
                 }
             }

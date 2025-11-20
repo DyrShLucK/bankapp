@@ -29,59 +29,16 @@ public class ApiController implements DefaultApi {
     @Override
     public Mono<ResponseEntity<NotificationsGet>> apiNotificationsGet(@jakarta.annotation.Nullable String SESSION, ServerWebExchange exchange) {
 
-        System.out.println("Входящий запрос: SESSION = " + SESSION);
-        System.out.println("Заголовки запроса: " + exchange.getRequest().getHeaders());
-        System.out.println("Параметры запроса: " + exchange.getRequest().getQueryParams());
 
         if (SESSION == null) {
-            System.out.println("SESSION отсутствует, возвращаем 401");
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
 
-        return apiService.getNotifications(SESSION)
-                .doOnNext(response -> System.out.println("Ответ от apiService: " + response))
-                .map(ResponseEntity::ok)
-                .doOnNext(response -> System.out.println("Отправляемый ответ: " + response));
+        return apiService.getNotifications(SESSION).map(ResponseEntity::ok);
     }
 
     @Override
     public Mono<ResponseEntity<Void>> apiNotificationsSetPost(Mono<Notification> notification, ServerWebExchange exchange) {
         return apiService.setNotification(notification).map(ResponseEntity::ok);
-    }
-
-    private String extractUsernameFromSession(String sessionId) {
-        try (RedisConnection connection = connectionFactory.getConnection()) {
-            String sessionKey = "spring:session:sessions:" + sessionId;
-
-            String contextKey = "sessionAttr:SPRING_SECURITY_CONTEXT";
-            byte[] sessionData = connection.hGet(
-                    sessionKey.getBytes(StandardCharsets.UTF_8),
-                    contextKey.getBytes(StandardCharsets.UTF_8)
-            );
-
-            if (sessionData == null) {
-                return null;
-            }
-
-            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(sessionData))) {
-                Object obj = ois.readObject();
-
-                SecurityContextImpl context = (SecurityContextImpl) obj;
-                Authentication auth = context.getAuthentication();
-
-                Object principal = auth.getPrincipal();
-                if (principal instanceof org.springframework.security.core.userdetails.User) {
-                    String username = ((org.springframework.security.core.userdetails.User) principal).getUsername();
-                    return username;
-                } else {
-                    if (principal instanceof String) {
-                        return (String) principal;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return null;
     }
 }

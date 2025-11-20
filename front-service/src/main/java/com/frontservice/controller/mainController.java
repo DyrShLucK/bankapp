@@ -43,10 +43,9 @@ public class mainController {
         }
 
         String sessionId = sessionCookie.getValue();
-        log.info("Получен SESSION cookie: {}", sessionId);
 
-        // Передаем cookie в вызов account-service как параметр
-        return defaultApi.apiGetMainPageGet(sessionId) // Передаем sessionId как аргумент
+
+        return defaultApi.apiGetMainPageGet(sessionId)
                 .flatMap(dto -> {
                     Map<String, Object> flashAttributes = (Map<String, Object>) session.getAttributes().get("jakarta.servlet.flash.mapping.output");
                     processAllFlashAttributes(model, flashAttributes, session);

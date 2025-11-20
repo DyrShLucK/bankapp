@@ -48,10 +48,8 @@ public class ApiController implements DefaultApi {
 
     @Override
     public Mono<ResponseEntity<MainPageResponse>> apiGetMainPageGet(@jakarta.annotation.Nullable String SESSION, ServerWebExchange exchange) {
-        log.info("Received SESSION: {}", SESSION);
 
         if (SESSION == null || SESSION.trim().isEmpty()) {
-            log.error("SESSION cookie is missing or empty");
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
 
@@ -62,7 +60,6 @@ public class ApiController implements DefaultApi {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
 
-        log.info("Successfully extracted username: {} from session: {}", username, SESSION);
 
         return toApiDTO.getMAinPageDTO(username)
                 .map(ResponseEntity::ok)
@@ -95,8 +92,7 @@ public class ApiController implements DefaultApi {
 
                     exchange.getResponse().addCookie(userCookie);
 
-                    headers.forEach((headerName, headerValues) ->
-                            log.info("Response Header {}: {}", headerName, String.join(", ", headerValues)));
+
 
                     return Mono.just(ResponseEntity.ok()
                             .headers(headers)
@@ -151,7 +147,6 @@ public class ApiController implements DefaultApi {
     private String extractUsernameFromSession(String sessionId) {
         try (RedisConnection connection = connectionFactory.getConnection()) {
             String sessionKey = "spring:session:sessions:" + sessionId;
-            log.info("Trying to access Redis key: {}", sessionKey);
 
             String contextKey = "sessionAttr:SPRING_SECURITY_CONTEXT";
             byte[] sessionData = connection.hGet(
@@ -166,23 +161,17 @@ public class ApiController implements DefaultApi {
 
             try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(sessionData))) {
                 Object obj = ois.readObject();
-                log.info("Deserialized object: {}", obj.getClass().getName());
 
                 SecurityContextImpl context = (SecurityContextImpl) obj;
                 Authentication auth = context.getAuthentication();
-                log.info("Authentication: {}", auth);
 
                 Object principal = auth.getPrincipal();
-                log.info("Principal class: {}", principal.getClass().getName());
-                log.info("Principal: {}", principal);
 
                 // Проверяем тип principal
                 if (principal instanceof org.springframework.security.core.userdetails.User) {
                     String username = ((org.springframework.security.core.userdetails.User) principal).getUsername();
-                    log.info("Extracted username: {}", username);
                     return username;
                 } else {
-                    log.warn("Principal is not of type User, it's: {}", principal.getClass().getName());
                     // Если principal - строка, возвращаем как есть
                     if (principal instanceof String) {
                         return (String) principal;
