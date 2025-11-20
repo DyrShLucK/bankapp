@@ -11,10 +11,9 @@ spec:
       command: ['sh', '-c']
       args:
         - |
-          response=$(wget -S --spider http://bankapp-dev-account-service:8081/ 2>&1 | grep "HTTP/" | tail -1)
-          echo "Response: $response"
-          # Проверяем, что ответ содержит 404 (или любой другой ожидаемый код)
-          if echo "$response" | grep -q "404\|200\|204"; then
+          wget -O- --server-response http://bankapp-dev-account-service:8081/ 2>&1 | tee /tmp/response
+          # Проверяем, что получили 200, 204 или 404
+          if grep -q "HTTP/1.1 200\|HTTP/1.1 204\|HTTP/1.1 404" /tmp/response; then
             echo "Test passed: received expected HTTP code"
             exit 0
           else
