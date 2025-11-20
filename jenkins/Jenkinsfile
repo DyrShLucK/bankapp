@@ -84,7 +84,7 @@ pipeline {
                   --set global.image.tag=${IMAGE_TAG} \\
                   --set infrastructure.keycloak.enabled=true \\
                   --set infrastructure.ingress.enabled=true \\
-                  --atomic \\
+                  --debug
                   --timeout 5m
                 """
             }
