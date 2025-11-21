@@ -73,7 +73,15 @@ pipeline {
                 }
             }
         }
-
+        stage('Wait for Kafka') {
+            steps {
+                sh """
+                echo "Waiting for Kafka to be available..."
+                kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=kafka \\
+                    --namespace kafka-dev --timeout=300s
+                """
+            }
+        }
         stage('Helm Deploy to DEV') {
             steps {
                 sh """

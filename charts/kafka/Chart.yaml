@@ -1,0 +1,10 @@
+apiVersion: v2
+name: kafka
+description: Apache Kafka deployment for BankApp
+type: application
+version: 1.0.0
+appVersion: "3.6.0"
+dependencies:
+  - name: kafka
+    version: "24.0.1"
+    repository: "https://charts.bitnami.com/bitnami"

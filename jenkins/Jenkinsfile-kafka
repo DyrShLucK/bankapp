@@ -1,0 +1,82 @@
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_REGISTRY = credentials('DOCKER_REGISTRY')
+        DB_PASSWORD     = credentials('DB_PASSWORD')
+        GITHUB_USERNAME = credentials('GITHUB_USERNAME')
+        IMAGE_TAG       = "${env.BUILD_NUMBER}"
+        NAMESPACE_DEV = 'kafka-dev'
+        NAMESPACE_PROD = 'kafka-prod'
+    }
+
+    stages {
+        stage('Deploy Kafka to DEV') {
+            steps {
+                sh """
+                helm repo add bitnami https://charts.bitnami.com/bitnami
+                helm repo update
+
+                helm upgrade --install kafka charts/kafka \\
+                    --namespace ${NAMESPACE_DEV} --create-namespace \\
+                    -f charts/kafka/values-dev.yaml \\
+                    --set kafka.replicaCount=2 \\
+                    --debug \\
+                    --timeout 10m
+                """
+            }
+        }
+
+        stage('Verify Kafka Deployment') {
+            steps {
+                script {
+                    echo "Waiting for Kafka to be ready..."
+                    sh "sleep 60"
+                    sh "kubectl rollout status statefulset/kafka -n ${NAMESPACE_DEV} --timeout=5m"
+                }
+            }
+        }
+
+        stage('Create Kafka Topics') {
+            steps {
+                sh """
+                kubectl exec -n ${NAMESPACE_DEV} kafka-0 -- \\
+                    kafka-topics.sh --bootstrap-server localhost:9092 \\
+                    --create --topic notifications --partitions 3 --replication-factor 2
+
+                kubectl exec -n ${NAMESPACE_DEV} kafka-0 -- \\
+                    kafka-topics.sh --bootstrap-server localhost:9092 \\
+                    --create --topic transfers --partitions 3 --replication-factor 2
+                """
+            }
+        }
+
+        stage('Manual Approval for PROD') {
+            steps {
+                input message: 'Deploy Kafka to PROD environment?', ok: 'Yes, deploy'
+            }
+        }
+
+        stage('Deploy Kafka to PROD') {
+            steps {
+                sh """
+                helm upgrade --install kafka charts/kafka \\
+                    --namespace ${NAMESPACE_PROD} --create-namespace \\
+                    -f charts/kafka/values-prod.yaml \\
+                    --set kafka.replicaCount=3 \\
+                    --debug \\
+                    --timeout 15m
+                """
+            }
+        }
+    }
+
+    post {
+        success {
+            echo "Kafka deployed successfully!"
+        }
+        failure {
+            echo "Kafka deployment failed!"
+        }
+    }
+}

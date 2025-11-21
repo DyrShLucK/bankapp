@@ -1,0 +1,35 @@
+# charts/kafka-infrastructure/values-prod.yaml
+global:
+  environment: prod
+  namespace: bankapp-prod
+
+kafka:
+  fullnameOverride: "kafka-cluster"
+  replicaCount: 3  # В продакшене лучше 3+ реплики
+  
+  persistence:
+    enabled: true
+    size: 100Gi
+    storageClass: "ssd"  # Быстрый storage для продакшена
+  
+  config:
+    offsets.topic.replication.factor: 3
+    transaction.state.log.replication.factor: 3
+    transaction.state.log.min.isr: 2
+    log.retention.hours: 720  # 30 дней
+    default.replication.factor: 3
+  
+  resources:
+    requests:
+      memory: 4Gi
+      cpu: 2000m
+    limits:
+      memory: 8Gi
+      cpu: 4000m
+  
+  # Безопасность для продакшена
+  auth:
+    clientProtocol: sasl
+    interBrokerProtocol: sasl
+    saslMechanisms: "scram-sha-512"
+    # Дополнительные настройки безопасности...
