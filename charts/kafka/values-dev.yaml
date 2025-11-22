@@ -6,7 +6,7 @@ kafka:
     storageClass: "standard"
 controller:
   persistence:
-    enabled: false
+    enabled: true
   auth:
     clientProtocol: plaintext
   service:
