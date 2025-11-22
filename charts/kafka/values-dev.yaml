@@ -13,16 +13,22 @@ volumePermissions:
     tag: 12-debian-12-r73
 
 controller:
-  replicaCount: 2
+  replicaCount: 1
   persistence:
     enabled: true
     size: 8Gi
     storageClass: "standard"
   auth:
-    enabled: false
+    enabled: false                    # ← отключает генерацию пользователей
     clientProtocol: plaintext
     interBrokerProtocol: plaintext
     controllerProtocol: plaintext
+    sasl:
+      mechanisms: ""                  # ← явно пусто
+      interBrokerMechanism: ""
+    jaas:
+      clientUsers: [ ]                 # ← пустой список
+      clientPasswords: [ ]             # ← без паролей
   listeners:
     client:
       protocol: PLAINTEXT
