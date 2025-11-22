@@ -1,24 +1,20 @@
-# Убираем неиспользуемый kafka.replicaCount в KRaft
-# kafka:
-#   replicaCount: 2
-#   persistence:
-#     enabled: true
-#     size: 8Gi
-#     storageClass: "standard"
-
-controller:
+kafka:
+  replicaCount: 2
   persistence:
-    enabled: true # Убедись, что Helm команда не перезаписывает это
+    enabled: true
     size: 8Gi
     storageClass: "standard"
+controller:
+  persistence:
+    enabled: true
   auth:
-    clientProtocol: sasl # Изменили на sasl, т.к. указываем пользователей
+    clientProtocol: plaintext
   service:
     type: ClusterIP
   listeners:
     client:
       containerPort: 9092
-      protocol: SASL_PLAINTEXT # Соответствует auth.clientProtocol: sasl и наличию пользователей
+      protocol: PLAINTEXT
       name: plainclient
   config:
     auto.create.topics.enable: "true"
@@ -31,20 +27,10 @@ controller:
     default.replication.factor: "2"
   volumePermissions:
     enabled: true
-
-# Убедимся, что SASL включён и настроен
-sasl:
-  enabledMechanisms: SCRAM-SHA-256,SCRAM-SHA-512
-  client:
-    users:
-      - user1
-    # Пароли будут сгенерированы автоматически или можно указать через existingSecret
-
 image:
   registry: docker.io
-  repository: bitnamilegacy/kafka # Лучше использовать стандартный образ
-  tag: latest # Лучше использовать фиксированную версию
-
+  repository: bitnamilegacy/kafka
+  tag: latest
 zookeeper:
   enabled: false
   replicaCount: 1
