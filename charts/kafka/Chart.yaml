@@ -1,10 +1,13 @@
 apiVersion: v2
-name: bankapp-kafka
-description: Apache Kafka deployment for BankApp
+name: bankapp
+description: Banking application umbrella chart
 type: application
-version: 1.0.0
-appVersion: "3.6.0"
+version: 0.1.0
+appVersion: "1.0"
+
 dependencies:
   - name: kafka
-    version: "24.0.1"
-    repository: "https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/"
+    version: "26.1.1"
+    repository: "oci://registry-1.docker.io/bitnamicharts"
+    alias: kafka
+    condition: kafka.enabled

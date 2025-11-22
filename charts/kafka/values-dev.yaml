@@ -1,63 +1,24 @@
-# values-dev.yaml
-
-image:
-  registry: docker.io
-  repository: bitnamilegacy/kafka
-  tag: 4.0.0-debian-12-r10
-
-volumePermissions:
+kafka:
+  resources:
+    requests:
+      memory: "512Mi"
+      cpu: "200m"
+    limits:
+      memory: "1024Mi"
   enabled: true
+  replicaCount: 1
   image:
     registry: docker.io
-    repository: bitnamilegacy/os-shell
-    tag: 12-debian-12-r73
-
-controller:
-  replicaCount: 1
-  persistence:
-    enabled: true
-    size: 8Gi
-    storageClass: "standard"
+    repository: bitnamilegacy/kafka
+    tag: "4.0.0-debian-12-r10"
+    pullPolicy: IfNotPresent
   auth:
-    enabled: false                    # ← отключает генерацию пользователей
-    clientProtocol: plaintext
-    interBrokerProtocol: plaintext
-    controllerProtocol: plaintext
-    sasl:
-      mechanisms: ""                  # ← явно пусто
-      interBrokerMechanism: ""
-    jaas:
-      clientUsers: [ ]                 # ← пустой список
-      clientPasswords: [ ]             # ← без паролей
+    interBrokerProtocol: "plaintext"
   listeners:
     client:
-      protocol: PLAINTEXT
-      port: 9092
-    controller:
-      protocol: PLAINTEXT
-      port: 9093
-    interbroker:
-      protocol: PLAINTEXT
-      port: 9094
-  config:
-    auto.create.topics.enable: "true"
-    delete.topic.enable: "true"
-    offsets.topic.replication.factor: "2"
-    transaction.state.log.replication.factor: "2"
-    transaction.state.log.min.isr: "1"
-    log.retention.hours: "168"
-    num.partitions: "3"
-    default.replication.factor: "2"
-  service:
-    type: ClusterIP
-
-zookeeper:
-  enabled: false
-
-metrics:
-  kafka:
+      protocol: "PLAINTEXT"
+  kraft:
     enabled: true
-    image:
-      registry: docker.io
-      repository: bitnamilegacy/kafka-exporter
-      tag: 1.7.0-debian-12-r94
+  persistence:
+    enabled: true
+    size: 1Gi
