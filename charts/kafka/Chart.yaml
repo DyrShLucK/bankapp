@@ -1,5 +1,5 @@
 apiVersion: v2
-name: kafka
+name: bankapp-kafka
 description: Apache Kafka deployment for BankApp
 type: application
 version: 1.0.0

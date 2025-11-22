@@ -32,7 +32,26 @@ pipeline {
                 }
             }
         }
+        stage('Cleanup Previous Installation') {
+            steps {
+                script {
+                    echo "🧹 Cleaning up previous Kafka installation..."
+                    sh """
+                    # Удаляем namespace полностью если существует
+                    if kubectl get namespace ${NAMESPACE_DEV} &>/dev/null; then
+                        echo "⚠️  Deleting namespace ${NAMESPACE_DEV} to clean up all resources..."
+                        kubectl delete namespace ${NAMESPACE_DEV} --ignore-not-found
+                        echo "⏳ Waiting for namespace deletion..."
+                        sleep 15
+                    fi
 
+                    # Создаем namespace заново
+                    kubectl create namespace ${NAMESPACE_DEV}
+                    echo "✅ Namespace ${NAMESPACE_DEV} recreated"
+                    """
+                }
+            }
+        }
         stage('Deploy Kafka to DEV') {
             steps {
                 sh """
