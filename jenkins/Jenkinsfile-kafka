@@ -51,15 +51,15 @@ pipeline {
             steps {
                 // Указываем правильный тег образа
                 sh '''
-echo "Installing fresh Kafka deployment..."
-helm upgrade --install kafka bitnami/kafka \
-    --namespace kafka-dev --create-namespace \
-    -f charts/kafka/values-dev.yaml \
-    --set kafka.persistence.enabled=false \
-    --set controller.persistence.enabled=false \
-    --set replicaCount=2 \
-    --debug --timeout 10m
-'''
+                    echo "Installing fresh Kafka deployment..."
+                    helm upgrade --install kafka bitnami/kafka \
+                        --namespace kafka-dev --create-namespace \
+                        -f charts/kafka/values-dev.yaml \
+                        --set kafka.persistence.enabled=false \
+                        --set controller.persistence.enabled=false \
+                        --set replicaCount=2 \
+                        --debug --timeout 10m
+                '''
             }
         }
 

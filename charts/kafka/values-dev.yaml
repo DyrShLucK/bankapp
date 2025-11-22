@@ -1,7 +1,7 @@
 kafka:
   replicaCount: 2
   persistence:
-    enabled: false
+    enabled: true
     size: 8Gi
     storageClass: "standard"
 controller:
@@ -30,9 +30,9 @@ controller:
 image:
   registry: docker.io
   repository: bitnamilegacy/kafka
-  tag: 4.0.0-debian-12-r3
+  tag: latest
 zookeeper:
-  enabled: true
+  enabled: false
   replicaCount: 1
   persistence:
     enabled: true
@@ -43,6 +43,4 @@ zookeeper:
 
 metrics:
   kafka:
-    enabled: true
-  zookeeper:
     enabled: true
