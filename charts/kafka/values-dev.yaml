@@ -1,7 +1,7 @@
 kafka:
   replicaCount: 2
   persistence:
-    enabled: true
+    enabled: false
     size: 8Gi
     storageClass: "standard"
   auth:
