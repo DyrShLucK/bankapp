@@ -7,4 +7,4 @@ appVersion: "3.6.0"
 dependencies:
   - name: kafka
     version: "24.0.1"
-    repository: "https://charts.bitnami.com/bitnami"
+    repository: "https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/"
