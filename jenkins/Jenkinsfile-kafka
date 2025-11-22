@@ -11,12 +11,31 @@ pipeline {
     }
 
     stages {
+         stage('Setup Helm Repo') {
+            steps {
+                sh """
+                helm repo add bitnami https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+                helm repo update
+                """
+            }
+        }
+
+        stage('Build Chart Dependencies') {
+            steps {
+                dir('charts/kafka') {
+                    sh """
+                    echo "Building chart dependencies..."
+                    helm dependency build
+                    ls -la charts/
+                    cat Chart.yaml
+                    """
+                }
+            }
+        }
+
         stage('Deploy Kafka to DEV') {
             steps {
                 sh """
-                helm repo add bitnami https://charts.bitnami.com/bitnami
-                helm repo update
-
                 helm upgrade --install kafka charts/kafka \\
                     --namespace ${NAMESPACE_DEV} --create-namespace \\
                     -f charts/kafka/values-dev.yaml \\
