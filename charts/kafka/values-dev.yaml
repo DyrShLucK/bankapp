@@ -1,21 +1,38 @@
-kafka:
+# values-dev.yaml
+
+# Отключаем ZooKeeper (по умолчанию и так выключен в Kafka 4.0+)
+zookeeper:
+  enabled: false
+
+# KRaft-контроллеры (брокеры + контроллеры в одном)
+controller:
   replicaCount: 2
+
   persistence:
     enabled: true
     size: 8Gi
     storageClass: "standard"
-controller:
-  persistence:
-    enabled: true
+
+  # Отключаем SASL/SCRAM — используем PLAINTEXT
   auth:
     clientProtocol: plaintext
-  service:
-    type: ClusterIP
+    interBrokerProtocol: plaintext
+    controllerProtocol: plaintext
+    enabled: false  # ← отключает генерацию SCRAM-пользователей
+
+  # Настройки слушателей
   listeners:
     client:
-      containerPort: 9092
       protocol: PLAINTEXT
-      name: plainclient
+      port: 9092
+    controller:
+      protocol: PLAINTEXT
+      port: 9093
+    interbroker:
+      protocol: PLAINTEXT
+      port: 9094
+
+  # Конфигурация Kafka сервера
   config:
     auto.create.topics.enable: "true"
     delete.topic.enable: "true"
@@ -25,22 +42,18 @@ controller:
     log.retention.hours: "168"
     num.partitions: "3"
     default.replication.factor: "2"
+    # KRaft обязателен
+    process.roles: "broker,controller"
+    node.id: ""  # генерируется автоматически
+    controller.listener.names: "CONTROLLER"
+
+  service:
+    type: ClusterIP
+
   volumePermissions:
     enabled: true
-image:
-  registry: docker.io
-  repository: bitnamilegacy/kafka
-  tag: latest
-zookeeper:
-  enabled: false
-  replicaCount: 1
-  persistence:
-    enabled: true
-    size: 4Gi
-    storageClass: "standard"
-  auth:
-    enabled: false
 
+# Метрики (опционально)
 metrics:
   kafka:
     enabled: true
