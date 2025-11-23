@@ -37,8 +37,4 @@ public class ApiController implements DefaultApi {
         return apiService.getNotifications(SESSION).map(ResponseEntity::ok);
     }
 
-    @Override
-    public Mono<ResponseEntity<Void>> apiNotificationsSetPost(Mono<Notification> notification, ServerWebExchange exchange) {
-        return apiService.setNotification(notification).map(ResponseEntity::ok);
-    }
 }

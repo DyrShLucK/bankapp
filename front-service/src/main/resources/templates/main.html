@@ -103,57 +103,62 @@
 
         const displayedNotifications = new Set();
 
-        setInterval(() => {
-            // Получаем логин из страницы
-            const userLogin = getLoginFromPage();
-            if (!userLogin) {
-                return;
-            }
+        const userLogin = getLoginFromPage(); // Ваша функция получения логина
+        if (!userLogin) {
+            console.error("User login not found!");
+        }
 
-            const timestamp = new Date().getTime(); // Добавляем timestamp для предотвращения кеширования
+        // Создаем WebSocket соединение с указанием username
+        const wsUri = `ws://localhost:8080/websocket/notifications?username=${encodeURIComponent(userLogin)}`;
+        const ws = new WebSocket(wsUri);
 
-            // Создаем два fetch запроса с логином в параметрах
-            const request1 = fetch(`http://localhost:8080/notifications?login=${encodeURIComponent(userLogin)}&v=${timestamp}`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Request failed');
-                    return response.json();
-                });
+        // Множество для отслеживания отображённых уведомлений
+        const displayedNotifications = new Set();
 
-            const request2 = fetch(`http://bankapp.local/notifications?login=${encodeURIComponent(userLogin)}&v=${timestamp}`)
-                .then(response => {
-                    if (!response.ok) throw new Error('Request failed');
-                    return response.json();
-                });
+        ws.onopen = function(event) {
+            console.log("WebSocket connection opened.");
+            // Можно отправить запрос на уведомления сразу после подключения, если нужно
+            // sendNotificationRequest(); // Если вы хотите вызывать это вручную
+        };
 
-            // Используем Promise.allSettled чтобы дождаться всех запросов
-            Promise.allSettled([request1, request2])
-                .then(results => {
-                    // Проверяем результаты
-                    const successfulResults = results.filter(result => result.status === 'fulfilled');
-                    let allNotifications = [];
+        ws.onmessage = function(event) {
+            try {
+                // Получаем массив уведомлений из сообщения
+                const notifications = JSON.parse(event.data);
 
-                    successfulResults.forEach(result => {
-                        const notifications = result.value;
-                        if (notifications && Array.isArray(notifications)) {
-                            allNotifications = [...allNotifications, ...notifications];
+                if (Array.isArray(notifications) && notifications.length > 0) {
+                    notifications.forEach(notification => {
+                        if (notification && notification.id && !displayedNotifications.has(notification.id)) {
+                            displayedNotifications.add(notification.id);
+                            showNotification(notification);
                         }
                     });
+                } else {
+                    console.log("Received message but no notifications array or it's empty:", event.data);
+                }
+            } catch (e) {
+                console.error("Error parsing WebSocket message:", e, event.data);
+            }
+        };
 
-                    // Обрабатываем полученные уведомления
-                    if (allNotifications.length > 0) {
-                        allNotifications.forEach(notification => {
-                            if (notification && notification.id && !displayedNotifications.has(notification.id)) {
-                                displayedNotifications.add(notification.id);
-                                showNotification(notification);
-                            }
-                        });
-                    }
-                })
-                .catch(error => {
-                    console.log('Ошибка при получении уведомлений:', error);
-                });
-        }, 2000);
+        ws.onclose = function(event) {
+            console.log("WebSocket connection closed:", event.code, event.reason);
+            // Попытка переподключения (опционально)
+            // setTimeout(() => { new WebSocket(wsUri); }, 5000);
+        };
 
+        ws.onerror = function(error) {
+            console.error("WebSocket error:", error);
+        };
+
+        // Функция для отправки запроса в Kafka через бэкенд (опционально, если не отправляется автоматически)
+        function sendNotificationRequest() {
+            // Это может быть вызвано по таймеру или событию
+            // frontservice сам отправляет KafkaNotificationRequest при подключении,
+            // но если нужно по таймеру, добавьте логику в NotificationWebSocketHandler
+        }
+
+        // Функция отображения уведомления (остаётся без изменений)
         function showNotification(notification) {
             const notificationDiv = document.createElement('div');
             notificationDiv.id = `notification-${notification.id}`;

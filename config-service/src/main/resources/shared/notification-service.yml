@@ -1,0 +1,19 @@
+spring:
+  kafka:
+    bootstrap-servers: localhost:9092 # Замените на адрес вашего Kafka кластера
+    consumer:
+      # groupId и другие настройки будут определены в KafkaConfig.java
+      properties:
+        spring.json.trusted.packages: "com.notificationsservice.domain"
+    producer:
+      # Настройки будут определены в KafkaConfig.java
+      properties:
+        spring.json.trusted.packages: "com.notificationsservice.domain"
+
+# Другие настройки вашего приложения (порт, логирование и т.д.)
+ # Пример порта для сервиса уведомлений
+
+logging:
+  level:
+    com.notificationsservice: DEBUG
+    org.springframework.kafka: INFO
