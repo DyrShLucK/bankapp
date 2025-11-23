@@ -40,7 +40,7 @@ pipeline {
             steps {
                 dir('charts/kafka') {
                     sh '''
-                    helm install kafka . --namespace kafka-dev --create-namespace -f values-dev.yaml
+                    helm install kafka . --namespace kafka-dev --create-namespace -f values-dev.yaml --set replicaCount=1
                     '''
                 }
             }
@@ -57,14 +57,19 @@ pipeline {
         }
 
         stage('Create Kafka Topics') {
-            steps {
-                sh """
-                kubectl exec -n kafka-dev kafka-0 -- \\
-                    kafka-topics.sh --bootstrap-server localhost:9092 \\
-                    --create --topic notifications --partitions 1 --replication-factor 1
-                """
-            }
-        }
+    steps {
+        sh """
+        kubectl wait --for=condition=ready pod/kafka-controller-0 -n ${NAMESPACE_DEV} --timeout=3m
+        kubectl exec -n ${NAMESPACE_DEV} kafka-controller-0 -- \\
+            kafka-topics.sh --bootstrap-server localhost:9092 \\
+            --create --topic notifications --partitions 1 --replication-factor 1
+
+        kubectl exec -n ${NAMESPACE_DEV} kafka-controller-0 -- \\
+            kafka-topics.sh --bootstrap-server localhost:9092 \\
+            --create --topic transfers --partitions 1 --replication-factor 1
+        """
+    }
+}
 
         stage('Manual Approval for PROD') {
                     steps {
