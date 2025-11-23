@@ -20,18 +20,6 @@ pipeline {
             }
         }
 
-        stage('Build Chart Dependencies') {
-            steps {
-                dir('charts/kafka') {
-                    sh '''
-                    echo "Building chart dependencies..."
-                    helm dependency build
-                    ls -la charts/
-                    cat Chart.yaml
-                    '''
-                }
-            }
-        }
 
         stage('Clean Up Previous Kafka Installation') {
             steps {
@@ -42,47 +30,40 @@ pipeline {
                 # Удаляем старые PVC
                 kubectl delete pvc -n kafka-dev data-kafka-controller-0 data-kafka-controller-1 data-kafka-controller-2 || true
                 kubectl delete secret -n kafka-dev kafka-kraft || true
+                kubectl delete namespace kafka-dev || true
                 sleep 10
                 '''
             }
         }
 
         stage('Deploy Kafka to DEV') {
-                    steps {
-                        sh '''
-                        echo "Installing Kafka from Bitnami chart..."
-                        helm upgrade --install kafka bitnami/kafka \\
-                            --namespace kafka-dev --create-namespace \\
-                            -f charts/kafka/values-dev.yaml
-                            --debug --timeout 10m
-                        '''
-                    }
+            steps {
+                dir('charts/kafka') {
+                    sh '''
+                    helm install kafka . --namespace kafka-dev --create-namespace -f values-dev.yaml
+                    '''
                 }
+            }
+        }
 
         stage('Verify Kafka Deployment') {
                     steps {
                         script {
                             echo "Waiting for Kafka to be ready..."
                             sh "sleep 60"
-                            sh "kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=kafka -n ${NAMESPACE_DEV} --timeout=5m"
+                            sh "kubectl rollout status statefulset/kafka-controller -n kafka-dev"
                         }
                     }
         }
 
         stage('Create Kafka Topics') {
-                    steps {
-                        sh """
-                        # Подождём, пока под kafka-0 появится
-                        kubectl wait --for=condition=ready pod/kafka-0 -n ${NAMESPACE_DEV} --timeout=3m
-                        kubectl exec -n ${NAMESPACE_DEV} kafka-0 -- \\
-                            kafka-topics.sh --bootstrap-server localhost:9092 \\
-                            --create --topic notifications --partitions 1 --replication-factor 1
-
-                        kubectl exec -n ${NAMESPACE_DEV} kafka-0 -- \\
-                            kafka-topics.sh --bootstrap-server localhost:9092 \\
-                            --create --topic transfers --partitions 1 --replication-factor 1
-                        """
-                    }
+            steps {
+                sh """
+                kubectl exec -n kafka-dev kafka-0 -- \\
+                    kafka-topics.sh --bootstrap-server localhost:9092 \\
+                    --create --topic notifications --partitions 1 --replication-factor 1
+                """
+            }
         }
 
         stage('Manual Approval for PROD') {
@@ -94,10 +75,7 @@ pipeline {
         stage('Deploy Kafka to PROD') {
             steps {
                      sh '''
-                     helm upgrade --install kafka bitnami/kafka \\
-                         --namespace kafka-prod --create-namespace \\
-                         -f charts/kafka/values-prod.yaml \\
-                         --debug --timeout 15m
+                     helm install kafka . --namespace kafka-prod --create-namespace -f values-prod.yaml
                      '''
                     }
             }
