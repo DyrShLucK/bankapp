@@ -79,10 +79,12 @@ pipeline {
 
         stage('Deploy Kafka to PROD') {
             steps {
+                   dir('charts/kafka') {
                      sh '''
                      helm install kafka . --namespace kafka-prod --create-namespace -f values-prod.yaml
                      '''
                     }
+                   }
             }
         }
 
