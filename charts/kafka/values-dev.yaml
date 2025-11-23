@@ -4,6 +4,10 @@ controller:
 broker:
   replicaCount: 1
 kafka:
+  controller:
+    replicaCount: 1
+  broker:
+    replicaCount: 1
   resources:
     requests:
       memory: "256Mi"
