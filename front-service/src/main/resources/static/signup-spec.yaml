@@ -30,7 +30,7 @@ paths:
       security:
         - cookieAuth: []
       parameters:
-        - name: SESSION
+        - name: username
           in: cookie
           required: true
           schema:
@@ -134,12 +134,12 @@ paths:
       security:
         - cookieAuth: []
       parameters:
-        - name: SESSION
+        - name: username
           in: cookie
           required: true
           schema:
             type: string
-          description: "ID сессии пользователя"
+          description: "username"
       responses:
         '200':
           description: Успешное получение

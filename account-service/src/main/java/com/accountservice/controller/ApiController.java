@@ -49,11 +49,8 @@ public class ApiController implements DefaultApi {
     @Override
     public Mono<ResponseEntity<MainPageResponse>> apiGetMainPageGet(@jakarta.annotation.Nullable String SESSION, ServerWebExchange exchange) {
 
-        if (SESSION == null || SESSION.trim().isEmpty()) {
-            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
-        }
-
-        String username = extractUsernameFromSession(SESSION);
+        log.info("Username : {}", SESSION);
+        String username = SESSION;
 
         if (username == null) {
             log.error("Username not found in session: {}", SESSION);
