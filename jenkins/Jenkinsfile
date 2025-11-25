@@ -77,7 +77,10 @@ pipeline {
                     steps {
                         withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
                             script {
+                                // Команда kubectl для создания docker-registry secret
+                                // Использует переменные окружения Jenkins и GITHUB_USERNAME
                                 sh """
+                                    kubectl get namespace ${NAMESPACE_DEV} || kubectl create namespace ${NAMESPACE_DEV}
                                     kubectl create secret docker-registry regcred \\
                                       --docker-server=ghcr.io \\
                                       --docker-username=${GITHUB_USERNAME} \\
@@ -88,11 +91,18 @@ pipeline {
                             }
                         }
                     }
+                    post {
+                        failure {
+                            echo "Не удалось создать или обновить imagePullSecret 'regcred' в namespace ${NAMESPACE_DEV}."
+                            echo "Проверьте права доступа kubectl и существование namespace."
+                        }
+                    }
+                }
         stage('Helm Deploy to DEV') {
             steps {
                 sh """
                 helm upgrade --install bankapp-dev charts/bankapp-umbrella \\
-                  --namespace ${NAMESPACE_DEV} --create-namespace \\
+                  --namespace ${NAMESPACE_DEV}  \\
                   -f charts/bankapp-umbrella/values-dev.yaml \\
                   --set global.image.repository=${DOCKER_REGISTRY} \\
                   --set global.image.tag=${IMAGE_TAG} \\
