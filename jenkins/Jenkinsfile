@@ -73,7 +73,21 @@ pipeline {
                 }
             }
         }
-
+        stage('Create Image Pull Secret') {
+                    steps {
+                        withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                            script {
+                                sh """
+                                    kubectl create secret docker-registry regcred \\
+                                      --docker-server=ghcr.io \\
+                                      --docker-username=${GITHUB_USERNAME} \\
+                                      --docker-password=\${GHCR_TOKEN} \\
+                                      --namespace=${NAMESPACE_DEV} \\
+                                      --dry-run=client -o yaml | kubectl apply -f -
+                                """
+                            }
+                        }
+                    }
         stage('Helm Deploy to DEV') {
             steps {
                 sh """
