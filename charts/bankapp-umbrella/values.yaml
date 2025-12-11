@@ -15,7 +15,7 @@ services:
     enabled: true
     fullnameOverride: "account-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/account-service"
+      repository: "ghcr.io/dyrshluck/account-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8081
@@ -24,7 +24,7 @@ services:
     enabled: true
     fullnameOverride: "blocker-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/blocker-service"
+      repository: "ghcr.io/dyrshluck/account-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8086
