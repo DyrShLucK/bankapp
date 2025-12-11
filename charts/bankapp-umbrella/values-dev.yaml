@@ -10,19 +10,10 @@ global:
 services:
   account-service:
     enabled: true
-    image:
-      repository: "ghcr.io/dyrshluck/account-service"
-      tag: "{{ .Values.global.image.tag }}"
   blocker-service:
     enabled: true
-    image:
-      repository: "ghcr.io/dyrshluck/account-service"
-      tag: "{{ .Values.global.image.tag }}"
   cash-service:
     enabled: true
-    image:
-      repository: "ghcr.io/dyrshluck/account-service"
-      tag: "{{ .Values.global.image.tag }}"
   exchange-service:
     enabled: true
   ExchangeGenerator-service:
