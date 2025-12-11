@@ -68,7 +68,6 @@ pipeline {
 
                         for (def service : services) {
                             sh "docker push ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG}"
-                            sh "minikube image load ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG}"
                         }
                     }
                 }
