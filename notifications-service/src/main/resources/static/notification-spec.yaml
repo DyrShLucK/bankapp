@@ -12,12 +12,12 @@ paths:
       security:
         - cookieAuth: [ ]
       parameters:
-        - name: SESSION
+        - name: userName
           in: cookie
           required: true
           schema:
             type: string
-          description: "ID сессии пользователя"
+          description: "userName пользователя"
       responses:
         '200':
           description: получение уведемлений

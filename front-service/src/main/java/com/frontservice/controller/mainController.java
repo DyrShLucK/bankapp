@@ -1,5 +1,6 @@
 package com.frontservice.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.frontUi.api.DefaultApi;
 import com.frontUi.domain.*;
 import org.eclipse.angus.mail.util.DecodingException;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,22 +31,30 @@ public class mainController {
 
     @Autowired
     DefaultApi defaultApi;
-
     private static final Logger log = LoggerFactory.getLogger(mainController.class);
 
     @GetMapping({"/", "/bankapp"})
     public Mono<String> main(Model model, ServerWebExchange exchange, WebSession session) {
-        HttpCookie sessionCookie = exchange.getRequest().getCookies().getFirst("SESSION");
 
-        if (sessionCookie == null) {
-            log.warn("SESSION cookie отсутствует, перенаправление на логин");
-            return Mono.just("redirect:/login");
+        Object authAttribute = session.getAttributes().get("SPRING_SECURITY_CONTEXT");
+        org.springframework.security.core.userdetails.User userDetails = null;
+        if (authAttribute != null) {
+
+            if (authAttribute instanceof org.springframework.security.core.context.SecurityContextImpl) {
+                org.springframework.security.core.context.SecurityContextImpl securityContext =
+                        (org.springframework.security.core.context.SecurityContextImpl) authAttribute;
+                org.springframework.security.core.Authentication authentication = securityContext.getAuthentication();
+
+                if (authentication != null && authentication.getPrincipal() != null) {
+                    if (authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+                        userDetails = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+                    }
+                }
+            }
+        } else {
+            log.info("SPRING_SECURITY_CONTEXT not found in session");
         }
-
-        String sessionId = sessionCookie.getValue();
-
-
-        return defaultApi.apiGetMainPageGet(sessionId)
+        return defaultApi.apiGetMainPageGet(userDetails.getUsername())
                 .flatMap(dto -> {
                     Map<String, Object> flashAttributes = (Map<String, Object>) session.getAttributes().get("jakarta.servlet.flash.mapping.output");
                     processAllFlashAttributes(model, flashAttributes, session);

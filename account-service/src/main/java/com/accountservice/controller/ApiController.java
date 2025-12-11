@@ -47,21 +47,17 @@ public class ApiController implements DefaultApi {
     }
 
     @Override
-    public Mono<ResponseEntity<MainPageResponse>> apiGetMainPageGet(@jakarta.annotation.Nullable String SESSION, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<MainPageResponse>> apiGetMainPageGet(@jakarta.annotation.Nullable String userName, ServerWebExchange exchange) {
 
-        if (SESSION == null || SESSION.trim().isEmpty()) {
-            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
-        }
 
-        String username = extractUsernameFromSession(SESSION);
 
-        if (username == null) {
-            log.error("Username not found in session: {}", SESSION);
+        if (userName == null) {
+            log.error("Username not found in session: {}", userName);
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
 
 
-        return toApiDTO.getMAinPageDTO(username)
+        return toApiDTO.getMAinPageDTO(userName)
                 .map(ResponseEntity::ok)
                 .switchIfEmpty(Mono.just(ResponseEntity.notFound().build()));
     }
@@ -83,11 +79,11 @@ public class ApiController implements DefaultApi {
                     org.springframework.http.ResponseCookie userCookie =
                             org.springframework.http.ResponseCookie.from("username", userFormLogin.getLogin())
                                     .httpOnly(true)
-                                    .secure(true)  // Обязательно true в продакшене с HTTPS
+                                    .secure(true)
                                     .path("/")
                                     .maxAge(3600)
-                                    .domain("bankapp.internal")  // Укажите ваш домен
-                                    .sameSite("Lax")  // Важно для кросс-доменных запросов
+                                    .domain("bankapp.internal")
+                                    .sameSite("Lax")
                                     .build();
 
                     exchange.getResponse().addCookie(userCookie);
@@ -105,83 +101,39 @@ public class ApiController implements DefaultApi {
 
 
     @Override
-    public Mono<ResponseEntity<Void>> apiEditPasswordPost(String SESSION, Mono<PasswordChange> passwordChange, ServerWebExchange exchange) {
-        String username = extractUsernameFromSession(SESSION);
-        if (username == null) {
+    public Mono<ResponseEntity<Void>> apiEditPasswordPost(String userName, Mono<PasswordChange> passwordChange, ServerWebExchange exchange) {
+        if (userName == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        return toApiDTO.editPassword(passwordChange, username);
+        return toApiDTO.editPassword(passwordChange, userName);
     }
 
     @Override
-    public Mono<ResponseEntity<EditUserResponse>> apiEditUserAccountsPost(String SESSION, Mono<UpdateUserForm> updateUserForm, ServerWebExchange exchange) {
-        String username = extractUsernameFromSession(SESSION);
-        if (username == null) {
+    public Mono<ResponseEntity<EditUserResponse>> apiEditUserAccountsPost(String userName, Mono<UpdateUserForm> updateUserForm, ServerWebExchange exchange) {
+        if (userName == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        return toApiDTO.editUser(updateUserForm, username).map(ResponseEntity::ok);
+        return toApiDTO.editUser(updateUserForm, userName).map(ResponseEntity::ok);
     }
 
     @Override
-    public Mono<ResponseEntity<AccountCashResponse>> transferToAccountService(String SESSION, Mono<CashTransfer> cashTransfer, ServerWebExchange exchange) {
-        String username = extractUsernameFromSession(SESSION);
-        if (username == null) {
+    public Mono<ResponseEntity<AccountCashResponse>> transferToAccountService(String userName, Mono<CashTransfer> cashTransfer, ServerWebExchange exchange) {
+        if (userName == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        return toApiDTO.cash(cashTransfer, username).map(ResponseEntity::ok);
+        return toApiDTO.cash(cashTransfer, userName).map(ResponseEntity::ok);
     }
 
 
     @Override
-    public Mono<ResponseEntity<TransferResponse>> transferFromToAccountService(String SESSION, Mono<Transfer> transfer, ServerWebExchange exchange) {
-        String username = extractUsernameFromSession(SESSION);
-        if (username == null) {
+    public Mono<ResponseEntity<TransferResponse>> transferFromToAccountService(String userName, Mono<Transfer> transfer, ServerWebExchange exchange) {
+        if (userName == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        return toApiDTO.transfer(transfer, username).map(ResponseEntity::ok);
+        return toApiDTO.transfer(transfer, userName).map(ResponseEntity::ok);
     }
 
 
 
 
-    private String extractUsernameFromSession(String sessionId) {
-        try (RedisConnection connection = connectionFactory.getConnection()) {
-            String sessionKey = "spring:session:sessions:" + sessionId;
-
-            String contextKey = "sessionAttr:SPRING_SECURITY_CONTEXT";
-            byte[] sessionData = connection.hGet(
-                    sessionKey.getBytes(StandardCharsets.UTF_8),
-                    contextKey.getBytes(StandardCharsets.UTF_8)
-            );
-
-            if (sessionData == null) {
-                log.error("Session data not found for ID: {}", sessionId);
-                return null;
-            }
-
-            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(sessionData))) {
-                Object obj = ois.readObject();
-
-                SecurityContextImpl context = (SecurityContextImpl) obj;
-                Authentication auth = context.getAuthentication();
-
-                Object principal = auth.getPrincipal();
-
-                // Проверяем тип principal
-                if (principal instanceof org.springframework.security.core.userdetails.User) {
-                    String username = ((org.springframework.security.core.userdetails.User) principal).getUsername();
-                    return username;
-                } else {
-                    // Если principal - строка, возвращаем как есть
-                    if (principal instanceof String) {
-                        return (String) principal;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            log.error("Error extracting username from session: {}", e.getMessage(), e);
-            return null;
-        }
-        return null;
-    }
 }

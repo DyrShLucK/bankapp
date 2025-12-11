@@ -79,7 +79,6 @@ public class SecurityConfiguration {
     public OAuth2UserService<OidcUserRequest, OidcUser> oAuth2UserService() {
         var oidcUserService = new OidcUserService();
         return userRequest -> {
-            System.out.println("Secutity");
             OidcUser oidcUser = oidcUserService.loadUser(userRequest);
 
             String prefixedUsername = "kc_" + oidcUser.getPreferredUsername();

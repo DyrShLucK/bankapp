@@ -17,14 +17,14 @@ public class ApiPostService {
         this.defaultApi = defaultApi;
     }
 
-    public Mono<TransferValue> getexchange(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono, String sessionId) {
+    public Mono<TransferValue> getexchange(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono, String userName) {
         return transferFormMono.flatMap(transferForm ->{
             Transfer transfer = new Transfer();
             transfer.setFromCurrency(transferForm.getFromCurrency());
             transfer.setToCurrency(transferForm.getToCurrency());
             transfer.setValue(transferForm.getValue());
             transfer.setToLogin(transferForm.getToLogin());
-            return defaultApi.excangeservice(sessionId, transfer).flatMap(value -> {
+            return defaultApi.excangeservice(userName, transfer).flatMap(value -> {
                 if (value.getSuccess()){
                     return Mono.just(value);
                 }else {
@@ -34,7 +34,7 @@ public class ApiPostService {
         });
     }
 
-    public Mono<TransferResponse> toAccountService(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono, String sessionId) {
+    public Mono<TransferResponse> toAccountService(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono, String userName) {
         return transferFormMono.flatMap(transfer -> {
             Transfer transfer2 = new Transfer();
             transfer2.setFromCurrency(transfer.getFromCurrency());
@@ -42,7 +42,7 @@ public class ApiPostService {
             transfer2.setValue(transfer.getValue());
             transfer2.setToLogin(transfer.getToLogin());
             transfer2.setSummary(transfer.getSummary());
-            return defaultApi.transferToAccountService(sessionId, transfer2).flatMap(transferResponse -> {
+            return defaultApi.transferToAccountService(userName, transfer2).flatMap(transferResponse -> {
                 TransferResponse transferResponse2 = new TransferResponse();
                 transferResponse2.setSuccess(transferResponse.getSuccess());
                 transferResponse2.setCause(transferResponse.getCause());

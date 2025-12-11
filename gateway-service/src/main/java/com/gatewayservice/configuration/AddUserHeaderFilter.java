@@ -14,7 +14,6 @@ public class AddUserHeaderFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        System.out.println(exchange.getRequest().getHeaders().toString());
         ServerHttpRequest request = exchange.getRequest();
 
         if (request.getHeaders().containsKey(USER_HEADER_NAME)) {

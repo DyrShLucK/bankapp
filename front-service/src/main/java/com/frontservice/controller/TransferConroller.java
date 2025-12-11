@@ -25,10 +25,21 @@ public class TransferConroller {
 
     @PostMapping("/transfer")
     public Mono<RedirectView> transfer(@ModelAttribute TransferForm form, WebSession session, ServerWebExchange exchange) {
-        String sessionId = exchange.getRequest().getCookies().getFirst("SESSION").getValue();
+        Object authAttribute = session.getAttributes().get("SPRING_SECURITY_CONTEXT");
+        String username = null;
+        if (authAttribute instanceof org.springframework.security.core.context.SecurityContextImpl) {
+            var securityContext = (org.springframework.security.core.context.SecurityContextImpl) authAttribute;
+            var authentication = securityContext.getAuthentication();
+
+            if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+                var user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+                username = user.getUsername();
+            }
+        }
+        System.out.println(username);
         String currentUserLogin = exchange.getRequest().getHeaders().getFirst("X-User-Name");
 
-        return signupApi.transfer(form, sessionId).flatMap(dto -> {
+        return signupApi.transfer(form, username).flatMap(dto -> {
             Map<String, Object> flashAttributes = new HashMap<>();
             if (form.getTo_login() != null && form.getTo_login().equals(currentUserLogin)) {
                 flashAttributes.put("transferErrors", dto.getCause());
