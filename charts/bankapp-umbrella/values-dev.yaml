@@ -2,7 +2,7 @@ global:
   environment: dev
   namespace: bankapp-dev
   image:
-    repository: ""  # Замените на ваш registry
+    repository: ""
     pullPolicy: IfNotPresent
     tag: "dev-latest"
 
@@ -10,10 +10,19 @@ global:
 services:
   account-service:
     enabled: true
+    image:
+      repository: "ghcr.io/dyrshluck/account-service"
+      tag: "{{ .Values.global.image.tag }}"
   blocker-service:
     enabled: true
+    image:
+      repository: "ghcr.io/dyrshluck/account-service"
+      tag: "{{ .Values.global.image.tag }}"
   cash-service:
     enabled: true
+    image:
+      repository: "ghcr.io/dyrshluck/account-service"
+      tag: "{{ .Values.global.image.tag }}"
   exchange-service:
     enabled: true
   ExchangeGenerator-service:
