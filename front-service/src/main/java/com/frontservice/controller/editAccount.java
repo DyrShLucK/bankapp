@@ -38,9 +38,19 @@ public class editAccount {
 
     @PostMapping("/editUserAccounts")
     public Mono<RedirectView> editAccountsAndUser(Model model, @ModelAttribute UserUpdateForm form, WebSession session, ServerWebExchange exchange) {
-        String sessionId = exchange.getRequest().getCookies().getFirst("SESSION").getValue();
+        Object authAttribute = session.getAttributes().get("SPRING_SECURITY_CONTEXT");
+        String username = null;
+        if (authAttribute instanceof org.springframework.security.core.context.SecurityContextImpl) {
+            var securityContext = (org.springframework.security.core.context.SecurityContextImpl) authAttribute;
+            var authentication = securityContext.getAuthentication();
 
-        return signupApi.editAccountsAndUser(form, sessionId)
+            if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+                var user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+                username = user.getUsername();
+            }
+        }
+
+        return signupApi.editAccountsAndUser(form, username)
                 .flatMap(dto -> {
                     Map<String, Object> flashAttributes = new HashMap<>();
                     flashAttributes.put("userAccountsErrors", dto.getCause());
@@ -52,7 +62,17 @@ public class editAccount {
 
     @PostMapping("/editPassword")
     public Mono<RedirectView> editPassword(Model model,@Valid @ModelAttribute PasswordUdateForm form, BindingResult result, WebSession session, ServerWebExchange exchange) {
-        String sessionId = exchange.getRequest().getCookies().getFirst("SESSION").getValue();
+        Object authAttribute = session.getAttributes().get("SPRING_SECURITY_CONTEXT");
+        String username = null;
+        if (authAttribute instanceof org.springframework.security.core.context.SecurityContextImpl) {
+            var securityContext = (org.springframework.security.core.context.SecurityContextImpl) authAttribute;
+            var authentication = securityContext.getAuthentication();
+
+            if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+                var user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+                username = user.getUsername();
+            }
+        }
 
         Map<String, Object> flashAttributes = new HashMap<>();
         if (result.hasErrors()) {
@@ -60,6 +80,6 @@ public class editAccount {
             session.getAttributes().put("jakarta.servlet.flash.mapping.output", flashAttributes);
             return Mono.just(new RedirectView("/bankapp", HttpStatusCode.valueOf(301)));
         }
-        return signupApi.editPassword(form, sessionId).then(Mono.just(new RedirectView("/bankapp", HttpStatusCode.valueOf(301))));
+        return signupApi.editPassword(form, username).then(Mono.just(new RedirectView("/bankapp", HttpStatusCode.valueOf(301))));
     }
 }

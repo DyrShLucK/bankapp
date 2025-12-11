@@ -115,12 +115,21 @@ pipeline {
                 """
             }
         }
-
+        stage('Wait for Pods to be Ready') {
+                    steps {
+                        script {
+                            sh """
+                                kubectl wait --for=condition=Ready pod \\
+                                  --all \\
+                                  --namespace=${NAMESPACE_DEV} \\
+                                  --timeout=300s
+                            """
+                        }
+                    }
+                }
         stage('Helm Test') {
             steps {
                 script {
-                    echo "Waiting for services to be ready..."
-                    sh "sleep 300"
                     sh "helm test bankapp-dev --namespace ${NAMESPACE_DEV} --logs || true"
                 }
             }

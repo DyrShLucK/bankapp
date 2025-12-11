@@ -27,14 +27,14 @@ public class ApiController implements DefaultApi {
     private RedisConnectionFactory connectionFactory;
 
     @Override
-    public Mono<ResponseEntity<NotificationsGet>> apiNotificationsGet(@jakarta.annotation.Nullable String SESSION, ServerWebExchange exchange) {
+    public Mono<ResponseEntity<NotificationsGet>> apiNotificationsGet(@jakarta.annotation.Nullable String userName, ServerWebExchange exchange) {
 
 
-        if (SESSION == null) {
+        if (userName == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
 
-        return apiService.getNotifications(SESSION).map(ResponseEntity::ok);
+        return apiService.getNotifications(userName).map(ResponseEntity::ok);
     }
 
     @Override

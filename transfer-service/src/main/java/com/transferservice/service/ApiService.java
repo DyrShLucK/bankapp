@@ -16,7 +16,7 @@ public class ApiService {
         this.apiPostService = apiPostService;
     }
 
-    public Mono<TransferResponse> getTransferResponse(Mono<Transfer> transfer, String username, String sessionId) {
+    public Mono<TransferResponse> getTransferResponse(Mono<Transfer> transfer, String username, String userName) {
         return apiPostService.blocker().flatMap(blockerResponse -> {
             if (!blockerResponse.getSuccess()) {
                 TransferResponse errorResponse = new TransferResponse();
@@ -25,10 +25,10 @@ public class ApiService {
                 return Mono.just(errorResponse);
             } else {
                 return transfer.flatMap(transfer1 ->
-                        apiPostService.getexchange(Mono.just(transfer1), sessionId)
+                        apiPostService.getexchange(Mono.just(transfer1), userName)
                                 .flatMap(transferValue -> {
                                     transfer1.setSummary(transferValue.getSummary());
-                                    return apiPostService.toAccountService(Mono.just(transfer1), sessionId);
+                                    return apiPostService.toAccountService(Mono.just(transfer1), userName);
                                 })
                                 .flatMap(response -> {
                                     String transferType;

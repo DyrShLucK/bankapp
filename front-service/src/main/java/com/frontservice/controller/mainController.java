@@ -1,5 +1,6 @@
 package com.frontservice.controller;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.frontUi.api.DefaultApi;
 import com.frontUi.domain.*;
 import org.eclipse.angus.mail.util.DecodingException;
@@ -9,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpCookie;
 import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.oauth2.jwt.Jwt;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -29,7 +31,6 @@ public class mainController {
 
     @Autowired
     DefaultApi defaultApi;
-
     private static final Logger log = LoggerFactory.getLogger(mainController.class);
 
     @GetMapping({"/", "/bankapp"})
@@ -53,13 +54,6 @@ public class mainController {
         } else {
             log.info("SPRING_SECURITY_CONTEXT not found in session");
         }
-
-
-        // You can now use the authentication context to make calls to other services
-        // The security context with username 'user123' is available in the session
-        // For service-to-service communication, you might want to pass the session ID or user context
-        // when calling account-service, transfer-service, etc.
-
         return defaultApi.apiGetMainPageGet(userDetails.getUsername())
                 .flatMap(dto -> {
                     Map<String, Object> flashAttributes = (Map<String, Object>) session.getAttributes().get("jakarta.servlet.flash.mapping.output");

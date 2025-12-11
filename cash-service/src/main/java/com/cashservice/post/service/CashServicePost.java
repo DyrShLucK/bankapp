@@ -20,7 +20,7 @@ public class CashServicePost {
         this.defaultApi = defaultApi;
     }
 
-    public Mono<AccountCashResponse> getAccountserviceResponceCash(Mono<CashTransfer> monoCashTransfer, String username, String sessionId) {
+    public Mono<AccountCashResponse> getAccountserviceResponceCash(Mono<CashTransfer> monoCashTransfer, String username, String userName) {
         com.cash_service.generated.post.domain.CashTransfer cashTransferPost = new com.cash_service.generated.post.domain.CashTransfer();
 
         return monoCashTransfer.flatMap(cashTransfer ->
@@ -36,7 +36,7 @@ public class CashServicePost {
                                 cashTransferPost.setValue(cashTransfer.getValue());
                                 cashTransferPost.setCurrencyTo(cashTransfer.getCurrencyTo());
 
-                                return defaultApi.transferToAccountService(sessionId, cashTransferPost)
+                                return defaultApi.transferToAccountService(userName, cashTransferPost)
                                         .flatMap(accountCashResponsePost -> {
                                             AccountCashResponse accountCashResponseGet = new AccountCashResponse();
                                             accountCashResponseGet.setCause(accountCashResponsePost.getCause());

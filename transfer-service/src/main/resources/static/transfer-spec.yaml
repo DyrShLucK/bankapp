@@ -12,12 +12,12 @@ paths:
       security:
         - cookieAuth: []
       parameters:
-        - name: SESSION
+        - name: userName
           in: cookie
           required: true
           schema:
             type: string
-          description: "ID сессии пользователя"
+          description: "userName пользователя"
       requestBody:
         required: true
         content:
@@ -36,7 +36,7 @@ components:
     cookieAuth:
       type: apiKey
       in: cookie
-      name: SESSION
+      name: userName
   schemas:
     Transfer:
       type: object

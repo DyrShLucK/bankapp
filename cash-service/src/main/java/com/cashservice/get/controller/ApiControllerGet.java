@@ -27,47 +27,13 @@ public class ApiControllerGet implements DefaultApi {
     private RedisConnectionFactory connectionFactory;
 
     @Override
-    public Mono<ResponseEntity<AccountCashResponse>> processCashWithdrawal(@jakarta.annotation.Nullable String SESSION, Mono<CashTransfer> cashTransfer, ServerWebExchange exchange) {
-        String username = extractUsernameFromSession(SESSION);
-        if (username == null) {
+    public Mono<ResponseEntity<AccountCashResponse>> processCashWithdrawal(@jakarta.annotation.Nullable String userName, Mono<CashTransfer> cashTransfer, ServerWebExchange exchange) {
+
+        if (userName == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
-        return cashService.cashFunc(cashTransfer, username, SESSION).map(ResponseEntity::ok);
+        return cashService.cashFunc(cashTransfer, userName, userName).map(ResponseEntity::ok);
     }
 
-    private String extractUsernameFromSession(String sessionId) {
-        try (RedisConnection connection = connectionFactory.getConnection()) {
-            String sessionKey = "spring:session:sessions:" + sessionId;
 
-            String contextKey = "sessionAttr:SPRING_SECURITY_CONTEXT";
-            byte[] sessionData = connection.hGet(
-                    sessionKey.getBytes(StandardCharsets.UTF_8),
-                    contextKey.getBytes(StandardCharsets.UTF_8)
-            );
-
-            if (sessionData == null) {
-                return null;
-            }
-
-            try (ObjectInputStream ois = new ObjectInputStream(new ByteArrayInputStream(sessionData))) {
-                Object obj = ois.readObject();
-
-                SecurityContextImpl context = (SecurityContextImpl) obj;
-                Authentication auth = context.getAuthentication();
-
-                Object principal = auth.getPrincipal();
-                if (principal instanceof org.springframework.security.core.userdetails.User) {
-                    String username = ((org.springframework.security.core.userdetails.User) principal).getUsername();
-                    return username;
-                } else {
-                    if (principal instanceof String) {
-                        return (String) principal;
-                    }
-                }
-            }
-        } catch (Exception e) {
-            return null;
-        }
-        return null;
-    }
 }

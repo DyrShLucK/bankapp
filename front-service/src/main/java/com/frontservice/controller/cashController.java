@@ -23,9 +23,19 @@ public class cashController {
 
     @PostMapping("/cash")
     public Mono<RedirectView> CashTransfer(Model model, @ModelAttribute CashForm form, WebSession session, ServerWebExchange exchange) {
-        String sessionId = exchange.getRequest().getCookies().getFirst("SESSION").getValue();
 
-        return signupApi.cash(form, sessionId)
+        Object authAttribute = session.getAttributes().get("SPRING_SECURITY_CONTEXT");
+        String username = null;
+        if (authAttribute instanceof org.springframework.security.core.context.SecurityContextImpl) {
+            var securityContext = (org.springframework.security.core.context.SecurityContextImpl) authAttribute;
+            var authentication = securityContext.getAuthentication();
+
+            if (authentication != null && authentication.getPrincipal() instanceof org.springframework.security.core.userdetails.User) {
+                var user = (org.springframework.security.core.userdetails.User) authentication.getPrincipal();
+                username = user.getUsername();
+            }
+        }
+        return signupApi.cash(form, username)
                 .flatMap(dto -> {
                     Map<String, Object> flashAttributes = new HashMap<>();
                     flashAttributes.put("cashErrors", dto.getCause());
