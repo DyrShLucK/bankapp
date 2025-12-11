@@ -68,6 +68,7 @@ pipeline {
 
                         for (def service : services) {
                             sh "docker push ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG}"
+                            sh "minikube image load ${DOCKER_REGISTRY}/${service}:${IMAGE_TAG}"
                         }
                     }
                 }
@@ -77,6 +78,8 @@ pipeline {
                     steps {
                         withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
                             script {
+                                // Команда kubectl для создания docker-registry secret
+                                // Использует переменные окружения Jenkins и GITHUB_USERNAME
                                 sh """
                                     kubectl get namespace ${NAMESPACE_DEV} || kubectl create namespace ${NAMESPACE_DEV}
                                     kubectl create secret docker-registry regcred \\
@@ -114,19 +117,17 @@ pipeline {
             }
         }
         stage('Wait for Pods to be Ready') {
-            steps {
-                script {
-                    echo "Waiting for all pods in ${NAMESPACE_DEV} to be ready..."
-                    sh """
-                        kubectl wait --for=condition=Ready pod \\
-                          --all \\
-                          --namespace=${NAMESPACE_DEV} \\
-                          --timeout=300s
-                    """
+                    steps {
+                        script {
+                            sh """
+                                kubectl wait --for=condition=Ready pod \\
+                                  --all \\
+                                  --namespace=${NAMESPACE_DEV} \\
+                                  --timeout=3000s
+                            """
+                        }
+                    }
                 }
-            }
-        }
-
         stage('Helm Test') {
             steps {
                 script {
