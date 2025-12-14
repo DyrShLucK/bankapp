@@ -63,6 +63,24 @@ if (!githubRepo) {
             mbp.scheduleBuild2(0) // Опционально запустить сразу
 
             println "--> Multibranch job '${jobName}' создан и запущен на '${githubRepo}'"
+
+
+            WorkflowJob kafkaJob = instance.createProject(WorkflowJob.class, kafkaJobName)
+
+            // Настройка источника скрипта: Jenkinsfile-kafka из SCM
+            // ВАЖНО: Убедитесь, что 'credentialsId' существует в Jenkins
+            def scm = new hudson.plugins.git.GitSCM(
+                    [new hudson.plugins.git.UserRemoteConfig("https://github.com/${githubRepo}.git", credentialsId, '', '')],
+                    [new hudson.plugins.git.BranchSpec("*/main")], // Или master, или другая default ветка
+                    false, [], null, null, []
+            )
+
+            def definition = new CpsScmFlowDefinition(scm, kafkaScriptPath) // Используем Jenkinsfile-kafka
+            kafkaJob.setDefinition(definition)
+
+            // Сохраняем и выводим сообщение
+            kafkaJob.save()
+            println "--> Pipeline job '${kafkaJobName}' создан. Использует '${kafkaScriptPath}' из репозитория '${githubRepo}'."
         }
     }
 } // Конец условия if (!githubRepo) для multibranch
