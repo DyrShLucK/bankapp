@@ -103,7 +103,6 @@ pipeline {
                     script {
                         echo "=== Запуск пайплайна деплоя Kafka: bankapp-kafka-deploy ==="
                         try {
-                            // Вызовите джоб по точному имени, которое вы указали выше
                             build job: 'bankapp-kafka-deploy', // <-- Имя джоба Kafka
                                  wait: true // Ждать завершения
                             echo "=== Пайплайн Kafka завершён успешно ==="
