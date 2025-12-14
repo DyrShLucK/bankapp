@@ -1,12 +1,9 @@
 global:
-  kafka:
-    enabled: true
-    bootstrapServers: "kafka.kafka-dev.svc.cluster.local:9092"
   environment: dev
   namespace: bankapp-dev
   image:
-    repository: ""  # Замените на ваш registry
-    pullPolicy: Always
+    repository: ""
+    pullPolicy: IfNotPresent
     tag: "dev-latest"
 
 # Включаем все сервисы

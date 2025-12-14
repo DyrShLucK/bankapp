@@ -73,20 +73,54 @@ pipeline {
                 }
             }
         }
-        stage('Wait for Kafka') {
-            steps {
-                sh """
-                echo "Waiting for Kafka to be available..."
-                kubectl wait --for=condition=ready pod -l app.kubernetes.io/name=kafka \\
-                    --namespace kafka-dev --timeout=300s
-                """
+        stage('Create Image Pull Secret') {
+                    steps {
+                        withCredentials([string(credentialsId: 'GHCR_TOKEN', variable: 'GHCR_TOKEN')]) {
+                            script {
+                                // Команда kubectl для создания docker-registry secret
+                                // Использует переменные окружения Jenkins и GITHUB_USERNAME
+                                sh """
+                                    kubectl get namespace ${NAMESPACE_DEV} || kubectl create namespace ${NAMESPACE_DEV}
+                                    kubectl create secret docker-registry regcred \\
+                                      --docker-server=ghcr.io \\
+                                      --docker-username=${GITHUB_USERNAME} \\
+                                      --docker-password=\${GHCR_TOKEN} \\
+                                      --namespace=${NAMESPACE_DEV} \\
+                                      --dry-run=client -o yaml | kubectl apply -f -
+                                """
+                            }
+                        }
+                    }
+                    post {
+                        failure {
+                            echo "Не удалось создать или обновить imagePullSecret 'regcred' в namespace ${NAMESPACE_DEV}."
+                            echo "Проверьте права доступа kubectl и существование namespace."
+                        }
+                    }
+                }
+
+        stage('Trigger Kafka Pipeline') {
+                steps {
+                    script {
+                        echo "=== Запуск пайплайна деплоя Kafka: bankapp-kafka-deploy ==="
+                        try {
+
+                            build job: 'bankapp-kafka-deploy',
+                                 wait: true // Ждать завершения
+                            echo "=== Пайплайн Kafka завершён успешно ==="
+                        } catch (Exception e) {
+                            echo "=== ОШИБКА при запуске пайплайна Kafka: ${e.getMessage()} ==="
+                            throw e
+                        }
+                    }
+                }
             }
-        }
+
         stage('Helm Deploy to DEV') {
             steps {
                 sh """
                 helm upgrade --install bankapp-dev charts/bankapp-umbrella \\
-                  --namespace ${NAMESPACE_DEV} --create-namespace \\
+                  --namespace ${NAMESPACE_DEV}  \\
                   -f charts/bankapp-umbrella/values-dev.yaml \\
                   --set global.image.repository=${DOCKER_REGISTRY} \\
                   --set global.image.tag=${IMAGE_TAG} \\
@@ -99,12 +133,21 @@ pipeline {
                 """
             }
         }
-
+        stage('Wait for Pods to be Ready') {
+                    steps {
+                        script {
+                            sh """
+                                kubectl wait --for=condition=Ready pod \\
+                                  --all \\
+                                  --namespace=${NAMESPACE_DEV} \\
+                                  --timeout=3000s
+                            """
+                        }
+                    }
+                }
         stage('Helm Test') {
             steps {
                 script {
-                    echo "Waiting for services to be ready..."
-                    sh "sleep 300"
                     sh "helm test bankapp-dev --namespace ${NAMESPACE_DEV} --logs || true"
                 }
             }
