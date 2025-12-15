@@ -1,6 +1,13 @@
-
-
 spring:
+  kafka:
+    consumer:
+      bootstrap-servers: kafka-controller-svc.kafka-dev.svc.cluster.local:9092
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      group-id: notifications-service-group
+      properties:
+        auto.commit.interval.ms: 100
+        auto.offset.reset: latest
   data:
     redis:
       host: localhost
@@ -55,3 +62,6 @@ api:
 logging:
   level:
     org.springframework.web.reactive.function.client.ExchangeFunctions: INFO
+kafka:
+  topics:
+    notificationsRequests: notifications.requests

@@ -15,7 +15,7 @@ services:
     enabled: true
     fullnameOverride: "account-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/account-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-account-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8081
@@ -24,7 +24,7 @@ services:
     enabled: true
     fullnameOverride: "blocker-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/blocker-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-blocker-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8086
@@ -33,7 +33,7 @@ services:
     enabled: true
     fullnameOverride: "cash-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/cash-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-cash-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8085
@@ -42,7 +42,7 @@ services:
     enabled: true
     fullnameOverride: "exchange-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/exchange-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-exchange-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8088
@@ -51,7 +51,7 @@ services:
     enabled: true
     fullnameOverride: "exchangegenerator-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/exchangegenerator-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-exchangegenerator-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8084
@@ -62,7 +62,7 @@ services:
     enabled: true
     fullnameOverride: "front-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/front-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-front-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8083
@@ -71,7 +71,7 @@ services:
     enabled: true
     fullnameOverride: "notification-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/notification-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-notification-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8087
@@ -80,7 +80,7 @@ services:
     enabled: true
     fullnameOverride: "transfer-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/transfer-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-transfer-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8089

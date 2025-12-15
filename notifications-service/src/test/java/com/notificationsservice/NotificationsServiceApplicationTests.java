@@ -8,7 +8,13 @@ import org.springframework.security.oauth2.client.ReactiveOAuth2AuthorizedClient
 import org.springframework.security.oauth2.client.registration.ReactiveClientRegistrationRepository;
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 
-@SpringBootTest
+@SpringBootTest(
+		properties = {
+				"spring.kafka.consumer.bootstrap-servers=localhost:9092", // Предоставляем значение по умолчанию
+				"kafka.topics.notificationsRequests=notifications.requests"  // Предоставляем значение по умолчанию
+				// Добавьте другие, если есть ошибки с другими плейсхолдерами
+		}
+)
 class NotificationsServiceApplicationTests {
 	@MockBean
 	private ReactiveJwtDecoder jwtDecoder;

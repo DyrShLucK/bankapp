@@ -68,4 +68,13 @@ data:
   SPRING_WEB_CORS_ALLOWED_METHODS: GET,POST,PUT,DELETE,OPTIONS
   SPRING_WEB_CORS_ALLOWED_HEADERS: "*"
   SPRING_WEB_CORS_ALLOW_CREDENTIALS: "true"
+
+  # kafka
+  SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS: "kafka-controller-svc.kafka-dev.svc.cluster.local:9092"
+  SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: "org.apache.kafka.common.serialization.StringDeserializer"
+  SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: "org.apache.kafka.common.serialization.StringDeserializer"
+  SPRING_KAFKA_CONSUMER_GROUP_ID: "notifications-service-group"
+  SPRING_KAFKA_CONSUMER_PROPERTIES_AUTO_COMMIT_INTERVAL_MS: "100"
+  SPRING_KAFKA_CONSUMER_PROPERTIES_AUTO_OFFSET_RESET: "latest"
+  KAFKA_TOPICS_NOTIFICATIONSREQUESTS: "notifications.requests"
   {{- end }}
