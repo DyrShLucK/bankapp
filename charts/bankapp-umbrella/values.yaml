@@ -14,9 +14,6 @@ services:
   account-service:
     enabled: true
     fullnameOverride: "account-service"
-    image:
-      repository: "{{ .Values.global.image.repository }}/bankapp-account-service"
-      tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8081
 
