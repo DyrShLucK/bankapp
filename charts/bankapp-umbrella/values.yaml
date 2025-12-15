@@ -13,7 +13,10 @@ global:
 services:
   account-service:
     enabled: true
-    fullnameOverride: "account-service"
+    fullnameOverride: "account-serviceasdasd"
+    image:
+      repository: "{{ .Values.global.image.repository }}/asdasd-account-service"
+      tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8081
 
@@ -21,7 +24,7 @@ services:
     enabled: true
     fullnameOverride: "blocker-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/baфывnkapp-blocker-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-blocker-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8086
