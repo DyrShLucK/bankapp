@@ -20,18 +20,18 @@ pipeline {
             }
         }
 
+
         stage('Clean Up Previous Kafka Installation') {
             steps {
                 sh '''
-                if helm status kafka --namespace kafka-dev >/dev/null 2>&1; then
-                  echo "Найден существующий релиз Kafka в kafka-dev, удаляем..."
-                  helm uninstall kafka --namespace kafka-dev
-                  echo "Ожидаем удаления ресурсов Kafka в kafka-dev..."
-                  kubectl wait --for=delete pod -l app.kubernetes.io/name=kafka --namespace kafka-dev --timeout=300s || true
-                else
-                  echo "Релиз Kafka в kafka-dev не найден, пропускаем удаление."
-                fi
+                # Удаляем старые ресурсы Kafka если они есть
+                helm uninstall kafka --namespace kafka-dev || true
+                sleep 10
+                # Удаляем старые PVC
+                kubectl delete pvc -n kafka-dev data-kafka-controller-0 data-kafka-controller-1 data-kafka-controller-2 || true
                 kubectl delete secret -n kafka-dev kafka-kraft || true
+                kubectl delete namespace kafka-dev || true
+                sleep 10
                 '''
             }
         }
@@ -40,71 +40,45 @@ pipeline {
             steps {
                 dir('charts/kafka') {
                     sh '''
-                    helm install kafka . --namespace kafka-dev --create-namespace -f values-dev.yaml --set replicaCount=1 --wait --timeout=10m
+                    helm install kafka . --namespace kafka-dev --create-namespace -f values-dev.yaml --set replicaCount=1
                     '''
                 }
             }
         }
 
-        stage('Verify Kafka Deployment in DEV') {
-            steps {
-                script {
-                    echo "Проверка готовности Kafka StatefulSet в ${env.NAMESPACE_DEV}..."
-                    sh "kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=kafka -n ${env.NAMESPACE_DEV} --timeout=300s"
-                    echo "Kafka StatefulSet в ${env.NAMESPACE_DEV} готов."
-                }
-            }
-        }
-
-        stage('Create Kafka Topics in DEV') {
-            steps {
-                script {
-                    def kafkaPodName = sh(
-                        script: "kubectl get pods -n ${env.NAMESPACE_DEV} -l app.kubernetes.io/name=kafka -o jsonpath='{.items[0].metadata.name}'",
-                        returnStdout: true
-                    ).trim()
-
-                    if (!kafkaPodName) {
-                        error "Не удалось получить имя пода Kafka в ${env.NAMESPACE_DEV}."
+        stage('Verify Kafka Deployment') {
+                    steps {
+                        script {
+                            echo "Waiting for Kafka to be ready..."
+                            sh "sleep 60"
+                            sh "kubectl rollout status statefulset/kafka-controller -n kafka-dev"
+                        }
                     }
-
-                    echo "Используется под Kafka: ${kafkaPodName} для создания топиков."
-
-                    sh """
-                        kubectl exec -n ${env.NAMESPACE_DEV} \${kafkaPodName} -- \\
-                            kafka-topics.sh --bootstrap-server localhost:9092 \\
-                            --create --topic notifications.requests --partitions 1 --replication-factor 1
-
-                        kubectl exec -n ${env.NAMESPACE_DEV} \${kafkaPodName} -- \\
-                            kafka-topics.sh --bootstrap-server localhost:9092 \\
-                            --create --topic notifications.responses --partitions 1 --replication-factor 1
-
-                        kubectl exec -n ${env.NAMESPACE_DEV} \${kafkaPodName} -- \\
-                            kafka-topics.sh --bootstrap-server localhost:9092 \\
-                            --create --topic exchange.rates --partitions 1 --replication-factor 1
-                    """
-                    echo "Топики Kafka созданы в ${env.NAMESPACE_DEV}."
-                }
-            }
         }
 
+        stage('Create Kafka Topics') {
+    steps {
+        sh """
+        kubectl wait --for=condition=ready pod/kafka-controller-0 -n ${NAMESPACE_DEV} --timeout=3m
+        # Создаём топик для запросов на получение уведомлений
+        kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
+            kafka-topics.sh --bootstrap-server localhost:9092 \\
+            --create --topic notifications.requests --partitions 1 --replication-factor 1
 
+        # Создаём топик для ответов с уведомлениями
+        kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
+            kafka-topics.sh --bootstrap-server localhost:9092 \\
+            --create --topic notifications.responses --partitions 1 --replication-factor 1
+        """
+    }
+}
 
     post {
         success {
-            script {
-                echo "Пайплайн Kafka успешно завершён!"
-                if (env.NAMESPACE_PROD != null && env.NAMESPACE_PROD != '') {
-                    echo "Kafka развернута в ${env.NAMESPACE_DEV} "
-                } else {
-                    echo "Kafka развернута в ${env.NAMESPACE_DEV}."
-                }
-            }
+            echo "Kafka deployed successfully!"
         }
         failure {
-            echo "Пайплайн Kafka завершился с ошибкой!"
-        }
-        always {
+            echo "Kafka deployment failed!"
         }
     }
 }
