@@ -13,9 +13,9 @@ global:
 services:
   account-service:
     enabled: true
-    fullnameOverride: "account-serviceasdasd"
+    fullnameOverride: "account-service"
     image:
-      repository: "{{ .Values.global.image.repository }}/asdasd-account-service"
+      repository: "{{ .Values.global.image.repository }}/bankapp-account-service"
       tag: "{{ .Values.global.image.tag }}"
     service:
       port: 8081
