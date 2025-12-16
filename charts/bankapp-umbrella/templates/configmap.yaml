@@ -70,10 +70,10 @@ data:
   SPRING_WEB_CORS_ALLOW_CREDENTIALS: "true"
 
   # kafka
-  SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS: "kafka-controller-svc.kafka-dev.svc.cluster.local:9092"
+  SPRING_KAFKA_PRODUCER_BOOTSTRAP_SERVERS: "kafka.kafka-dev.svc.cluster.local:9092"
   SPRING_KAFKA_PRODUCER_KEY_SERIALIZER: "org.apache.kafka.common.serialization.StringSerializer"
   SPRING_KAFKA_PRODUCER_VALUE_SERIALIZER: "org.springframework.kafka.support.serializer.JsonSerializer"
-  SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS: "kafka-controller-svc.kafka-dev.svc.cluster.local:9092"
+  SPRING_KAFKA_CONSUMER_BOOTSTRAP_SERVERS: "kafka.kafka-dev.svc.cluster.local:9092"
   SPRING_KAFKA_CONSUMER_KEY_DESERIALIZER: "org.apache.kafka.common.serialization.StringDeserializer"
   SPRING_KAFKA_CONSUMER_VALUE_DESERIALIZER: "org.springframework.kafka.support.serializer.JsonDeserializer"
   SPRING_KAFKA_CONSUMER_GROUP_ID: "notification-group"

@@ -29,7 +29,6 @@ public class ApiController implements DefaultApi {
 
     @Override
     public Mono<ResponseEntity<Void>> apiNotificationsSetPost(Mono<Notification> notification, ServerWebExchange exchange) {
-        // Принимаем уведомление и отправляем его в Kafka
         return apiService.handleIncomingNotification(notification).then(Mono.just(ResponseEntity.ok().build()));
     }
 }
