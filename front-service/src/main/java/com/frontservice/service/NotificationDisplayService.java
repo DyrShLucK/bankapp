@@ -10,11 +10,11 @@ import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.stream.Collectors;
 
 @Service
-public class NotificationCacheService {
+public class NotificationDisplayService {
 
     private final Map<String, List<Notification>> userNotifications = new ConcurrentHashMap<>();
 
-    public void addNotification(String username, Notification notification) {
+    public void sendNotificationToUser(String username, Notification notification) {
         List<Notification> list = userNotifications.computeIfAbsent(username, k -> new CopyOnWriteArrayList<>());
         list.add(notification);
     }

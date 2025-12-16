@@ -2,6 +2,7 @@ package com.frontservice.controller;
 
 import com.frontUi.domain.Notification;
 import com.frontUi.domain.NotificationsGet;
+import com.frontservice.service.NotificationDisplayService;
 import com.frontservice.service.SignupApi;
 import lombok.AllArgsConstructor;
 import lombok.Data;
@@ -18,14 +19,13 @@ import java.util.List;
 
 @RestController
 public class notificationController {
+
     @Autowired
-    SignupApi signupApi;
+    private NotificationDisplayService displayService;
 
     @GetMapping("/notifications")
-    public Mono<List<Notification>> notifications(
-            @RequestParam("login") String login) {
-        return signupApi.notification(login)
-                .map(NotificationsGet::getNotifications)
-                .defaultIfEmpty(new ArrayList<>());
+    public Mono<List<Notification>> notifications(@RequestParam("login") String login) {
+        List<Notification> notifications = displayService.getNotificationsForUser(login);
+        return Mono.justOrEmpty(notifications).defaultIfEmpty(List.of());
     }
 }
