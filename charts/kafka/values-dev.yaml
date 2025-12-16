@@ -3,29 +3,34 @@ kafka:
     replicaCount: 1
   broker:
     replicaCount: 1
-  config:
-    offsetsTopicReplicationFactor: 1
-    transactionStateLogReplicationFactor: 1
+
+  kraft:
+    enabled: true
+
+  persistence:
+    enabled: true
+    size: 1Gi
+
   resources:
     requests:
       memory: "256Mi"
       cpu: "200m"
     limits:
       memory: "512Mi"
-  enabled: true
-  replicaCount: 1
-  image:
-    registry: docker.io
-    repository: bitnamilegacy/kafka
-    tag: "4.0.0-debian-12-r10"
-    pullPolicy: IfNotPresent
-  auth:
-    interBrokerProtocol: "plaintext"
+
   listeners:
     client:
       protocol: "PLAINTEXT"
-  kraft:
-    enabled: true
-  persistence:
-    enabled: true
-    size: 1Gi
+    controller:
+      protocol: "PLAINTEXT"
+
+  auth:
+    interBrokerProtocol: "PLAINTEXT"
+
+  config:
+    # ВСЕ ЗНАЧЕНИЯ — СТРОКИ!
+    offsetsTopicReplicationFactor: "1"
+    transactionStateLogReplicationFactor: "1"
+    autoCreateTopicsEnable: "true"
+    defaultReplicationFactor: "1"
+    numPartitions: "1"
