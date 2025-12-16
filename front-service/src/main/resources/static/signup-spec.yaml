@@ -272,7 +272,6 @@ components:
           type: array
           items:
             type: string
-
     UserForm:
       type: object
       properties:

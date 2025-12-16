@@ -102,9 +102,11 @@ public class ApiController implements DefaultApi {
 
     @Override
     public Mono<ResponseEntity<Void>> apiEditPasswordPost(String userName, Mono<PasswordChange> passwordChange, ServerWebExchange exchange) {
+        System.out.println(userName);
         if (userName == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }
+
         return toApiDTO.editPassword(passwordChange, userName);
     }
 
