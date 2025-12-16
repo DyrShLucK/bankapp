@@ -63,32 +63,17 @@ pipeline {
         # Создаём топик для запросов на получение уведомлений
         kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
             kafka-topics.sh --bootstrap-server localhost:9092 \\
-            --create --topic notifications.requests --partitions 1 --replication-factor 1
+            --create --topic notifications.requests --partitions 1 --replication-factor 1 --if-not-exists
 
         # Создаём топик для ответов с уведомлениями
         kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
             kafka-topics.sh --bootstrap-server localhost:9092 \\
-            --create --topic notifications.responses --partitions 1 --replication-factor 1
+            --create --topic notifications.responses --partitions 1 --replication-factor 1 --if-not-exists
         """
     }
 }
 
-        stage('Manual Approval for PROD') {
-                    steps {
-                        input message: 'Deploy Kafka to PROD environment?', ok: 'Yes, deploy'
-                    }
-        }
 
-        stage('Deploy Kafka to PROD') {
-            steps {
-                   dir('charts/kafka') {
-                     sh '''
-                     helm upgrade --install kafka . --namespace kafka-prod --create-namespace -f values-prod.yaml
-                     '''
-                    }
-                   }
-            }
-        }
 
     post {
         success {

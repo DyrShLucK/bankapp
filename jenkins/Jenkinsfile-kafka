@@ -63,12 +63,12 @@ pipeline {
         # Создаём топик для запросов на получение уведомлений
         kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
             kafka-topics.sh --bootstrap-server localhost:9092 \\
-            --create --topic notifications.requests --partitions 1 --replication-factor 1
+            --create --topic notifications.requests --partitions 1 --replication-factor 1 --if-not-exists
 
         # Создаём топик для ответов с уведомлениями
         kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
             kafka-topics.sh --bootstrap-server localhost:9092 \\
-            --create --topic notifications.responses --partitions 1 --replication-factor 1
+            --create --topic notifications.responses --partitions 1 --replication-factor 1 --if-not-exists
         """
     }
 }

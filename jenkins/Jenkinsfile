@@ -103,8 +103,8 @@ pipeline {
                     script {
                         echo "=== Запуск пайплайна деплоя Kafka: bankapp-kafka-deploy ==="
                         try {
-                            build job: 'bankapp-kafka-deploy', // <-- Имя джоба Kafka
-                                 wait: true // Ждать завершения
+                            build job: 'bankapp-kafka-deploy',
+                                 wait: true
                             echo "=== Пайплайн Kafka завершён успешно ==="
                         } catch (Exception e) {
                             echo "=== ОШИБКА при запуске пайплайна Kafka: ${e.getMessage()} ==="
