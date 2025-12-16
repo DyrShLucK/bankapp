@@ -73,6 +73,22 @@ pipeline {
     }
 }
 
+        stage('Manual Approval for PROD') {
+                    steps {
+                        input message: 'Deploy Kafka to PROD environment?', ok: 'Yes, deploy'
+                    }
+        }
+
+        stage('Deploy Kafka to PROD') {
+            steps {
+                   dir('charts/kafka') {
+                     sh '''
+                     helm upgrade --install kafka . --namespace kafka-prod --create-namespace -f values-prod.yaml
+                     '''
+                    }
+                   }
+            }
+        }
 
     post {
         success {

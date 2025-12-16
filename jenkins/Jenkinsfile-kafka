@@ -58,26 +58,29 @@ pipeline {
 
         stage('Create Kafka Topics') {
     steps {
-         sh """
-         kubectl wait --for=condition=ready pod/kafka-controller-0 -n ${NAMESPACE_DEV} --timeout=3m
-         # Создаём топик для запросов на получение уведомлений
-         kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
-             kafka-topics.sh --bootstrap-server localhost:9092 \\
-             --create --topic notifications.requests --partitions 1 --replication-factor 1
+        sh """
+        kubectl wait --for=condition=ready pod/kafka-controller-0 -n ${NAMESPACE_DEV} --timeout=3m
+        # Создаём топик для запросов на получение уведомлений
+        kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
+            kafka-topics.sh --bootstrap-server localhost:9092 \\
+            --create --topic notifications.requests --partitions 1 --replication-factor 1
 
-         # Создаём топик для ответов с уведомлениями
-         kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
-             kafka-topics.sh --bootstrap-server localhost:9092 \\
-             --create --topic notifications.responses --partitions 1 --replication-factor 1
-         """
-     }
- }
+        # Создаём топик для ответов с уведомлениями
+        kubectl exec -n \${NAMESPACE_DEV} kafka-controller-0 -- \\
+            kafka-topics.sh --bootstrap-server localhost:9092 \\
+            --create --topic notifications.responses --partitions 1 --replication-factor 1
+        """
+    }
+}
+
+
+
     post {
-            success {
-                echo "Kafka deployed successfully!"
-            }
-            failure {
-                echo "Kafka deployment failed!"
-            }
+        success {
+            echo "Kafka deployed successfully!"
         }
+        failure {
+            echo "Kafka deployment failed!"
+        }
+    }
 }
