@@ -36,14 +36,20 @@ pipeline {
         }
 
         stage('Deploy Kafka to DEV') {
-            steps {
-                dir('charts/kafka') {
-                    sh '''
-                    helm install kafka . --namespace kafka-dev --create-namespace -f values-dev.yaml --set replicaCount=1
-                    '''
+                    steps {
+                        dir('charts/kafka') {
+                            sh '''
+                            helm install kafka . \
+                              --namespace kafka-dev \
+                              --create-namespace \
+                              -f values-dev.yaml \
+                              --set replicaCount=1 \
+                              --set config.offsetsTopicReplicationFactor=1 \
+                              --set config.transactionStateLogReplicationFactor=1
+                            '''
+                        }
+                    }
                 }
-            }
-        }
 
         stage('Verify Kafka Deployment') {
             steps {
