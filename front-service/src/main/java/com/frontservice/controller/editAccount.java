@@ -38,6 +38,7 @@ public class editAccount {
 
     @PostMapping("/editUserAccounts")
     public Mono<RedirectView> editAccountsAndUser(Model model, @ModelAttribute UserUpdateForm form, WebSession session, ServerWebExchange exchange) {
+
         Object authAttribute = session.getAttributes().get("SPRING_SECURITY_CONTEXT");
         String username = null;
         if (authAttribute instanceof org.springframework.security.core.context.SecurityContextImpl) {
@@ -49,7 +50,7 @@ public class editAccount {
                 username = user.getUsername();
             }
         }
-
+        System.out.println(username);
         return signupApi.editAccountsAndUser(form, username)
                 .flatMap(dto -> {
                     Map<String, Object> flashAttributes = new HashMap<>();
@@ -80,6 +81,7 @@ public class editAccount {
             session.getAttributes().put("jakarta.servlet.flash.mapping.output", flashAttributes);
             return Mono.just(new RedirectView("/bankapp", HttpStatusCode.valueOf(301)));
         }
+        System.out.println(username);
         return signupApi.editPassword(form, username).then(Mono.just(new RedirectView("/bankapp", HttpStatusCode.valueOf(301))));
     }
 }

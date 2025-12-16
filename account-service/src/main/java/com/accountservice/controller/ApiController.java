@@ -110,6 +110,8 @@ public class ApiController implements DefaultApi {
 
     @Override
     public Mono<ResponseEntity<EditUserResponse>> apiEditUserAccountsPost(String userName, Mono<UpdateUserForm> updateUserForm, ServerWebExchange exchange) {
+        log.info(userName);
+        System.out.println(userName);
         if (userName == null) {
             return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
         }

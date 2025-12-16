@@ -116,7 +116,6 @@ pipeline {
         stage('Helm Deploy to DEV') {
             steps {
                 sh """
-                helm dependency update charts/bankapp-umbrella
                 helm upgrade --install bankapp-dev charts/bankapp-umbrella \\
                   --namespace ${NAMESPACE_DEV}  \\
                   -f charts/bankapp-umbrella/values-dev.yaml \\
