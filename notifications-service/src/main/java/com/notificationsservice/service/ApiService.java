@@ -1,14 +1,12 @@
+// src/main/java/com/notificationsservice/service/ApiService.java
 package com.notificationsservice.service;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.notification_service.domain.Notification;
 import com.notification_service.domain.NotificationsGet;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.kafka.annotation.KafkaListener;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -24,19 +22,19 @@ public class ApiService {
 
     private static final Logger logger = LoggerFactory.getLogger(ApiService.class);
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
-    @Value("${kafka.topics.notificationsRequests:notifications.requests}")
-    private String notificationsRequestsTopic;
-
+    // Временное хранилище уведомлений в памяти. В продакшене лучше использовать Redis.
     private final Map<String, List<Notification>> userNotifications = new ConcurrentHashMap<>();
-    private final AtomicInteger IdNotification = new AtomicInteger(0);
+    private final AtomicInteger idNotification = new AtomicInteger(0);
+
+    @Autowired
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     public Mono<NotificationsGet> getNotifications(String username) {
         logger.info("Getting notifications for user: {}", username);
+
         List<Notification> currentNotifications = userNotifications.getOrDefault(username, new CopyOnWriteArrayList<>());
 
+        // Очищаем список уведомлений для пользователя после получения
         userNotifications.put(username, new CopyOnWriteArrayList<>());
 
         NotificationsGet response = new NotificationsGet();
@@ -45,39 +43,35 @@ public class ApiService {
         return Mono.just(response);
     }
 
-    @KafkaListener(
-            topics = "#{@environment.getProperty('kafka.topics.notificationsRequests', 'notifications.requests')}",
-            groupId = "notifications-service-group",
-            containerFactory = "kafkaListenerContainerFactory"
-    )
-    public void consumeNotificationRequest(String notificationJson) {
-        logger.info("Received notification JSON from Kafka: {}", notificationJson);
-
-        try {
-            Notification notification = objectMapper.readValue(notificationJson, Notification.class);
-
-            notification.setId(IdNotification.getAndIncrement());
-
+    // Принимает уведомление и отправляет его в Kafka
+    public Mono<Void> handleIncomingNotification(Mono<Notification> notificationMono) {
+        return notificationMono.flatMap(notification -> {
             String username = notification.getUsername();
             if (username == null || username.isEmpty()) {
-                logger.warn("Received notification without username: {}", notification);
-                return;
+                logger.warn("Username is null or empty, skipping notification.");
+                return Mono.empty();
             }
 
-            List<Notification> userNotificationList = userNotifications.computeIfAbsent(
-                    username,
-                    k -> new CopyOnWriteArrayList<>()
-            );
-            userNotificationList.add(notification);
+            // Устанавливаем ID
+            notification.setId(idNotification.getAndIncrement());
 
-            logger.info("Stored notification for user '{}'. Total notifications for user: {}", username, userNotificationList.size());
+            logger.info("Sending notification to Kafka for user: {} with ID: {}", username, notification.getId());
 
-        } catch (JsonProcessingException e) {
-            logger.error("Error deserializing notification JSON: {}", notificationJson, e);
-            throw new RuntimeException("Failed to deserialize notification", e);
-        } catch (Exception e) {
-            logger.error("Unexpected error processing notification: {}", notificationJson, e);
-            throw e;
-        }
+            // Отправляем уведомление в Kafka
+            kafkaTemplate.send("bank-notifications", username, notification); // ключ - username, значение - объект уведомления
+
+            return Mono.empty();
+        });
+    }
+
+    // Метод для добавления уведомления из Kafka Consumer (см. ниже)
+    public void addNotificationToCache(Notification notification) {
+        String username = notification.getUsername();
+        List<Notification> userNotificationList = userNotifications.computeIfAbsent(
+                username,
+                k -> new CopyOnWriteArrayList<>()
+        );
+        userNotificationList.add(notification);
+        logger.info("Added notification to cache for user: {}", username);
     }
 }

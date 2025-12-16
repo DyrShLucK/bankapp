@@ -1,13 +1,19 @@
 spring:
   kafka:
+    producer:
+      bootstrap-servers: localhost:9092
+      key-serializer: org.apache.kafka.common.serialization.StringSerializer
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
     consumer:
-      bootstrap-servers: kafka-controller-svc.kafka-dev.svc.cluster.local:9092
+      bootstrap-servers: localhost:9092
+      group-id: notification-group
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
-      group-id: notifications-service-group
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
       properties:
-        auto.commit.interval.ms: 100
+        spring.json.trusted.packages: "com.notification_service.domain"
         auto.offset.reset: latest
+        enable.auto.commit: true
+        auto.commit.interval.ms: 1000
   data:
     redis:
       host: localhost
