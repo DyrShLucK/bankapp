@@ -46,6 +46,9 @@ dependencies {
 	implementation 'org.openapitools:jackson-databind-nullable:0.2.6'
 	implementation 'org.keycloak:keycloak-admin-client:26.0.2'
 	testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
+	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+	testImplementation 'org.springframework.kafka:spring-kafka-test'
+	testImplementation 'org.awaitility:awaitility'
 
 	implementation 'org.projectlombok:lombok:1.18.38'
 	annotationProcessor 'org.projectlombok:lombok:1.18.38'
@@ -53,21 +56,23 @@ dependencies {
 	implementation 'org.thymeleaf.extras:thymeleaf-extras-springsecurity6'
 	implementation 'org.springframework.cloud:spring-cloud-starter-loadbalancer'
 
+
 }
-openApiGenerate {
-	generatorName.set("spring")
-	inputSpec.set("$projectDir/src/main/resources/static/notification-spec.yaml")
-	outputDir.set("$projectDir/build/generated")
-	modelPackage.set("com.notification-service.domain")
-	apiPackage.set("com.notification-service.api")
-	configOptions.set([
-			sourceFolder: "src/main/java",
-			interfaceOnly: "true",
-			library: "spring-boot",
-			useTags: "true",
-			reactive: "true"
-	])
-}
+//устарел
+//openApiGenerate {
+//	generatorName.set("spring")
+//	inputSpec.set("$projectDir/src/main/resources/static/notification-spec.yaml")
+//	outputDir.set("$projectDir/build/generated")
+//	modelPackage.set("com.notification-service.domain")
+//	apiPackage.set("com.notification-service.api")
+//	configOptions.set([
+//			sourceFolder: "src/main/java",
+//			interfaceOnly: "true",
+//			library: "spring-boot",
+//			useTags: "true",
+//			reactive: "true"
+//	])
+//}
 sourceSets {
 	getByName("main") {
 		java {
@@ -83,9 +88,9 @@ dependencyManagement {
 		mavenBom "org.springframework.cloud:spring-cloud-dependencies:2025.0.0"
 	}
 }
-tasks.named('compileJava') {
-	dependsOn 'openApiGenerate'
-}
+//tasks.named('compileJava') {
+//	dependsOn 'openApiGenerate'
+//}
 
 tasks.named('test') {
 	useJUnitPlatform()
