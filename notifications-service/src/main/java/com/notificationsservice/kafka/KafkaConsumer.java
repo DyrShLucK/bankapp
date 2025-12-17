@@ -17,7 +17,6 @@ public class KafkaConsumer {
     @Autowired
     private ApiService apiService;
 
-    // Используем топик bank-notifications, как требуется по заданию
     @KafkaListener(topics = "notifications.requests", groupId = "notification-group")
     public void consumeNotification(Notification notification) {
         logger.info("Consumed notification from Kafka: {}", notification);

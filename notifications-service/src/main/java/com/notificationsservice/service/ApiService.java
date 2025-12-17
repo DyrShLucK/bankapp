@@ -22,7 +22,6 @@ public class ApiService {
 
     private static final Logger logger = LoggerFactory.getLogger(ApiService.class);
 
-    // Временное хранилище уведомлений в памяти. В продакшене лучше использовать Redis.
     private final Map<String, List<Notification>> userNotifications = new ConcurrentHashMap<>();
     private final AtomicInteger idNotification = new AtomicInteger(0);
 
@@ -43,7 +42,6 @@ public class ApiService {
         return Mono.just(response);
     }
 
-    // Принимает уведомление и отправляет его в Kafka
     public Mono<Void> handleIncomingNotification(Mono<Notification> notificationMono) {
         return notificationMono.flatMap(notification -> {
             String username = notification.getUsername();
@@ -52,19 +50,18 @@ public class ApiService {
                 return Mono.empty();
             }
 
-            // Устанавливаем ID
             notification.setId(idNotification.getAndIncrement());
 
             logger.info("Sending notification to Kafka for user: {} with ID: {}", username, notification.getId());
 
             // Отправляем уведомление в Kafka
-            kafkaTemplate.send("bank-notifications", username, notification); // ключ - username, значение - объект уведомления
+            kafkaTemplate.send("notifications.requests", username, notification);
 
             return Mono.empty();
         });
     }
 
-    // Метод для добавления уведомления из Kafka Consumer (см. ниже)
+
     public void addNotificationToCache(Notification notification) {
         String username = notification.getUsername();
         List<Notification> userNotificationList = userNotifications.computeIfAbsent(
