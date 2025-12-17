@@ -64,6 +64,7 @@ public class ApiService {
         List<Notification> list = userNotifications.computeIfAbsent(username, k -> new CopyOnWriteArrayList<>());
         list.add(notification);
         logger.info("Stored notification for user '{}' from external source. Total notifications in cache: {}", username, list.size());
+        handleIncomingNotification(notification);
     }
 
 }
