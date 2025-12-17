@@ -4,6 +4,11 @@ spring:
   cloud:
     config:
       enabled: false
+  kafka:
+    consumer:
+      properties:
+        spring.json.use.type.headers: false
+        spring.json.add.type.headers: false
 eureka:
   client:
     enabled: false

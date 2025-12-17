@@ -1,4 +1,3 @@
-// src/main/java/com/notificationsservice/service/ApiService.java
 package com.notificationsservice.service;
 
 import com.notification_service.domain.Notification;

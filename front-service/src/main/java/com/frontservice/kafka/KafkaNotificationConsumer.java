@@ -1,7 +1,6 @@
 package com.frontservice.kafka;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.frontUi.domain.Notification;
+import com.frontUi.domain.Notification; // Используем класс из frontUi
 import com.frontservice.service.NotificationDisplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,16 +18,14 @@ public class KafkaNotificationConsumer {
     @Autowired
     private NotificationDisplayService displayService;
 
-    @Autowired
-    private ObjectMapper objectMapper;
-
+    // Принимаем объект типа com.frontUi.domain.Notification напрямую
     @KafkaListener(topics = "notifications.requests", groupId = "front-service-group")
-    public void consumeNotification(Object rawMessage, @Header(KafkaHeaders.RECEIVED_KEY) String username) {
+    public void consumeNotification(Notification notification, @Header(KafkaHeaders.RECEIVED_KEY) String username) {
         try {
-            Notification notification = objectMapper.convertValue(rawMessage, Notification.class);
+            // ObjectMapper больше не нужен для конвертации
 
             if (username == null) {
-                username = notification.getUsername();
+                username = notification.getUsername(); // Получаем username из самого уведомления, если ключ Kafka пуст
             }
 
             if (username == null) {
@@ -37,10 +34,11 @@ public class KafkaNotificationConsumer {
             }
 
             logger.info("Received notification for user: {} with message: {}", username, notification.getMessage());
-            displayService.sendNotificationToUser(username, notification);
+            displayService.sendNotificationToUser(username, notification); // Передаем десериализованный объект
 
-        } catch (IllegalArgumentException | ClassCastException e) {
-            logger.error("Failed to deserialize notification from Kafka: {}", rawMessage, e);
+        } catch (Exception e) // Ловим любую ошибку десериализации/обработки
+        {
+            logger.error("Failed to process notification received from Kafka: {}", notification, e);
         }
     }
 }

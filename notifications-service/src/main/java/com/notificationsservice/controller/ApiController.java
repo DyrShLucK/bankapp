@@ -1,4 +1,3 @@
-// src/main/java/com/notificationsservice/controller/ApiController.java
 package com.notificationsservice.controller;
 
 import com.notification_service.api.DefaultApi;
