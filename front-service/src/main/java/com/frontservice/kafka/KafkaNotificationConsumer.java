@@ -19,13 +19,12 @@ public class KafkaNotificationConsumer {
     private NotificationDisplayService displayService;
 
     // Принимаем объект типа com.frontUi.domain.Notification напрямую
+    // Используем фабрику, указанную в @KafkaListener (по умолчанию использует kafkaListenerContainerFactory)
     @KafkaListener(topics = "notifications.requests", groupId = "front-service-group")
     public void consumeNotification(Notification notification, @Header(KafkaHeaders.RECEIVED_KEY) String username) {
         try {
-            // ObjectMapper больше не нужен для конвертации
-
             if (username == null) {
-                username = notification.getUsername(); // Получаем username из самого уведомления, если ключ Kafka пуст
+                username = notification.getUsername();
             }
 
             if (username == null) {
@@ -34,10 +33,9 @@ public class KafkaNotificationConsumer {
             }
 
             logger.info("Received notification for user: {} with message: {}", username, notification.getMessage());
-            displayService.sendNotificationToUser(username, notification); // Передаем десериализованный объект
+            displayService.sendNotificationToUser(username, notification);
 
-        } catch (Exception e) // Ловим любую ошибку десериализации/обработки
-        {
+        } catch (Exception e) {
             logger.error("Failed to process notification received from Kafka: {}", notification, e);
         }
     }

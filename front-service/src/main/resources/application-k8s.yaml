@@ -6,6 +6,7 @@ spring:
       enabled: false
   kafka:
     consumer:
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       properties:
         spring.json.use.type.headers: false
         spring.json.add.type.headers: false
