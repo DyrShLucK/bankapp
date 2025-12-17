@@ -1,6 +1,6 @@
 package com.notificationsservice.config;
 
-import com.notification_service.domain.Notification;
+import com.notificationsservice.model.Notification;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
