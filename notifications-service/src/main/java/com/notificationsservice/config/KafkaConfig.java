@@ -17,10 +17,6 @@ import java.util.Map;
 @Configuration
 public class KafkaConfig {
 
-    /**
-     * Фабрика ConsumerFactory для обработки уведомлений из responses.
-     * Использует внутренний класс Notification и отключает type mapping.
-     */
     @Bean
     public ConsumerFactory<String, Notification> responsesConsumerFactory() {
         Map<String, Object> props = new HashMap<>();
@@ -33,10 +29,6 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), jsonDeserializer);
     }
 
-    /**
-     * Фабрика ContainerFactory для обработки уведомлений из responses.
-     * Использует responsesConsumerFactory.
-     */
     @Bean
     public ConcurrentKafkaListenerContainerFactory<String, Notification> responsesKafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Notification> factory = new ConcurrentKafkaListenerContainerFactory<>();

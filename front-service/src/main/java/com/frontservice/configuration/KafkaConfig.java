@@ -9,6 +9,7 @@ import org.springframework.kafka.config.ConcurrentKafkaListenerContainerFactory;
 import org.springframework.kafka.core.ConsumerFactory;
 import org.springframework.kafka.core.DefaultKafkaConsumerFactory;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
+
 import java.util.HashMap;
 import java.util.Map;
 
@@ -16,11 +17,10 @@ import java.util.Map;
 @Configuration
 public class KafkaConfig {
 
-    // Бин для фабрики ConsumerFactory
     @Bean
-    public ConsumerFactory<String, Notification> consumerFactory() { // Указываем <String, Notification> здесь
+    public ConsumerFactory<String, Notification> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka.kafka-dev.svc.cluster.local:9092"); // или адрес вашего Kafka
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka.kafka-dev.svc.cluster.local:9092");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "front-service-group");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
@@ -29,9 +29,8 @@ public class KafkaConfig {
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), jsonDeserializer);
     }
 
-    // Бин для ConcurrentKafkaListenerContainerFactory
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Notification> kafkaListenerContainerFactory() { // Указываем <String, Notification> здесь
+    public ConcurrentKafkaListenerContainerFactory<String, Notification> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Notification> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;

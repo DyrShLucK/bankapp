@@ -18,11 +18,7 @@ public class ResponseNotificationConsumer {
     @Autowired
     private ApiService apiService;
 
-    @KafkaListener(
-            topics = "notifications.responses",
-            groupId = "notification-service-responses-group",
-            containerFactory = "responsesKafkaListenerContainerFactory"
-    )
+    @KafkaListener(topics = "notifications.responses", groupId = "notification-service-responses-group")
     public void consumeResponseNotification(Notification notification, @Header(KafkaHeaders.RECEIVED_KEY) String username) {
         try {
             if (username == null) {
@@ -35,8 +31,7 @@ public class ResponseNotificationConsumer {
             }
 
             logger.info("Received response notification from another service for user: {} with message: {}", username, notification.getMessage());
-            
-            apiService.storeNotificationForUser(username, notification); // Вызов метода, который ты реализуешь в ApiService
+            apiService.storeNotificationForUser(username, notification);
 
         } catch (Exception e) {
             logger.error("Failed to process response notification received from Kafka topic 'notifications.responses': {}", notification, e);
