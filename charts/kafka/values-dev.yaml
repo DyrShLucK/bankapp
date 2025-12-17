@@ -1,8 +1,4 @@
 kafka:
-  config:
-    offsetsTopicReplicationFactor: "1"
-    transactionStateLogReplicationFactor: "1"
-    autoCreateTopicsEnable: "true"
   controller:
     extraConfig: |
       offsets.topic.replication.factor=1
