@@ -1,12 +1,25 @@
 package com.accountservice.service;
-
 import com.account_service.generated.get.domain.*;
+//import com.account_service.generated.get.domain.MainPageResponse;
+//import com.account_service.generated.get.domain.Users;
+//import com.account_service.generated.get.domain.UserForm;
+//import com.account_service.generated.get.domain.AccountForm;
+//import com.account_service.generated.get.domain.UserFormLogin;
+//import com.account_service.generated.get.domain.EditUserResponse;
+//import com.account_service.generated.get.domain.UpdateUserForm;
+//import com.account_service.generated.get.domain.PasswordChange;
+//import com.account_service.generated.get.domain.AccountCashResponse;
+//import com.account_service.generated.get.domain.TransferResponse;
+//import com.account_service.generated.get.domain.CashTransfer;
+//import com.account_service.generated.get.domain.Transfer;
+
 import com.account_service.generated.post.api.DefaultApi;
-import com.account_service.generated.post.domain.Notification;
+import com.accountservice.model.Notification;
 import com.accountservice.model.Account;
 import com.accountservice.model.User;
 import com.accountservice.repository.UserRepository;
 import org.springframework.http.ResponseEntity;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextImpl;
 import org.springframework.stereotype.Service;
@@ -28,12 +41,12 @@ import java.util.*;
 public class ApiServiceDTO {
     private final AccountService accountService;
     private final UserRepository userRepository;
-    private final DefaultApi notificationApi;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public ApiServiceDTO(AccountService accountService, UserRepository userRepository, DefaultApi notificationApi) { // Добавлен параметр в конструктор
+    public ApiServiceDTO(AccountService accountService, UserRepository userRepository, KafkaTemplate kafkaTemplate) {
         this.accountService = accountService;
         this.userRepository = userRepository;
-        this.notificationApi = notificationApi;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public Mono<MainPageResponse> getMAinPageDTO(String username) {
@@ -273,19 +286,19 @@ public class ApiServiceDTO {
                         (causes != null && !causes.isEmpty() ? String.join(", ", causes) : "Неизвестная ошибка");
             }
 
+
             Notification notification = new Notification();
             notification.setUsername(username);
             notification.setMessage(message);
             notification.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
 
-            notificationApi.apiNotificationsSetPost(notification)
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .subscribe(
-                            response -> System.out.println("Уведомление об изменении пользователя отправлено успешно для " + username),
-                            error -> System.err.println("Ошибка при отправке уведомления об изменении пользователя для " + username + ": " + error.getMessage())
-                    );
+            kafkaTemplate.send("notifications.responses", username, notification);
+
+            System.out.println("User edit notification sent to Kafka topic 'notifications.responses' for user: " + username);
+
         } catch (Exception e) {
-            System.err.println("Ошибка при подготовке уведомления об изменении пользователя для " + username + ": " + e.getMessage());
+            System.err.println("Ошибка при подготовке/отправке уведомления об изменении пользователя для " + username + " в Kafka: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 
@@ -302,15 +315,13 @@ public class ApiServiceDTO {
             notification.setUsername(username);
             notification.setMessage(message);
             notification.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            kafkaTemplate.send("notifications.responses", username, notification);
 
-            notificationApi.apiNotificationsSetPost(notification)
-                    .subscribeOn(Schedulers.boundedElastic())
-                    .subscribe(
-                            response -> System.out.println("Уведомление о смене пароля отправлено успешно для " + username),
-                            error -> System.err.println("Ошибка при отправке уведомления о смене пароля для " + username + ": " + error.getMessage())
-                    );
+            System.out.println("Password change notification sent to Kafka topic 'notifications.responses' for user: " + username);
+
         } catch (Exception e) {
-            System.err.println("Ошибка при подготовке уведомления о смене пароля для " + username + ": " + e.getMessage());
+            System.err.println("Ошибка при подготовке/отправке уведомления о смене пароля для " + username + " в Kafka: " + e.getMessage());
+            e.printStackTrace();
         }
     }
 

@@ -110,7 +110,7 @@ public class ApiController implements DefaultApi {
         return toApiDTO.editPassword(passwordChange, userName);
     }
 
-    // В вашем AccountsController.java
+
     @Override
     public Mono<ResponseEntity<EditUserResponse>> apiEditUserAccountsPost(String userName, Mono<UpdateUserForm> updateUserForm, ServerWebExchange exchange) {
         log.info("Received request to edit user accounts and user info. Username: {}", userName);

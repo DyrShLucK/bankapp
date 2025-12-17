@@ -10,9 +10,9 @@ import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 
 @SpringBootTest(
 		properties = {
-				"spring.kafka.consumer.bootstrap-servers=localhost:9092", // Предоставляем значение по умолчанию
-				"kafka.topics.notificationsRequests=notifications.requests"  // Предоставляем значение по умолчанию
-				// Добавьте другие, если есть ошибки с другими плейсхолдерами
+				"spring.kafka.consumer.bootstrap-servers=localhost:9092",
+				"kafka.topics.notificationsRequests=notifications.requests"
+
 		}
 )
 @Disabled("Disabled until Kafka setup is fixed for tests")

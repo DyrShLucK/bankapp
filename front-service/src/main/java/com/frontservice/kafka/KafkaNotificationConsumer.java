@@ -1,6 +1,6 @@
 package com.frontservice.kafka;
 
-import com.frontUi.domain.Notification; // Используем класс из frontUi
+import com.frontUi.domain.Notification;
 import com.frontservice.service.NotificationDisplayService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,8 +18,6 @@ public class KafkaNotificationConsumer {
     @Autowired
     private NotificationDisplayService displayService;
 
-    // Принимаем объект типа com.frontUi.domain.Notification напрямую
-    // Используем фабрику, указанную в @KafkaListener (по умолчанию использует kafkaListenerContainerFactory)
     @KafkaListener(topics = "notifications.requests", groupId = "front-service-group")
     public void consumeNotification(Notification notification, @Header(KafkaHeaders.RECEIVED_KEY) String username) {
         try {

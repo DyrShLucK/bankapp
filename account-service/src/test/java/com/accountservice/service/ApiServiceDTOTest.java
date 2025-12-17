@@ -14,6 +14,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 import org.mockito.MockitoAnnotations;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
@@ -37,13 +38,14 @@ class ApiServiceDTOTest {
 
     @Mock
     private DefaultApi notificationApi;
-
+    @Mock
+    private  KafkaTemplate<String, Object> kafkaTemplate;
     private ApiServiceDTO apiServiceDTO;
 
     @BeforeEach
     void setUp() {
         MockitoAnnotations.openMocks(this);
-        apiServiceDTO = new ApiServiceDTO(accountService, userRepository, notificationApi);
+        apiServiceDTO = new ApiServiceDTO(accountService, userRepository, kafkaTemplate);
     }
 
     @Test
