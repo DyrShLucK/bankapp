@@ -18,7 +18,7 @@ import java.util.Map;
 public class KafkaConfig {
 
     @Bean
-    public ConsumerFactory<String, Notification> responsesConsumerFactory() {
+    public ConsumerFactory<String, Notification> consumerFactory() {
         Map<String, Object> props = new HashMap<>();
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka.kafka-dev.svc.cluster.local:9092");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "notification-service-responses-group");
@@ -30,9 +30,9 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, Notification> responsesKafkaListenerContainerFactory() {
+    public ConcurrentKafkaListenerContainerFactory<String, Notification> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Notification> factory = new ConcurrentKafkaListenerContainerFactory<>();
-        factory.setConsumerFactory(responsesConsumerFactory());
+        factory.setConsumerFactory(consumerFactory());
         return factory;
     }
 }
