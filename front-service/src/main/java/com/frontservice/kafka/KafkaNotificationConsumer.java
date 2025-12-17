@@ -24,8 +24,9 @@ public class KafkaNotificationConsumer {
             return;
         }
 
-        logger.info("Received notification for user: {} with message: {}", username, notification.getMessage());
+        logger.info("Received notification from Kafka for user: {} with message: {}", username, notification.getMessage());
 
+        // Отправляем уведомление в браузер
         displayService.sendNotificationToUser(username, notification);
     }
 }
