@@ -20,15 +20,11 @@ public class KafkaConfig {
     @Bean
     public ConsumerFactory<String, Notification> consumerFactory() { // Указываем <String, Notification> здесь
         Map<String, Object> props = new HashMap<>();
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092"); // или адрес вашего Kafka
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka.kafka-dev.svc.cluster.local:9092"); // или адрес вашего Kafka
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "front-service-group");
-        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class); // Ключ - строка
-        //props.put(org.apache.kafka.clients.consumer.ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class); // Не указываем здесь, настраиваем бин ниже
+        props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
 
-        // --- Настройка JsonDeserializer ---
-        JsonDeserializer<Notification> jsonDeserializer = new JsonDeserializer<>(Notification.class, false); // Указываем целевой класс и отключаем type mapping
-        //jsonDeserializer.addTrustedPackages("com.frontUi.domain"); // Опционально, но безопасно добавить, если есть подозрения
-        // -----------------------------------
+        JsonDeserializer<Notification> jsonDeserializer = new JsonDeserializer<>(Notification.class, false);
 
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), jsonDeserializer);
     }
