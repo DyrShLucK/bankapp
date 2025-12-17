@@ -110,14 +110,21 @@ public class ApiController implements DefaultApi {
         return toApiDTO.editPassword(passwordChange, userName);
     }
 
+    // В вашем AccountsController.java
     @Override
     public Mono<ResponseEntity<EditUserResponse>> apiEditUserAccountsPost(String userName, Mono<UpdateUserForm> updateUserForm, ServerWebExchange exchange) {
-        log.info(userName);
-        System.out.println(userName);
-        if (userName == null) {
-            return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
-        }
-        return toApiDTO.editUser(updateUserForm, userName).map(ResponseEntity::ok);
+        log.info("Received request to edit user accounts and user info. Username: {}", userName);
+        System.out.println("Received request to edit user accounts and user info. Username: " + userName);
+
+        return updateUserForm.doOnNext(form -> {
+            log.info("Received UpdateUserForm: {}", form);
+            System.out.println("Received UpdateUserForm: " + form);
+        }).then(Mono.defer(() -> {
+            if (userName == null) {
+                return Mono.just(ResponseEntity.status(HttpStatus.UNAUTHORIZED).build());
+            }
+            return toApiDTO.editUser(updateUserForm, userName).map(ResponseEntity::ok);
+        }));
     }
 
     @Override

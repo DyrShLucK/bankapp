@@ -1,3 +1,4 @@
+// src/main/java/com/frontservice/controller/editAccount.java
 package com.frontservice.controller;
 
 import com.frontUi.domain.AccountForm;
@@ -8,6 +9,8 @@ import com.frontservice.DTO.RegistrationForm;
 import com.frontservice.DTO.UserUpdateForm;
 import com.frontservice.service.SignupApi;
 import jakarta.validation.Valid;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.HttpStatusCode;
@@ -33,6 +36,9 @@ import java.util.stream.Collectors;
 
 @Controller
 public class editAccount {
+
+    private static final Logger logger = LoggerFactory.getLogger(editAccount.class);
+
     @Autowired
     SignupApi signupApi;
 
@@ -50,7 +56,10 @@ public class editAccount {
                 username = user.getUsername();
             }
         }
-        System.out.println(username);
+
+        logger.info("Sending request to edit user accounts and user info. Username: {}, Form: {}", username, form);
+        System.out.println("Sending request to edit user accounts and user info. Username: " + username + ", Form: " + form);
+
         return signupApi.editAccountsAndUser(form, username)
                 .flatMap(dto -> {
                     Map<String, Object> flashAttributes = new HashMap<>();
@@ -62,7 +71,7 @@ public class editAccount {
     }
 
     @PostMapping("/editPassword")
-    public Mono<RedirectView> editPassword(Model model,@Valid @ModelAttribute PasswordUdateForm form, BindingResult result, WebSession session, ServerWebExchange exchange) {
+    public Mono<RedirectView> editPassword(Model model, @Valid @ModelAttribute PasswordUdateForm form, BindingResult result, WebSession session, ServerWebExchange exchange) {
         Object authAttribute = session.getAttributes().get("SPRING_SECURITY_CONTEXT");
         String username = null;
         if (authAttribute instanceof org.springframework.security.core.context.SecurityContextImpl) {
@@ -75,13 +84,16 @@ public class editAccount {
             }
         }
 
+        logger.info("Sending request to edit password. Username: {}, Form: {}", username, form);
+        System.out.println("Sending request to edit password. Username: " + username + ", Form: " + form);
+
         Map<String, Object> flashAttributes = new HashMap<>();
         if (result.hasErrors()) {
             flashAttributes.put("passwordErrors", result.getFieldErrors().stream().map(FieldError::getDefaultMessage).collect(Collectors.toList()));
             session.getAttributes().put("jakarta.servlet.flash.mapping.output", flashAttributes);
             return Mono.just(new RedirectView("/bankapp", HttpStatusCode.valueOf(301)));
         }
-        System.out.println(username);
+
         return signupApi.editPassword(form, username).then(Mono.just(new RedirectView("/bankapp", HttpStatusCode.valueOf(301))));
     }
 }

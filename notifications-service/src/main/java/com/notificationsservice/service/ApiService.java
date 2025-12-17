@@ -54,7 +54,6 @@ public class ApiService {
 
             logger.info("Sending notification to Kafka for user: {} with ID: {}", username, notification.getId());
 
-            // Отправляем уведомление в Kafka
             kafkaTemplate.send("notifications.requests", username, notification);
 
             return Mono.empty();
@@ -62,13 +61,4 @@ public class ApiService {
     }
 
 
-    public void addNotificationToCache(Notification notification) {
-        String username = notification.getUsername();
-        List<Notification> userNotificationList = userNotifications.computeIfAbsent(
-                username,
-                k -> new CopyOnWriteArrayList<>()
-        );
-        userNotificationList.add(notification);
-        logger.info("Added notification to cache for user: {}", username);
-    }
 }
