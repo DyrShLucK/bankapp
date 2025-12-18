@@ -73,6 +73,7 @@ pipeline {
 
                 create_topic_if_not_exists "notifications.requests"
                 create_topic_if_not_exists "notifications.responses"
+                create_topic_if_not_exists "exchange.rates"
                 """
             }
         }

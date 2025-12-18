@@ -1,6 +1,7 @@
 package com.exchangegeneratorservice.service;
 
 import com.exchange_service.domain.Value;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
 
@@ -15,12 +16,17 @@ public class ApiService {
     private final long CACHE_DURATION = 60000;
     private final Random random = new Random();
 
+    @Autowired
+    private KafkaService kafkaService;
+
     public Flux<Value> getExchangeRates() {
         long currentTime = System.currentTimeMillis();
 
         if (cachedRates.isEmpty() || (currentTime - lastUpdate) > CACHE_DURATION) {
             updateCachedRates();
             lastUpdate = currentTime;
+
+            kafkaService.sendExchangeRates(cachedRates);
         }
 
         return Flux.fromIterable(cachedRates);
