@@ -57,8 +57,6 @@ public class editAccount {
             }
         }
 
-        logger.info("Sending request to edit user accounts and user info. Username: {}, Form: {}", username, form);
-        System.out.println("Sending request to edit user accounts and user info. Username: " + username + ", Form: " + form);
 
         return signupApi.editAccountsAndUser(form, username)
                 .flatMap(dto -> {
@@ -84,8 +82,6 @@ public class editAccount {
             }
         }
 
-        logger.info("Sending request to edit password. Username: {}, Form: {}", username, form);
-        System.out.println("Sending request to edit password. Username: " + username + ", Form: " + form);
 
         Map<String, Object> flashAttributes = new HashMap<>();
         if (result.hasErrors()) {
