@@ -3,32 +3,35 @@ package com.transferservice.service;
 import com.transfer_service.generated.get.domain.TransferResponse;
 import com.transfer_service.generated.post.api.DefaultApi;
 import com.transfer_service.generated.post.domain.BlockerResponse;
-import com.transfer_service.generated.post.domain.Notification;
 import com.transfer_service.generated.post.domain.Transfer;
 import com.transfer_service.generated.post.domain.TransferValue;
+import com.transfer_service.generated.post.domain.Notification;
+import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
 @Service
 public class ApiPostService {
     private final DefaultApi defaultApi;
+    private final KafkaTemplate<String, Object> kafkaTemplate;
 
-    public ApiPostService(DefaultApi defaultApi) {
+    public ApiPostService(DefaultApi defaultApi, KafkaTemplate<String, Object> kafkaTemplate) {
         this.defaultApi = defaultApi;
+        this.kafkaTemplate = kafkaTemplate;
     }
 
     public Mono<TransferValue> getexchange(Mono<com.transfer_service.generated.get.domain.Transfer> transferFormMono, String userName) {
-        return transferFormMono.flatMap(transferForm ->{
+        return transferFormMono.flatMap(transferForm -> {
             Transfer transfer = new Transfer();
             transfer.setFromCurrency(transferForm.getFromCurrency());
             transfer.setToCurrency(transferForm.getToCurrency());
             transfer.setValue(transferForm.getValue());
             transfer.setToLogin(transferForm.getToLogin());
             return defaultApi.excangeservice(userName, transfer).flatMap(value -> {
-                if (value.getSuccess()){
+                if (value.getSuccess()) {
                     return Mono.just(value);
-                }else {
-                    return null;
+                } else {
+                    return Mono.empty();
                 }
             });
         });
@@ -51,8 +54,17 @@ public class ApiPostService {
         });
     }
 
-    public Mono<Void> notification(Notification notification) {
-        return defaultApi.apiNotificationsSetPost(notification);
+    public Mono<Void> sendNotification(String username, String message) {
+        try {
+            Notification notification = new Notification();
+            notification.setUsername(username);
+            notification.setMessage(message);
+            notification.setTimestamp(java.time.LocalDateTime.now().toString());
+            kafkaTemplate.send("notifications.responses", username, notification);
+            return Mono.empty();
+        } catch (Exception e) {
+            return Mono.error(e);
+        }
     }
 
     public Mono<BlockerResponse> blocker() {

@@ -1,17 +1,5 @@
 package com.accountservice.service;
 import com.account_service.generated.get.domain.*;
-//import com.account_service.generated.get.domain.MainPageResponse;
-//import com.account_service.generated.get.domain.Users;
-//import com.account_service.generated.get.domain.UserForm;
-//import com.account_service.generated.get.domain.AccountForm;
-//import com.account_service.generated.get.domain.UserFormLogin;
-//import com.account_service.generated.get.domain.EditUserResponse;
-//import com.account_service.generated.get.domain.UpdateUserForm;
-//import com.account_service.generated.get.domain.PasswordChange;
-//import com.account_service.generated.get.domain.AccountCashResponse;
-//import com.account_service.generated.get.domain.TransferResponse;
-//import com.account_service.generated.get.domain.CashTransfer;
-//import com.account_service.generated.get.domain.Transfer;
 
 import com.account_service.generated.post.api.DefaultApi;
 import com.accountservice.model.Notification;

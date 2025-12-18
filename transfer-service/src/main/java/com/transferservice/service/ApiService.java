@@ -2,7 +2,6 @@ package com.transferservice.service;
 
 import com.transfer_service.generated.get.domain.Transfer;
 import com.transfer_service.generated.get.domain.TransferResponse;
-import com.transfer_service.generated.post.domain.Notification;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Mono;
 
@@ -40,15 +39,11 @@ public class ApiService {
                                         transferType = "Перевод себе со счета на счет";
                                     }
                                     if (response.getSuccess()) {
-                                        Notification notification = new Notification();
-                                        notification.setUsername(username);
-                                        notification.setMessage("Перевод успешно выполнен: " + transfer1.getValue() + " " + transfer1.getFromCurrency() + " -> " + transfer1.getSummary() + transfer1.getToCurrency() + ". " + transferType );
-                                        notification.setTimestamp(java.time.LocalDateTime.now().toString());
-
-                                        return apiPostService.notification(notification)
+                                        String message = "Перевод успешно выполнен: " + transfer1.getValue() + " " + transfer1.getFromCurrency() + " -> " + transfer1.getSummary() + transfer1.getToCurrency() + ". " + transferType;
+                                        return apiPostService.sendNotification(username, message)
                                                 .thenReturn(response)
                                                 .onErrorResume(error -> {
-                                                    System.err.println("Failed to send notification: " + error.getMessage());
+                                                    System.err.println("Failed to send Kafka notification: " + error.getMessage());
                                                     return Mono.just(response);
                                                 });
                                     } else {

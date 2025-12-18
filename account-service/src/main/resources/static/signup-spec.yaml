@@ -38,7 +38,7 @@ paths:
       security:
         - cookieAuth: []
       parameters:
-        - name: username
+        - name: userName
           in: cookie
           required: true
           schema:
