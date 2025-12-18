@@ -14,16 +14,11 @@ public class AddUserHeaderFilter implements GlobalFilter, Ordered {
 
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
-        System.out.println("=======================================================");
-        System.out.println(exchange.getRequest().getHeaders().toString());
-        System.out.println("=======================================================");
         ServerHttpRequest request = exchange.getRequest();
 
         if (request.getHeaders().containsKey(USER_HEADER_NAME)) {
-            System.out.println("if");
             return chain.filter(exchange);
         }
-        System.out.println("else");
         return exchange.getPrincipal()
                 .map(principal -> {
                     String username = principal.getName();

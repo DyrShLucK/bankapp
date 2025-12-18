@@ -52,7 +52,6 @@ public class ExchangeGet {
         if (newRates != null && !newRates.isEmpty()) {
             this.cachedRates = new CopyOnWriteArrayList<>(newRates);
             this.lastUpdate = System.currentTimeMillis();
-            System.out.println("Updated cached rates from Kafka with " + newRates.size() + " currencies");
         }
     }
 }

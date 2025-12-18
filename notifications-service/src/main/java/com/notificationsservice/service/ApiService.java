@@ -28,7 +28,6 @@ public class ApiService {
     private KafkaTemplate<String, Object> kafkaTemplate;
 
     public Mono<List<Notification>> getNotifications(String username) {
-        logger.info("Getting notifications for user: {}", username);
 
         List<Notification> currentNotifications = userNotifications.getOrDefault(username, new CopyOnWriteArrayList<>());
         userNotifications.put(username, new CopyOnWriteArrayList<>());
@@ -45,7 +44,6 @@ public class ApiService {
 
         notification.setId(idNotification.getAndIncrement());
 
-        logger.info("Sending notification to Kafka for user: {} with ID: {}", username, notification.getId());
 
         kafkaTemplate.send("notifications.requests", username, notification);
     }
@@ -61,7 +59,6 @@ public class ApiService {
 
         List<Notification> list = userNotifications.computeIfAbsent(username, k -> new CopyOnWriteArrayList<>());
         list.add(notification);
-        logger.info("Stored notification for user '{}' from external source. Total notifications in cache: {}", username, list.size());
         handleIncomingNotification(notification);
     }
 

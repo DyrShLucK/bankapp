@@ -31,12 +31,10 @@ public class ExchangeRatesConsumer {
             logger.info("Received exchange rates from Kafka topic 'exchange.rates', key: {}, rates count: {}",
                     key, rawRates.size());
 
-            // Преобразование raw List в List<Value>
             List<Value> rates = objectMapper.convertValue(rawRates, new TypeReference<List<Value>>() {});
 
             logger.info("Converted {} raw objects to Value objects", rates.size());
 
-            // Обновляем кэш курсов в ExchangeGet
             exchangeGet.updateCachedRates(rates);
 
             logger.info("Exchange rates successfully updated from Kafka message");

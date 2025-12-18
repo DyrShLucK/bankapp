@@ -1,6 +1,8 @@
 package com.notificationsservice.config;
 
 import com.notificationsservice.model.Notification;
+import org.apache.kafka.clients.consumer.ConsumerConfig;
+import org.apache.kafka.clients.producer.ProducerConfig;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -23,7 +25,9 @@ public class KafkaConfig {
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "kafka.kafka-dev.svc.cluster.local:9092");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.GROUP_ID_CONFIG, "notification-service-responses-group");
         props.put(org.apache.kafka.clients.consumer.ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
-
+        props.put(ConsumerConfig.ENABLE_AUTO_COMMIT_CONFIG, false);
+        props.put(ConsumerConfig.AUTO_COMMIT_INTERVAL_MS_CONFIG, 1000);
+        props.put(ProducerConfig.ACKS_CONFIG, "all");
         JsonDeserializer<Notification> jsonDeserializer = new JsonDeserializer<>(Notification.class, false);
 
         return new DefaultKafkaConsumerFactory<>(props, new StringDeserializer(), jsonDeserializer);
@@ -33,6 +37,7 @@ public class KafkaConfig {
     public ConcurrentKafkaListenerContainerFactory<String, Notification> kafkaListenerContainerFactory() {
         ConcurrentKafkaListenerContainerFactory<String, Notification> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
+        factory.getContainerProperties().setAckMode(org.springframework.kafka.listener.ContainerProperties.AckMode.MANUAL_IMMEDIATE);
         return factory;
     }
 }

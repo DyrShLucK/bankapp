@@ -282,10 +282,8 @@ public class ApiServiceDTO {
 
             kafkaTemplate.send("notifications.responses", username, notification);
 
-            System.out.println("User edit notification sent to Kafka topic 'notifications.responses' for user: " + username);
 
         } catch (Exception e) {
-            System.err.println("Ошибка при подготовке/отправке уведомления об изменении пользователя для " + username + " в Kafka: " + e.getMessage());
             e.printStackTrace();
         }
     }
@@ -305,10 +303,8 @@ public class ApiServiceDTO {
             notification.setTimestamp(LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
             kafkaTemplate.send("notifications.responses", username, notification);
 
-            System.out.println("Password change notification sent to Kafka topic 'notifications.responses' for user: " + username);
 
         } catch (Exception e) {
-            System.err.println("Ошибка при подготовке/отправке уведомления о смене пароля для " + username + " в Kafka: " + e.getMessage());
             e.printStackTrace();
         }
     }

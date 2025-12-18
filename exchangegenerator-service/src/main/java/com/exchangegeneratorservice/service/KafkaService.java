@@ -19,11 +19,9 @@ public class KafkaService {
 
     public void sendExchangeRates(List<Value> rates) {
         try {
-            logger.info("Sending exchange rates to Kafka topic 'exchange.rates'");
 
             kafkaTemplate.send("exchange.rates", "rates", rates);
 
-            logger.info("Exchange rates successfully sent to Kafka topic 'exchange.rates'");
         } catch (Exception e) {
             logger.error("Failed to send exchange rates to Kafka", e);
         }

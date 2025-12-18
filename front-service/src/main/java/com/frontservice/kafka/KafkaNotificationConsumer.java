@@ -30,7 +30,6 @@ public class KafkaNotificationConsumer {
                 return;
             }
 
-            logger.info("Received notification for user: {} with message: {}", username, notification.getMessage());
             displayService.sendNotificationToUser(username, notification);
 
         } catch (Exception e) {
