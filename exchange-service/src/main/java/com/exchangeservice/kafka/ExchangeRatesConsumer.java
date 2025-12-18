@@ -1,5 +1,7 @@
 package com.exchangeservice.kafka;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.exchange_service.generated.post.domain.Value;
 import com.exchangeservice.service.ExchangeGet;
 import org.slf4j.Logger;
@@ -20,14 +22,19 @@ public class ExchangeRatesConsumer {
     @Autowired
     private ExchangeGet exchangeGet;
 
-    @KafkaListener(topics = "exchange.rates", groupId = "exchange-service-group")
-    public void consumeExchangeRates(Object ratesObj, @Header(KafkaHeaders.RECEIVED_KEY) String key) {
-        try {
-            @SuppressWarnings("unchecked")
-            List<Value> rates = (List<Value>) ratesObj;
+    @Autowired
+    private ObjectMapper objectMapper;
 
+    @KafkaListener(topics = "exchange.rates", groupId = "exchange-service-group")
+    public void consumeExchangeRates(List rawRates, @Header(KafkaHeaders.RECEIVED_KEY) String key) {
+        try {
             logger.info("Received exchange rates from Kafka topic 'exchange.rates', key: {}, rates count: {}",
-                    key, rates.size());
+                    key, rawRates.size());
+
+            // Преобразование raw List в List<Value>
+            List<Value> rates = objectMapper.convertValue(rawRates, new TypeReference<List<Value>>() {});
+
+            logger.info("Converted {} raw objects to Value objects", rates.size());
 
             // Обновляем кэш курсов в ExchangeGet
             exchangeGet.updateCachedRates(rates);
