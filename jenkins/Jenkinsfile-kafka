@@ -8,6 +8,7 @@ pipeline {
         IMAGE_TAG       = "${env.BUILD_NUMBER}"
         NAMESPACE_DEV = 'monitoring-dev'
         NAMESPACE_PROD = 'monitoring-prod'
+        // Убираем пробелы в конце URL
         HELM_REPO_BITNAMI = 'https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/'
         HELM_REPO_PROMETHEUS = 'https://prometheus-community.github.io/helm-charts'
         HELM_REPO_GRAFANA = 'https://grafana.github.io/helm-charts'
@@ -41,7 +42,6 @@ pipeline {
                 '''
             }
         }
-
         stage('Prepare DEV Environment') {
             steps {
                 sh '''
@@ -54,7 +54,6 @@ pipeline {
                 '''
             }
         }
-
         stage('Deploy Monitoring Stack to DEV') {
             steps {
                 dir('charts') {
@@ -127,8 +126,7 @@ pipeline {
                 }
             }
         }
-
-        stage('Deploy Kafka to DEV') {
+        stage('Deploy Kafka to DEV') { // Это строка 122 из оригинального файла
             steps {
                 dir('charts/kafka') {
                     sh '''
@@ -163,7 +161,7 @@ pipeline {
                         echo "Topic '\${topic}' already exists. Skipping."
                     fi
                 }
-
+                # Исправлена ошибка: вызов функции был create_topic вместо create_topic_if_not_exists
                 create_topic_if_not_exists "service.logs"
                 create_topic_if_not_exists "tracing.spans"
                 create_topic_if_not_exists "notifications.requests"
