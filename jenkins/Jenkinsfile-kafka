@@ -18,7 +18,7 @@ pipeline {
         stage('Setup Helm Repo') {
             steps {
                 sh '''
-                helm repo add bitnami https://raw.githubusercontent.com/bitnami/charts/refs/heads/archive-full-index/bitnami/
+                helm repo add bitnami ${HELM_REPO_BITNAMI}
                 helm repo add prometheus-community ${HELM_REPO_PROMETHEUS}
                 helm repo add grafana ${HELM_REPO_GRAFANA}
                 helm repo add elastic ${HELM_REPO_ELASTIC}
@@ -41,90 +41,93 @@ pipeline {
                 '''
             }
         }
+
         stage('Prepare DEV Environment') {
-                    steps {
-                        sh '''
-                        kubectl create namespace ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
-                        kubectl create namespace kafka-dev --dry-run=client -o yaml | kubectl apply -f -
+            steps {
+                sh '''
+                kubectl create namespace ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
+                kubectl create namespace kafka-dev --dry-run=client -o yaml | kubectl apply -f -
 
-                        # Создаем секреты для безопасности
-                        kubectl create secret generic elastic-credentials --from-literal=kibana_password=admin -n ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
-                        kubectl create secret generic grafana-admin --from-literal=admin-password=admin -n ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
-                        '''
-                    }
-                }
+                # Создаем секреты для безопасности
+                kubectl create secret generic elastic-credentials --from-literal=kibana_password=admin -n ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
+                kubectl create secret generic grafana-admin --from-literal=admin-password=admin -n ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
+                '''
+            }
+        }
+
         stage('Deploy Monitoring Stack to DEV') {
-                    steps {
-                        dir('charts') {
-                            sh '''
-                            # Deploy полный стек мониторинга (Prometheus + Grafana + Alertmanager)
-                            helm upgrade --install monitoring ./monitoring \
-                                --namespace ${NAMESPACE_DEV} \
-                                --values monitoring/values-dev.yaml \
-                                --create-namespace
+            steps {
+                dir('charts') {
+                    sh '''
+                    # Deploy полный стек мониторинга (Prometheus + Grafana + Alertmanager)
+                    helm upgrade --install monitoring ./monitoring \
+                        --namespace ${NAMESPACE_DEV} \
+                        --values monitoring/values-dev.yaml \
+                        --create-namespace
 
-                            # Deploy Zipkin отдельно
-                            helm upgrade --install zipkin ./zipkin \
-                                --namespace ${NAMESPACE_DEV} \
-                                --values zipkin/values-dev.yaml \
-                                --create-namespace
+                    # Deploy Zipkin отдельно
+                    helm upgrade --install zipkin ./zipkin \
+                        --namespace ${NAMESPACE_DEV} \
+                        --values zipkin/values-dev.yaml \
+                        --create-namespace
 
-                            # Ждем пока все компоненты запустятся
-                            echo "Waiting for monitoring components to be ready..."
-                            sleep 60
+                    # Ждем пока все компоненты запустятся
+                    echo "Waiting for monitoring components to be ready..."
+                    sleep 60
 
-                            kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=prometheus -n ${NAMESPACE_DEV} --timeout=300s || true
-                            kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=grafana -n ${NAMESPACE_DEV} --timeout=300s || true
-                            kubectl wait --for=condition=Ready pod -l app=zipkin -n ${NAMESPACE_DEV} --timeout=300s || true
-                            '''
-                        }
-                    }
+                    kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=prometheus -n ${NAMESPACE_DEV} --timeout=300s || true
+                    kubectl wait --for=condition=Ready pod -l app.kubernetes.io/name=grafana -n ${NAMESPACE_DEV} --timeout=300s || true
+                    kubectl wait --for=condition=Ready pod -l app=zipkin -n ${NAMESPACE_DEV} --timeout=300s || true
+                    '''
                 }
+            }
+        }
 
-                stage('Deploy ELK Stack to DEV') {
-                    steps {
-                        dir('charts') {
-                            sh '''
-                            # Deploy Elasticsearch
-                            helm upgrade --install elasticsearch ./elasticsearch \
-                                --namespace ${NAMESPACE_DEV} \
-                                --values elasticsearch/values-dev.yaml \
-                                --create-namespace
+        stage('Deploy ELK Stack to DEV') {
+            steps {
+                dir('charts') {
+                    sh '''
+                    # Deploy Elasticsearch
+                    helm upgrade --install elasticsearch ./elasticsearch \
+                        --namespace ${NAMESPACE_DEV} \
+                        --values elasticsearch/values-dev.yaml \
+                        --create-namespace
 
-                            # Ждем пока Elasticsearch станет готовым
-                            echo "Waiting for Elasticsearch to be ready..."
-                            sleep 90
+                    # Ждем пока Elasticsearch станет готовым
+                    echo "Waiting for Elasticsearch to be ready..."
+                    sleep 90
 
-                            # Deploy Logstash
-                            helm upgrade --install logstash ./logstash \
-                                --namespace ${NAMESPACE_DEV} \
-                                --values logstash/values-dev.yaml \
-                                --create-namespace
+                    # Deploy Logstash
+                    helm upgrade --install logstash ./logstash \
+                        --namespace ${NAMESPACE_DEV} \
+                        --values logstash/values-dev.yaml \
+                        --create-namespace
 
-                            # Deploy Kibana
-                            helm upgrade --install kibana ./kibana \
-                                --namespace ${NAMESPACE_DEV} \
-                                --values kibana/values-dev.yaml \
-                                --create-namespace
+                    # Deploy Kibana
+                    helm upgrade --install kibana ./kibana \
+                        --namespace ${NAMESPACE_DEV} \
+                        --values kibana/values-dev.yaml \
+                        --create-namespace
 
-                            # Ждем пока все компоненты ELK запустятся
-                            echo "Waiting for ELK components to be ready..."
-                            sleep 60
+                    # Ждем пока все компоненты ELK запустятся
+                    echo "Waiting for ELK components to be ready..."
+                    sleep 60
 
-                            kubectl wait --for=condition=Ready pod -l app=elasticsearch-master -n ${NAMESPACE_DEV} --timeout=600s || true
-                            kubectl wait --for=condition=Ready pod -l app=logstash -n ${NAMESPACE_DEV} --timeout=300s || true
-                            kubectl wait --for=condition=Ready pod -l app=kibana -n ${NAMESPACE_DEV} --timeout=300s || true
+                    kubectl wait --for=condition=Ready pod -l app=elasticsearch-master -n ${NAMESPACE_DEV} --timeout=600s || true
+                    kubectl wait --for=condition=Ready pod -l app=logstash -n ${NAMESPACE_DEV} --timeout=300s || true
+                    kubectl wait --for=condition=Ready pod -l app=kibana -n ${NAMESPACE_DEV} --timeout=300s || true
 
-                            # Импортируем дашборды в Kibana
-                            echo "Importing Kibana dashboards..."
-                            sleep 30
-                            curl -X POST http://kibana.${NAMESPACE_DEV}.svc.cluster.local:5601/api/saved_objects/_import \
-                                -H "kbn-xsrf: true" \
-                                --form file=@kibana/config/dashboards.ndjson || true
-                            '''
-                        }
-                    }
+                    # Импортируем дашборды в Kibana
+                    echo "Importing Kibana dashboards..."
+                    sleep 30
+                    curl -X POST http://kibana.${NAMESPACE_DEV}.svc.cluster.local:5601/api/saved_objects/_import \
+                        -H "kbn-xsrf: true" \
+                        --form file=@kibana/config/dashboards.ndjson || true
+                    '''
                 }
+            }
+        }
+
         stage('Deploy Kafka to DEV') {
             steps {
                 dir('charts/kafka') {
@@ -160,60 +163,61 @@ pipeline {
                         echo "Topic '\${topic}' already exists. Skipping."
                     fi
                 }
-                create_topic "service.logs"
-                create_topic "tracing.spans"
+
+                create_topic_if_not_exists "service.logs"
+                create_topic_if_not_exists "tracing.spans"
                 create_topic_if_not_exists "notifications.requests"
                 create_topic_if_not_exists "notifications.responses"
                 create_topic_if_not_exists "exchange.rates"
                 """
             }
         }
-    }
-    stage('Verify All Components') {
-                steps {
-                    sh '''
-                    echo "=== VERIFYING ALL COMPONENTS ==="
 
-                    echo "1. Monitoring Stack status:"
-                    kubectl get pods -l app.kubernetes.io/name=prometheus -n ${NAMESPACE_DEV} || true
-                    kubectl get pods -l app.kubernetes.io/name=grafana -n ${NAMESPACE_DEV} || true
-                    kubectl get pods -l app=alertmanager -n ${NAMESPACE_DEV} || true
-                    kubectl get pods -l app=zipkin -n ${NAMESPACE_DEV} || true
-
-                    echo "2. ELK Stack status:"
-                    kubectl get pods -l app=elasticsearch-master -n ${NAMESPACE_DEV} || true
-                    kubectl get pods -l app=logstash -n ${NAMESPACE_DEV} || true
-                    kubectl get pods -l app=kibana -n ${NAMESPACE_DEV} || true
-
-                    echo "3. Kafka status:"
-                    kubectl get pods -l app.kubernetes.io/instance=kafka -n kafka-dev || true
-
-                    echo "=== ALL COMPONENTS ARE READY ==="
-                    '''
-                }
-            }
-        }
-
-    post {
-            success {
-                echo "✅ Full monitoring stack deployed successfully to ${NAMESPACE_DEV}!"
-                echo "🔗 Access URLs:"
-                echo "   Prometheus: http://prometheus.${NAMESPACE_DEV}.svc.cluster.local:9090"
-                echo "   Grafana: http://grafana.dev.yourdomain.com (admin/admin)"
-                echo "   Alertmanager: http://alertmanager.${NAMESPACE_DEV}.svc.cluster.local:9093"
-                echo "   Zipkin: http://zipkin.dev.yourdomain.com"
-                echo "   Kibana: http://kibana.dev.yourdomain.com"
-            }
-            failure {
-                echo "❌ Deployment failed! Checking component statuses..."
+        stage('Verify All Components') {
+            steps {
                 sh '''
-                kubectl get pods -n ${NAMESPACE_DEV}
-                kubectl describe pods -n ${NAMESPACE_DEV}
-                kubectl logs -l app.kubernetes.io/instance=kafka -n kafka-dev --tail=50 || true
+                echo "=== VERIFYING ALL COMPONENTS ==="
+
+                echo "1. Monitoring Stack status:"
+                kubectl get pods -l app.kubernetes.io/name=prometheus -n ${NAMESPACE_DEV} || true
+                kubectl get pods -l app.kubernetes.io/name=grafana -n ${NAMESPACE_DEV} || true
+                kubectl get pods -l app=alertmanager -n ${NAMESPACE_DEV} || true
+                kubectl get pods -l app=zipkin -n ${NAMESPACE_DEV} || true
+
+                echo "2. ELK Stack status:"
+                kubectl get pods -l app=elasticsearch-master -n ${NAMESPACE_DEV} || true
+                kubectl get pods -l app=logstash -n ${NAMESPACE_DEV} || true
+                kubectl get pods -l app=kibana -n ${NAMESPACE_DEV} || true
+
+                echo "3. Kafka status:"
+                kubectl get pods -l app.kubernetes.io/instance=kafka -n kafka-dev || true
+
+                echo "=== ALL COMPONENTS ARE READY ==="
                 '''
             }
-            always {
-                echo "🗄️ Build completed. Resources are deployed in namespace: ${NAMESPACE_DEV}"
-            }
         }
+    }
+
+    post {
+        success {
+            echo "✅ Full monitoring stack deployed successfully to ${NAMESPACE_DEV}!"
+            echo "🔗 Access URLs:"
+            echo "   Prometheus: http://prometheus.${NAMESPACE_DEV}.svc.cluster.local:9090"
+            echo "   Grafana: http://grafana.dev.yourdomain.com (admin/admin)"
+            echo "   Alertmanager: http://alertmanager.${NAMESPACE_DEV}.svc.cluster.local:9093"
+            echo "   Zipkin: http://zipkin.dev.yourdomain.com"
+            echo "   Kibana: http://kibana.dev.yourdomain.com"
+        }
+        failure {
+            echo "❌ Deployment failed! Checking component statuses..."
+            sh '''
+            kubectl get pods -n ${NAMESPACE_DEV}
+            kubectl describe pods -n ${NAMESPACE_DEV}
+            kubectl logs -l app.kubernetes.io/instance=kafka -n kafka-dev --tail=50 || true
+            '''
+        }
+        always {
+            echo "🗄️ Build completed. Resources are deployed in namespace: ${NAMESPACE_DEV}"
+        }
+    }
 }
