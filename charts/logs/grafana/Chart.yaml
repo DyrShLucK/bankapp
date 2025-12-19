@@ -1,0 +1,9 @@
+apiVersion: v2
+name: grafana
+description: Grafana dashboard and visualization platform
+type: application
+version: 0.1.0
+appVersion: "10.1.4"
+maintainers:
+  - name: Your Name
+    email: your.email@example.com

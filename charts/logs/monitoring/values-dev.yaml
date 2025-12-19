@@ -1,0 +1,143 @@
+# Используем kube-prometheus-stack как основу
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    resources:
+      requests:
+        memory: 400Mi
+        cpu: 100m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 10Gi
+
+grafana:
+  enabled: true
+  adminPassword: "admin"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  persistence:
+    enabled: false
+  ingress:
+    enabled: true
+    className: "nginx"
+    hosts:
+      - grafana.dev.yourdomain.com
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.dev.yourdomain.com
+
+alertmanager:
+  enabled: true
+  config:
+    global:
+      resolve_timeout: 5m
+    route:
+      receiver: 'default'
+      group_by: ['alertname']
+      group_wait: 30s
+      group_interval: 5m
+      repeat_interval: 1h
+    receivers:
+      - name: 'default'
+        email_configs:
+          - to: 'alerts@yourdomain.com'
+            from: 'alertmanager@yourdomain.com'
+            smarthost: 'smtp.yourdomain.com:587'
+            auth_username: 'smtp-user'
+            auth_password: 'smtp-password'
+            headers:
+              subject: '{{ .Status | toUpper }}: {{ .CommonAnnotations.summary | default .CommonAnnotations.description | default .GroupLabels.alertname }}'
+            html: |
+              <h2>Alert: {{ .GroupLabels.alertname }}</h2>
+              <p><strong>Status:</strong> {{ .Status | toUpper }}</p>
+              <p><strong>Description:</strong> {{ .CommonAnnotations.description }}</p>
+              <p><strong>Details:</strong></p>
+              <ul>
+                {{ range .Alerts }}
+                <li>
+                  <strong>Instance:</strong> {{ .Labels.instance }}<br/>
+                  <strong>Severity:</strong> {{ .Labels.severity }}<br/>
+                  <strong>Value:</strong> {{ .Annotations.value }}<br/>
+                  <strong>Time:</strong> {{ .StartsAt.Format "2006-01-02 15:04:05 UTC" }}
+                </li>
+                {{ end }}
+              </ul>
+              <p><a href="http://grafana.dev.yourdomain.com/alerting/list">View in Grafana</a></p>
+
+kubeStateMetrics:
+  enabled: true
+
+nodeExporter:
+  enabled: true
+
+# Настройки алертов для микросервисов
+prometheusRules:
+  enabled: true
+  groups:
+    - name: microservices.rules
+      rules:
+        - alert: HighErrorRate
+          expr: sum(rate(http_server_requests_seconds_count{status=~"5.."}[5m])) by (service, uri) / sum(rate(http_server_requests_seconds_count[5m])) by (service, uri) > 0.1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High error rate on {{ $labels.service }}"
+            description: "Error rate is above 10% for service {{ $labels.service }} on endpoint {{ $labels.uri }}"
+
+        - alert: HighRequestLatency
+          expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket[5m])) by (le, service)) > 1
+          for: 10m
+          labels:
+            severity: warning
+          annotations:
+            summary: "High request latency on {{ $labels.service }}"
+            description: "95th percentile latency is above 1 second for service {{ $labels.service }}"
+
+        - alert: LowOrderRate
+          expr: sum(rate(orders_total[1m])) < 10
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Low order rate"
+            description: "Order rate has dropped below 10 orders per minute"
+
+        - alert: FailedLoginAttempts
+          expr: sum(rate(spring_security_authentication_failures_total[5m])) by (service) > 5
+          for: 5m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Multiple failed login attempts on {{ $labels.service }}"
+            description: "More than 5 failed login attempts per minute detected on service {{ $labels.service }}"
+
+# ServiceMonitor для микросервисов
+serviceMonitors:
+  - name: microservices
+    selector:
+      matchLabels:
+        app: microservice
+    namespaceSelector:
+      any: true
+    endpoints:
+      - port: http
+        path: /actuator/prometheus
+        interval: 15s
+        scrapeTimeout: 10s

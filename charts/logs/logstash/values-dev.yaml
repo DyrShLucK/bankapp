@@ -1,0 +1,64 @@
+replicaCount: 1
+
+image:
+  repository: docker.elastic.co/logstash/logstash
+  tag: "8.12.0"
+  pullPolicy: IfNotPresent
+
+resources:
+  requests:
+    cpu: "200m"
+    memory: "512Mi"
+  limits:
+    cpu: "500m"
+    memory: "1Gi"
+
+pipeline:
+  config:
+    coffee-logs.conf: |
+      input {
+        kafka {
+          bootstrap_servers => "kafka.kafka-dev.svc.cluster.local:9092"
+          topics => ["service.logs"]
+          group_id => "logstash-group"
+          auto_offset_reset => "latest"
+          decorate_events => true
+        }
+      }
+      filter {
+        json {
+          source => "message"
+          target => "parsed_log"
+        }
+        mutate {
+          add_field => {
+            "traceId" => "%{[parsed_log][traceId]}"
+            "spanId" => "%{[parsed_log][spanId]}"
+          }
+        }
+        mutate {
+          gsub => [
+            "message", "(password|passwd|pwd)[^,]*", "[REDACTED]",
+            "message", "(credit_card|card_number)[^,]*", "[REDACTED]"
+          ]
+        }
+      }
+      output {
+        elasticsearch {
+          hosts => ["http://elasticsearch-master.elasticsearch-dev.svc.cluster.local:9200"]
+          index => "service-logs-%{+YYYY.MM.dd}"
+        }
+        stdout {
+          codec => rubydebug
+        }
+      }
+
+service:
+  type: ClusterIP
+  port: 5044
+
+env:
+  - name: ELASTICSEARCH_HOST
+    value: "elasticsearch-master.elasticsearch-dev.svc.cluster.local"
+  - name: ELASTICSEARCH_PORT
+    value: "9200"

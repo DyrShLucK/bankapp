@@ -36,7 +36,7 @@ paths:
     post:
       summary: Обновление данных пользователя
       security:
-        - cookieAuth: []
+        - cookieAuth: [ ]
       parameters:
         - name: userName
           in: cookie

@@ -27,7 +27,7 @@ public class ResponseNotificationConsumer {
     public void consumeResponseNotification(
             Notification notification,
             @Header(KafkaHeaders.RECEIVED_KEY) String username,
-            Acknowledgment ack // ← добавлен параметр
+            Acknowledgment ack
     ) {
         try {
             if (username == null) {
@@ -46,6 +46,7 @@ public class ResponseNotificationConsumer {
 
         } catch (Exception e) {
             logger.error("Failed to process response notification received from Kafka topic 'notifications.responses': {}", notification, e);
+            ack.acknowledge();
         }
     }
 }
