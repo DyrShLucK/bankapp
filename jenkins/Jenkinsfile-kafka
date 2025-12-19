@@ -56,7 +56,7 @@ pipeline {
         }
         stage('Deploy Monitoring Stack to DEV') {
             steps {
-                dir('charts') {
+                dir('charts/logs') {
                     sh '''
                     # Deploy полный стек мониторинга (Prometheus + Grafana + Alertmanager)
                     helm upgrade --install monitoring ./monitoring \
@@ -84,7 +84,7 @@ pipeline {
 
         stage('Deploy ELK Stack to DEV') {
             steps {
-                dir('charts') {
+                dir('charts/logs') {
                     sh '''
                     # Deploy Elasticsearch
                     helm upgrade --install elasticsearch ./elasticsearch \
