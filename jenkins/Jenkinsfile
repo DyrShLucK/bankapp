@@ -21,7 +21,21 @@ pipeline {
                         }
                     }
                 }
-
+                stage('Trigger Kafka Pipeline') {
+                                steps {
+                                    script {
+                                        echo "=== Запуск пайплайна деплоя Kafka: bankapp-kafka-deploy ==="
+                                        try {
+                                            build job: 'bankapp-kafka-deploy',
+                                                 wait: true
+                                            echo "=== Пайплайн Kafka завершён успешно ==="
+                                        } catch (Exception e) {
+                                            echo "=== ОШИБКА при запуске пайплайна Kafka: ${e.getMessage()} ==="
+                                            throw e
+                                        }
+                                    }
+                                }
+                            }
                 stage('Build & Test All Projects') {
                     steps {
                         sh './gradlew clean test'
