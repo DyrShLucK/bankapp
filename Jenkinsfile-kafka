@@ -47,7 +47,7 @@ pipeline {
                         kubectl create namespace ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
                         kubectl create namespace kafka-dev --dry-run=client -o yaml | kubectl apply -f -
 
-                        # Создаем секреты для безопасности
+                        # Создаем секреты для безопасностиf
                         kubectl create secret generic elastic-credentials --from-literal=kibana_password=admin -n ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
                         kubectl create secret generic grafana-admin --from-literal=admin-password=admin -n ${NAMESPACE_DEV} --dry-run=client -o yaml | kubectl apply -f -
                         '''
