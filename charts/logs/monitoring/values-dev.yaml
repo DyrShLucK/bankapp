@@ -1,4 +1,10 @@
 # Используем kube-prometheus-stack как основу
+server:
+  service:
+    port: 9090
+pushgateway:
+  service:
+    port: 9091
 prometheus:
   prometheusSpec:
     serviceMonitorSelectorNilUsesHelmValues: false
@@ -43,6 +49,8 @@ grafana:
           - grafana.dev.yourdomain.com
 
 alertmanager:
+  service:
+    port: 9093
   enabled: true
   config:
     global:
