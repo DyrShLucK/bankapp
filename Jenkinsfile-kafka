@@ -206,6 +206,7 @@ pipeline {
             echo "   Zipkin: http://zipkin.dev.yourdomain.com"
             echo "   Kibana: http://kibana.dev.yourdomain.com"
         }
+
         failure {
             echo "❌ Deployment failed! Checking component statuses..."
             sh '''
