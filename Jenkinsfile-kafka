@@ -28,10 +28,11 @@ pipeline {
                 dir('charts/logs') {
                     sh '''
 
-                    helm upgrade --install zipkin bitnami/zipkin `
-                      --namespace ${MONITORING_NAMESPACE} `
-                      --create-namespace `
-                      -f zipkin/values-dev.yaml
+                    helm upgrade --install zipkin bitnami/zipkin \
+                        --namespace monitoring-dev \
+                        --create-namespace \
+                        --set resources.requests.memory=256Mi \
+                        --set resources.requests.cpu=100m
                     helm upgrade --install prometheus prometheus-community/prometheus \
                       --namespace ${MONITORING_NAMESPACE} \
                       --create-namespace \

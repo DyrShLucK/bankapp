@@ -46,6 +46,7 @@ public class SecurityConfiguration {
                         .pathMatchers("/signup").permitAll()
                         .pathMatchers("/login").permitAll()
                         .pathMatchers("/logout").permitAll()
+                        .pathMatchers("/actuator/*").permitAll()
                         .anyExchange().permitAll()
                 )
                 .oauth2Client(withDefaults())
