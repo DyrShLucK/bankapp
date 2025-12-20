@@ -37,9 +37,9 @@ scrape_configs:
     metrics_path: '/actuator/prometheus'    # Путь к эндпоинту с метриками
     scrape_interval: 15s                    # Интервал для получения — каждые 15 секунд
     static_configs:
-      - targets: ['localhost:8080']         # Адрес (можно указать несколько — например, несколько подов в Kubernetes)
+      - targets: ['bankapp-dev-front-service']         # Адрес (можно указать несколько — например, несколько подов в Kubernetes)
         labels:
-          application: 'orders-servic
+          application: 'front-service'
 grafana:
   enabled: true
   adminPassword: "admin"
