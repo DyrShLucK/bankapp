@@ -20,17 +20,21 @@ prometheus:
             requests:
               storage: 1Gi
 serviceMonitors:
-  - name: microservices
+  - selector:
+      matchLabels:
+        monitoring: enabled
+  - name: front-service
     selector:
       matchLabels:
-        app: microservice
+        app.kubernetes.io/name: front-service
+        app.kubernetes.io/instance: front-service
     namespaceSelector:
-      any: true
+      matchNames:
+        - bankapp-dev
     endpoints:
       - port: http
         path: /actuator/prometheus
         interval: 15s
-        scrapeTimeout: 10s
 
   - name: front-service
     selector:
