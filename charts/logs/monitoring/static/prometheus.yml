@@ -19,25 +19,3 @@ scrape_configs:
       - targets: [ 'bankapp-dev-front-service.bankapp-dev.svc.cluster.local:8083' ]
         labels:
           application: 'front-service'
-
-grafana:
-  enabled: true
-  adminPassword: "admin"
-  resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 1Gi
-  persistence:
-    enabled: false
-  ingress:
-    enabled: true
-    className: "nginx"
-    hosts:
-      - grafana.dev.bankapp.com
-    tls:
-      - secretName: grafana-tls
-        hosts:
-          - grafana.dev.bankapp.com
