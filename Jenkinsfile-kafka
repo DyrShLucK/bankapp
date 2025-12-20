@@ -27,7 +27,7 @@ pipeline {
             steps {
                 dir('charts/logs/monitoring') {
                     sh '''
-                    helm dependency upgrade
+                    helm dependency update
                     helm upgrade --install monitoring . \
                       --namespace ${MONITORING_NAMESPACE} \
                       --create-namespace \
