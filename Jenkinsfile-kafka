@@ -28,7 +28,7 @@ pipeline {
                 dir('charts/logs/monitoring') {
                     sh '''
                     helm dependency update
-                    helm upgrade --install monitoring . \
+                    helm upgrade --install prometheus prometheus-community/prometheus . \
                       --namespace ${MONITORING_NAMESPACE} \
                       --create-namespace \
                       -f values-dev.yaml
