@@ -32,6 +32,14 @@ serviceMonitors:
       - port: http
         path: /actuator/prometheus
         interval: 15s
+scrape_configs:
+  - job_name: 'front-service'              # Название задачи
+    metrics_path: '/actuator/prometheus'    # Путь к эндпоинту с метриками
+    scrape_interval: 15s                    # Интервал для получения — каждые 15 секунд
+    static_configs:
+      - targets: ['localhost:8080']         # Адрес (можно указать несколько — например, несколько подов в Kubernetes)
+        labels:
+          application: 'orders-servic
 grafana:
   enabled: true
   adminPassword: "admin"

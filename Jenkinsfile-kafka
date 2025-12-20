@@ -33,6 +33,11 @@ pipeline {
                       --create-namespace \
                       -f values-dev.yaml
                     '''
+                    dir('static') { /
+                                        sh '''
+                                        kubectl apply -f . -n ${MONITORING_NAMESPACE} #
+                                        '''
+                                    }
                 }
             }
         }
