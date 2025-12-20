@@ -83,6 +83,7 @@ public class SecurityConfig {
                 .csrf(ServerHttpSecurity.CsrfSpec::disable)
                 .authorizeExchange(exchanges -> exchanges
                         .pathMatchers("/signup").permitAll()
+                        .pathMatchers("/actuator/*").permitAll()
                         .anyExchange().permitAll()
                 )
                 .formLogin(form -> form

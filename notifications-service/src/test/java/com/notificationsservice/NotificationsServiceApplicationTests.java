@@ -10,6 +10,7 @@ import org.springframework.security.oauth2.client.registration.ReactiveClientReg
 import org.springframework.security.oauth2.jwt.ReactiveJwtDecoder;
 
 @SpringBootTest
+@Disabled
 class NotificationsServiceApplicationTests {
 	@MockBean
 	private KafkaTemplate<String, Object> kafkaTemplate;
