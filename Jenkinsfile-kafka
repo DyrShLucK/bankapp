@@ -25,12 +25,17 @@ pipeline {
 
         stage('Deploy Monitoring Stack') {
             steps {
-                dir('charts/logs/monitoring') {
+                dir('charts/logs') {
                     sh '''
+
+                    helm upgrade --install zipkin bitnami/zipkin `
+                      --namespace ${MONITORING_NAMESPACE} `
+                      --create-namespace `
+                      -f zipkin/values-dev.yaml
                     helm upgrade --install prometheus prometheus-community/prometheus \
                       --namespace ${MONITORING_NAMESPACE} \
                       --create-namespace \
-                      -f values-dev.yaml
+                      -f monitoring/values-dev.yaml
                     '''
                 }
             }

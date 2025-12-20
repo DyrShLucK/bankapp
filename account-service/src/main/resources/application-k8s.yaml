@@ -1,5 +1,23 @@
 server:
   port: 8081
+management:
+  zipkin:
+    tracing:
+      endpoint: http://zipkin.monitoring-dev.svc.cluster.local:9411/api/v2/spans
+  tracing:
+    sampling:
+      probability: 1
+  endpoints:
+    web:
+      exposure:
+        include: health,info,prometheus,metrics
+  endpoint:
+    health:
+      show-details: always
+  metrics:
+    tags:
+      application: account-service
+      env: dev
 spring:
   cloud:
     config:
