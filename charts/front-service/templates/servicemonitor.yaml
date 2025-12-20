@@ -2,7 +2,7 @@ apiVersion: monitoring.coreos.com/v1
 kind: ServiceMonitor
 metadata:
   name: {{ include "front-service.fullname" . }}-monitor
-  namespace: monitoring
+  namespace: monitoring-dev
   labels:
     {{- include "front-service.labels" . | nindent 4 }}
     release: prometheus-stack
