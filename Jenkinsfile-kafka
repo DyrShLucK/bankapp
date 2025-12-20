@@ -47,6 +47,19 @@ pipeline {
             }
         }
 
+        stage('Clean Up Previous Kafka Installation') {
+            steps {
+                sh '''
+                helm uninstall kafka --namespace kafka-dev || true
+                sleep 10
+                kubectl delete pvc -n kafka-dev data-kafka-controller-0 data-kafka-controller-1 data-kafka-controller-2 || true
+                kubectl delete secret -n kafka-dev kafka-kraft || true
+                kubectl delete namespace kafka-dev || true
+                sleep 10
+                '''
+            }
+        }
+
         stage('Deploy Kafka to DEV') {
             steps {
                 dir('charts/kafka') {
