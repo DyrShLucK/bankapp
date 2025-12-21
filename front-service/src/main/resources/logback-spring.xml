@@ -36,10 +36,23 @@
         </appender>
     </springProfile>
 
-    <root level="INFO">
-        <springProfile name="!local"><appender-ref ref="KAFKA"/></springProfile>
-        <springProfile name="local"><appender-ref ref="STDOUT"/></springProfile>
-    </root>
+    <springProfile name="!local">
+        <root level="INFO">
+            <appender-ref ref="KAFKA"/>
+        </root>
+    </springProfile>
 
-    <logger name="com.yourbank" level="DEBUG" />
+    <springProfile name="local">
+        <root level="INFO">
+            <appender-ref ref="STDOUT"/>
+        </root>
+    </springProfile>
+
+    <springProfile name="!local">
+        <logger name="com.yourbank" level="DEBUG" />
+    </springProfile>
+
+    <springProfile name="local">
+        <logger name="com.yourbank" level="DEBUG" />
+    </springProfile>
 </configuration>
