@@ -7,10 +7,10 @@ imagePullPolicy: "IfNotPresent"
 resources:
   limits:
     cpu: 1000m
-    memory: 1Gi
+    memory: 512Mi
   requests:
     cpu: 100m
-    memory: 512Mi
+    memory: 128Mi
 probes:
   livenessInitialDelaySeconds: 120
   readinessInitialDelaySeconds: 60
