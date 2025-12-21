@@ -1,17 +1,53 @@
+enabled: true
 
-clusterName: "elasticsearch"
-nodeGroup: "master"
+cluster:
+  name: "my-es-cluster"
 
-replicas: 1
-minimumMasterNodes: 1
+image:
+  repository: "docker.elastic.co/elasticsearch/elasticsearch"
+  tag: "8.11.0"
+  pullPolicy: "IfNotPresent"
 
-esJavaOpts: "-Xmx512m -Xms512m"
+resources:
+  limits:
+    cpu: "1000m"
+    memory: "1Gi"
+  requests:
+    cpu: "256m"
+    memory: "1Gi"
 
-persistence:
-  enabled: false # или настройте storageClass для prod
-
+# --- Настройки сервиса ---
 service:
   type: ClusterIP
-  ports:
-    - port: 9200
-      name: http
+  port: 9200
+
+probes:
+  liveness:
+    initialDelaySeconds: 120
+    periodSeconds: 10
+    timeoutSeconds: 10
+    failureThreshold: 3
+  readiness:
+    initialDelaySeconds: 90
+    periodSeconds: 5
+    timeoutSeconds: 5
+    failureThreshold: 3
+
+extraEnv:
+  - name: "discovery.type"
+    value: "single-node"
+  - name: "ES_JAVA_OPTS"
+    value: "-Xms2g -Xmx2g"
+  - name: "xpack.security.enabled"
+    value: "false"
+  - name: "xpack.security.http.ssl.enabled"
+    value: "false"
+  - name: "xpack.security.transport.ssl.enabled"
+    value: "false"
+  - name: "xpack.monitoring.collection.enabled"
+    value: "false"
+
+esConfig: {}
+
+persistence:
+  enabled: false

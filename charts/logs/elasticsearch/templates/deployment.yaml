@@ -1,0 +1,77 @@
+{{- if .Values.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "elasticsearch.fullname" . }}
+  labels:
+    {{- include "elasticsearch.labels" . | nindent 4 }}
+spec:
+  replicas: {{ .Values.replicas | default 1 }}
+  selector:
+    matchLabels:
+      {{- include "elasticsearch.selectorLabels" . | nindent 6 }}
+  template:
+    metadata:
+      labels:
+        {{- include "elasticsearch.selectorLabels" . | nindent 8 }}
+    spec:
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+  {{- range $index, $envVar := .Values.extraEnv }}
+- name: {{ $envVar.name }}
+  value: {{ $envVar.value | quote }}
+  {{- end }}
+ports:
+  - containerPort: {{ .Values.service.port }}
+    name: http
+livenessProbe:
+  httpGet:
+    path: /
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: {{ .Values.probes.liveness.initialDelaySeconds }}
+  periodSeconds: {{ .Values.probes.liveness.periodSeconds }}
+  timeoutSeconds: {{ .Values.probes.liveness.timeoutSeconds }}
+  failureThreshold: {{ .Values.probes.liveness.failureThreshold }}
+readinessProbe:
+  httpGet:
+    path: /
+    port: http
+    scheme: HTTP
+  initialDelaySeconds: {{ .Values.probes.readiness.initialDelaySeconds }}
+  periodSeconds: {{ .Values.probes.readiness.periodSeconds }}
+  timeoutSeconds: {{ .Values.probes.readiness.timeoutSeconds }}
+  failureThreshold: {{ .Values.probes.readiness.failureThreshold }}
+resources:
+  {{- if .Values.resources }}
+  {{ toYaml .Values.resources | indent 10 }}
+  {{- end }}
+volumeMounts:
+  {{- if .Values.esConfig }}
+- name: elasticsearch-config
+  mountPath: /usr/share/elasticsearch/config/elasticsearch.yml
+  subPath: elasticsearch.yml
+  readOnly: true
+  {{- end }}
+  {{- if .Values.persistence.enabled }}
+volumes:
+  - name: elasticsearch-data
+    persistentVolumeClaim:
+      claimName: {{ include "elasticsearch.fullname" . }}-data
+  {{- if .Values.esConfig }}
+  - name: elasticsearch-config
+configMap:
+  name: {{ include "elasticsearch.fullname" . }}-config
+  {{- end }}
+  {{- else }}
+volumes:
+  {{- if .Values.esConfig }}
+- name: elasticsearch-config
+  configMap:
+    name: {{ include "elasticsearch.fullname" . }}-config
+{{- end }}
+{{- end }}
+{{- end }}
