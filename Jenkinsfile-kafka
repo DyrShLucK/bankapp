@@ -54,6 +54,7 @@ pipeline {
                     steps {
                         dir('charts/logs') {
                             sh '''
+                            kubectl delete namespace log
                             helm dependency update elasticsearch
                             helm upgrade --install elasticsearch ./elasticsearch \
                             --namespace log --create-namespace \

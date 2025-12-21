@@ -38,6 +38,12 @@ dependencies {
 	implementation 'org.springframework.kafka:spring-kafka'
 	implementation 'com.fasterxml.jackson.core:jackson-databind'
 
+	implementation 'org.springframework.boot:spring-boot-starter-actuator'
+	implementation 'io.micrometer:micrometer-registry-prometheus'
+	implementation 'org.springframework.boot:spring-boot-starter-aop'
+	implementation "io.micrometer:micrometer-registry-prometheus:1.16.0"
+	implementation 'io.micrometer:micrometer-tracing-bridge-brave'
+	implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
 
 	implementation 'org.springframework.boot:spring-boot-starter'
 	implementation 'org.springdoc:springdoc-openapi-starter-webflux-ui:2.8.9'

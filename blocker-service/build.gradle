@@ -36,6 +36,7 @@ dependencies {
     implementation 'io.github.resilience4j:resilience4j-reactor:2.1.0'
     implementation 'io.github.resilience4j:resilience4j-circuitbreaker:2.1.0'
     implementation 'io.github.resilience4j:resilience4j-spring-boot2:2.1.0'
+
     implementation 'org.springframework.boot:spring-boot-starter-actuator'
     implementation 'io.micrometer:micrometer-registry-prometheus'
     implementation 'org.springframework.boot:spring-boot-starter-aop'
