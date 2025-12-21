@@ -26,14 +26,14 @@ pipeline {
             steps {
                 dir('charts/logs') {
                     sh '''
-                    helm upgrade --install zipkin bitnami/zipkin \
-                      --namespace ${MONITORING_NAMESPACE} \
-                      --create-namespace \
-                      -f zipkin/values-dev.yaml
-                    helm upgrade --install prometheus prometheus-community/prometheus \
-                      --namespace ${MONITORING_NAMESPACE} \
-                      --create-namespace \
-                      -f monitoring/values-dev.yaml
+                    //helm upgrade --install zipkin bitnami/zipkin \
+                    //  --namespace ${MONITORING_NAMESPACE} \
+                    //  --create-namespace \
+                    //  -f zipkin/values-dev.yaml
+                    //helm upgrade --install prometheus prometheus-community/prometheus \
+                    //  --namespace ${MONITORING_NAMESPACE} \
+                    //  --create-namespace \
+                    //  -f monitoring/values-dev.yaml
                     '''
                 }
             }
@@ -42,10 +42,10 @@ pipeline {
         stage('Verify Monitoring Stack') {
             steps {
                 script {
-                    echo "Waiting for Prometheus and Grafana to be ready..."
-                    sh "sleep 30"
-                    sh "kubectl rollout status deployment/monitoring-grafana -n ${MONITORING_NAMESPACE} || true"
-                    sh "kubectl rollout status statefulset/monitoring-kube-prometheus-prometheus -n ${MONITORING_NAMESPACE} || true"
+                    //echo "Waiting for Prometheus and Grafana to be ready..."
+                    //sh "sleep 30"
+                    //sh "kubectl rollout status deployment/monitoring-grafana -n ${MONITORING_NAMESPACE} || true"
+                    //sh "kubectl rollout status statefulset/monitoring-kube-prometheus-prometheus -n ${MONITORING_NAMESPACE} || true"
                 }
             }
         }
