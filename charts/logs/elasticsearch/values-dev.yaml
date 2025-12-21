@@ -1,39 +1,17 @@
-clusterName: "elasticsearch-dev"
+
+clusterName: "elasticsearch"
 nodeGroup: "master"
+
 replicas: 1
+minimumMasterNodes: 1
 
-roles:
-  master: "true"
-  data: "true"
-  ingest: "true"
-  ml: "false"
-
-esConfig:
-  elasticsearch.yml: |
-    xpack.security.enabled: false
-    xpack.monitoring.collection.enabled: true
-
-resources:
-  requests:
-    cpu: "500m"
-    memory: "1Gi"
-  limits:
-    cpu: "1000m"
-    memory: "2Gi"
+esJavaOpts: "-Xmx512m -Xms512m"
 
 persistence:
-  enabled: true
-  storageClass: "standard"
-  accessMode: ReadWriteOnce
-  size: 20Gi
-
-volumeClaimTemplate:
-  accessModes: ["ReadWriteOnce"]
-  storageClassName: "standard"
-  resources:
-    requests:
-      storage: 20Gi
+  enabled: false # или настройте storageClass для prod
 
 service:
   type: ClusterIP
-  port: 9200
+  ports:
+    - port: 9200
+      name: http

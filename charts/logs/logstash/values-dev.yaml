@@ -1,64 +1,39 @@
-replicaCount: 1
-
-image:
-  repository: docker.elastic.co/logstash/logstash
-  tag: "8.12.0"
-  pullPolicy: IfNotPresent
-
-resources:
-  requests:
-    cpu: "200m"
-    memory: "512Mi"
-  limits:
-    cpu: "500m"
-    memory: "1Gi"
-
-pipeline:
-  config:
-    coffee-logs.conf: |
-      input {
-        kafka {
-          bootstrap_servers => "kafka.kafka-dev.svc.cluster.local:9092"
-          topics => ["service.logs"]
-          group_id => "logstash-group"
-          auto_offset_reset => "latest"
-          decorate_events => true
-        }
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: logstash-pipeline
+  namespace: logging
+logstashPipeline:
+  logstash.conf: |
+    input {
+      kafka {
+        bootstrap_servers => "kafka.prod.svc.cluster.local:9092" # Адрес Kafka-сервера в кластере
+        topics => ["bank-app-logs"] # Название топика
+        group_id => "logstash-consumer-group" # Consumer Group ID
+        codec => json # Предполагается, что логи в JSON
+        auto_offset_reset => "latest" # Начинать с последнего сообщения
       }
-      filter {
+    }
+
+    filter {
+      # Пример фильтрации и парсинга JSON
+      if [message] {
         json {
           source => "message"
-          target => "parsed_log"
-        }
-        mutate {
-          add_field => {
-            "traceId" => "%{[parsed_log][traceId]}"
-            "spanId" => "%{[parsed_log][spanId]}"
-          }
-        }
-        mutate {
-          gsub => [
-            "message", "(password|passwd|pwd)[^,]*", "[REDACTED]",
-            "message", "(credit_card|card_number)[^,]*", "[REDACTED]"
-          ]
         }
       }
-      output {
-        elasticsearch {
-          hosts => ["http://elasticsearch-master.elasticsearch-dev.svc.cluster.local:9200"]
-          index => "service-logs-%{+YYYY.MM.dd}"
-        }
-        stdout {
-          codec => rubydebug
-        }
+      # Пример маскировки чувствительных данных (не идеальное решение, лучше на уровне микросервиса)
+      # mutate {
+      #   gsub => [
+      #     "[some_field]", "(\d{4})\d{4}(\d{4})", "\1****\2"
+      #   ]
+      # }
+    }
+
+    output {
+      elasticsearch {
+        hosts => ["http://elasticsearch-es-http.logging.svc.cluster.local:9200"] # Адрес ES в кластере
+        index => "bank-logs-%{+YYYY.MM.dd}" # Индекс с временным шаблоном
+        manage_template => false # Управление шаблонами через Kibana или отдельный Job
       }
-
-service:
-  type: ClusterIP
-  port: 5044
-
-env:
-  - name: ELASTICSEARCH_HOST
-    value: "elasticsearch-master.elasticsearch-dev.svc.cluster.local"
-  - name: ELASTICSEARCH_PORT
-    value: "9200"
+    }

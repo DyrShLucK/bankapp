@@ -12,7 +12,6 @@ pipeline {
     }
 
     stages {
-        // ========= НОВОЕ: Добавляем репозитории =========
         stage('Setup Helm Repos') {
             steps {
                 sh '''
@@ -51,6 +50,34 @@ pipeline {
                 }
             }
         }
+        stage('Deploy ELK Stack') {
+                    steps {
+                        dir('charts/logs') {
+                            sh '''
+                            helm repo add elastic https://helm.elastic.co
+                            helm repo update
+
+                            helm upgrade --install elasticsearch elastic/elasticsearch \
+                            -f elasticsearch/values-dev.yaml \
+                            --namespace log --create-namespace \
+                            --set enabled=true --set replicas=1
+
+                            helm upgrade --install logstash elastic/logstash  \
+                            --namespace log \
+                            -f logstash/values-dev.yaml \
+                            --set enabled=true \
+                            --set kafka.bootstrapServers="kafka.prod.svc.cluster.local:9092" \
+                            --set elasticsearch.hosts="http://elasticsearch-elasticsearch.logging.svc.cluster.local:9200"
+
+                            helm upgrade --install kibana elastic/kibana \
+                            --namespace log \
+                            -f elk/kibana/values.yaml \
+                            --set enabled=true \
+                            --set elasticsearch.hosts="http://elasticsearch-elasticsearch.logging.svc.cluster.local:9200"
+                            '''
+                        }
+                    }
+                }
 
         stage('Clean Up Previous Kafka Installation') {
             steps {

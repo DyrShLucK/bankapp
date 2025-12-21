@@ -3,7 +3,7 @@ server:
 management:
   zipkin:
     tracing:
-      endpoint: http://zipkin.monitoring-dev.svc.cluster.local:9411/api/v2/spans
+      endpoint: ${ZIPKIN_URL:http://localhost:9411/api/v2/spans}
   tracing:
     sampling:
       probability: 1

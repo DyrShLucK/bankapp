@@ -1,42 +1,10 @@
-replicaCount: 1
-
-image:
-  repository: docker.elastic.co/kibana/kibana
-  tag: "8.12.0"
-  pullPolicy: IfNotPresent
-
-resources:
-  requests:
-    cpu: "100m"
-    memory: "512Mi"
-  limits:
-    cpu: "500m"
-    memory: "1Gi"
-
-elasticsearchHosts: "http://elasticsearch-master.elasticsearch-dev.svc.cluster.local:9200"
+# elk/kibana/values.yaml
+# Пример минимальной конфигурации
+replicas: 1
 
 service:
-  type: ClusterIP
-  port: 5601
+  type: NodePort # или LoadBalancer, в зависимости от нужд
+  nodePort: 30601 # Укажи свободный порт, если type=NodePort
 
-ingress:
-  enabled: true
-  className: "nginx"
-  hosts:
-    - host: kibana.dev.yourdomain.com
-      paths:
-        - path: /
-          pathType: Prefix
-  tls:
-    - secretName: kibana-tls
-      hosts:
-        - kibana.dev.yourdomain.com
-
-env:
-  - name: ELASTICSEARCH_USERNAME
-    value: "kibana_system"
-  - name: ELASTICSEARCH_PASSWORD
-    valueFrom:
-      secretKeyRef:
-        name: elastic-credentials
-        key: kibana_password
+# Указываем адрес Elasticsearch
+elasticsearchHosts: "http://elasticsearch-es-http.logging.svc.cluster.local:9200"

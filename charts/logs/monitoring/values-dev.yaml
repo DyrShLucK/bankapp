@@ -22,24 +22,24 @@ server:
 
 
 
-  grafana:
+grafana:
+  enabled: true
+  adminPassword: "admin"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
+  persistence:
+    enabled: false
+  ingress:
     enabled: true
-    adminPassword: "admin"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 256Mi
-      limits:
-        cpu: 500m
-        memory: 1Gi
-    persistence:
-      enabled: false
-    ingress:
-      enabled: true
-      className: "nginx"
-      hosts:
-        - grafana.dev.bankapp.com
-      tls:
-        - secretName: grafana-tls
-          hosts:
-            - grafana.dev.bankapp.com
+    className: "nginx"
+    hosts:
+      - grafana.dev.bankapp.com
+    tls:
+      - secretName: grafana-tls
+        hosts:
+          - grafana.dev.bankapp.com
