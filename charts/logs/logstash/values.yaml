@@ -84,17 +84,17 @@ logstashJavaOpts: "-Xmx1g -Xms1g"
 
 resources:
   requests:
+    cpu: "50m"
+    memory: "128Mi"
+  limits:
     cpu: "100m"
     memory: "256Mi"
-  limits:
-    cpu: "500m"
-    memory: "512Mi"
 
 volumeClaimTemplate:
   accessModes: ["ReadWriteOnce"]
   resources:
     requests:
-      storage: 512Mi
+      storage: 256Mi
 
 rbac:
   create: false

@@ -54,6 +54,7 @@ dependencies {
     implementation 'io.zipkin.reporter2:zipkin-reporter-brave'
     implementation 'com.github.danielwegener:logback-kafka-appender:0.2.0-RC2'
     implementation 'org.apache.kafka:kafka-clients:3.7.0'
+    implementation 'net.logstash.logback:logstash-logback-encoder:7.4'
 
 
     implementation 'org.springframework.cloud:spring-cloud-starter-gateway-server-webflux'
