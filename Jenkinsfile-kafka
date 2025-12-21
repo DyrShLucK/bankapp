@@ -24,6 +24,7 @@ pipeline {
         stage('Clean Up Previous Kafka Installation') {
                     steps {
                         sh '''
+                        kubectl delete namespace kafka-dev | true
                         helm uninstall kafka --namespace kafka-dev || true
                         sleep 10
                         kubectl delete pvc -n kafka-dev data-kafka-controller-0 data-kafka-controller-1 data-kafka-controller-2 || true
@@ -71,6 +72,7 @@ pipeline {
 
                         create_topic_if_not_exists "notifications.requests"
                         create_topic_if_not_exists "notifications.responses"
+                        create_topic_if_not_exists "bank-app-logs"
                         """
                     }
                 }
