@@ -1,9 +1,12 @@
-apiVersion: v2
-name: logstash
-description: Logstash processing pipeline
-type: application
-version: 0.1.0
-appVersion: "8.12.0"
+apiVersion: v1
+description: Official Elastic helm chart for Logstash
+home: https://github.com/elastic/helm-charts
 maintainers:
-  - name: Your Name
-    email: your.email@example.com
+  - email: helm-charts@elastic.co
+    name: Elastic
+name: logstash
+version: 8.5.1
+appVersion: 8.5.1
+sources:
+  - https://github.com/elastic/logstash
+icon: https://helm.elastic.co/icons/logstash.png
