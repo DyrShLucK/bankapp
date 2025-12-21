@@ -57,7 +57,7 @@ pipeline {
 
                             helm upgrade --install elasticsearch ./elasticsearch \
                             --namespace log --create-namespace \
-                            -f values-dev.yaml
+                            -f elasticsearch/values-dev.yaml
 
                             helm upgrade --install logstash logstash ./logstash  \
                             --namespace log \
@@ -68,7 +68,7 @@ pipeline {
 
                             helm upgrade --install kibana kibana ./kibana \
                             --namespace log \
-                            -f elk/kibana/values.yaml \
+                            -f kibana/values-dev.yaml \
                             --set enabled=true \
                             --set elasticsearch.hosts="http://elasticsearch-elasticsearch.logging.svc.cluster.local:9200"
                             '''
