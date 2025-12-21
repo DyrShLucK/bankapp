@@ -26,7 +26,6 @@ pipeline {
             steps {
                 dir('charts/logs') {
                     sh '''
-
                     helm upgrade --install zipkin bitnami/zipkin \
                       --namespace ${MONITORING_NAMESPACE} \
                       --create-namespace \

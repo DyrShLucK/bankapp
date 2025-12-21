@@ -8,7 +8,7 @@ prometheus:
         memory: 400Mi
         cpu: 100m
       limits:
-        memory: 1Gi
+        memory: 512Mi
         cpu: 500m
     storageSpec:
       volumeClaimTemplate:
@@ -17,7 +17,7 @@ prometheus:
           accessModes: ["ReadWriteOnce"]
           resources:
             requests:
-              storage: 10Gi
+              storage: 1Gi
 
 grafana:
   enabled: true
@@ -28,7 +28,7 @@ grafana:
       memory: 256Mi
     limits:
       cpu: 500m
-      memory: 1Gi
+      memory: 512Mi
   persistence:
     enabled: false
   ingress:
