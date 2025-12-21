@@ -70,7 +70,7 @@ pipeline {
                             --namespace log \
                             -f kibana/values-dev.yaml \
                             --set enabled=true \
-                            --set elasticsearch.hosts="http://elasticsearch-elasticsearch.log.svc.cluster.local:9200"
+                            --set elasticsearch.hosts="https://elasticsearch-elasticsearch.log.svc.cluster.local:9200"
                             '''
                         }
                     }

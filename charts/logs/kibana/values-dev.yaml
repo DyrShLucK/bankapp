@@ -1,10 +1,11 @@
-# elk/kibana/values.yaml
-# Пример минимальной конфигурации
 replicas: 1
 
 service:
-  type: NodePort # или LoadBalancer, в зависимости от нужд
-  nodePort: 30601 # Укажи свободный порт, если type=NodePort
+  type: NodePort
+  nodePort: 30601
 
 # Указываем адрес Elasticsearch
-elasticsearchHosts: "http://elasticsearch-es-http.logging.svc.cluster.local:9200"
+elasticsearchHosts: "https://elasticsearch-es-http.log.svc.cluster.local:9200"
+elasticsearch:
+  username: "admin"
+  password: "admin"
