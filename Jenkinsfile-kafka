@@ -21,19 +21,72 @@ pipeline {
                 '''
             }
         }
+        stage('Clean Up Previous Kafka Installation') {
+                    steps {
+                        sh '''
+                        helm uninstall kafka --namespace kafka-dev || true
+                        sleep 10
+                        kubectl delete pvc -n kafka-dev data-kafka-controller-0 data-kafka-controller-1 data-kafka-controller-2 || true
+                        kubectl delete secret -n kafka-dev kafka-kraft || true
+                        kubectl delete namespace kafka-dev || true
+                        sleep 10
+                        '''
+                    }
+                }
 
+                stage('Deploy Kafka to DEV') {
+                    steps {
+                        dir('charts/kafka') {
+                            sh '''
+                            helm install kafka . --namespace kafka-dev --create-namespace -f values-dev.yaml --set kafka.replicaCount=1
+                            '''
+                        }
+                    }
+                }
+
+                stage('Verify Kafka Deployment') {
+                    steps {
+                        script {
+                            echo "Waiting for Kafka to be ready..."
+                            sh "sleep 60"
+                            sh "kubectl rollout status statefulset/kafka-controller -n kafka-dev"
+                        }
+                    }
+                }
+
+                stage('Create Kafka Topics') {
+                    steps {
+                        sh """
+                        kubectl wait --for=condition=ready pod/kafka-controller-0 -n ${NAMESPACE_DEV} --timeout=3m
+
+                        create_topic_if_not_exists() {
+                            local topic=\$1
+                            if ! kubectl exec -n ${NAMESPACE_DEV} kafka-controller-0 -- kafka-topics.sh --bootstrap-server kafka:9092 --list | grep -q \"^\${topic}\$\"; then
+                                echo "Creating topic: \${topic}"
+                                kubectl exec -n ${NAMESPACE_DEV} kafka-controller-0 -- kafka-topics.sh --bootstrap-server kafka:9092 --create --topic \${topic} --partitions 1 --replication-factor 1
+                            else
+                                echo "Topic '\${topic}' already exists. Skipping."
+                            fi
+                        }
+
+                        create_topic_if_not_exists "notifications.requests"
+                        create_topic_if_not_exists "notifications.responses"
+                        """
+                    }
+                }
+            }
         stage('Deploy Monitoring Stack') {
             steps {
                 dir('charts/logs') {
                     sh '''
-                    //helm upgrade --install zipkin bitnami/zipkin \
-                    //  --namespace ${MONITORING_NAMESPACE} \
-                    //  --create-namespace \
-                    //  -f zipkin/values-dev.yaml
-                    //helm upgrade --install prometheus prometheus-community/prometheus \
-                    //  --namespace ${MONITORING_NAMESPACE} \
-                    //  --create-namespace \
-                    //  -f monitoring/values-dev.yaml
+                    helm upgrade --install zipkin bitnami/zipkin \
+                      --namespace ${MONITORING_NAMESPACE} \
+                      --create-namespace \
+                      -f zipkin/values-dev.yaml
+                    helm upgrade --install prometheus prometheus-community/prometheus \
+                      --namespace ${MONITORING_NAMESPACE} \
+                      --create-namespace \
+                      -f monitoring/values-dev.yaml
                     '''
                 }
             }
@@ -42,10 +95,10 @@ pipeline {
         stage('Verify Monitoring Stack') {
             steps {
                 script {
-                    //echo "Waiting for Prometheus and Grafana to be ready..."
-                    //sh "sleep 30"
-                    //sh "kubectl rollout status deployment/monitoring-grafana -n ${MONITORING_NAMESPACE} || true"
-                    //sh "kubectl rollout status statefulset/monitoring-kube-prometheus-prometheus -n ${MONITORING_NAMESPACE} || true"
+                    echo "Waiting for Prometheus and Grafana to be ready..."
+                    sh "sleep 30"
+                    sh "kubectl rollout status deployment/monitoring-grafana -n ${MONITORING_NAMESPACE} || true"
+                    sh "kubectl rollout status statefulset/monitoring-kube-prometheus-prometheus -n ${MONITORING_NAMESPACE} || true"
                 }
             }
         }
@@ -78,60 +131,7 @@ pipeline {
                     }
                 }
 
-        stage('Clean Up Previous Kafka Installation') {
-            steps {
-                sh '''
-                helm uninstall kafka --namespace kafka-dev || true
-                sleep 10
-                kubectl delete pvc -n kafka-dev data-kafka-controller-0 data-kafka-controller-1 data-kafka-controller-2 || true
-                kubectl delete secret -n kafka-dev kafka-kraft || true
-                kubectl delete namespace kafka-dev || true
-                sleep 10
-                '''
-            }
-        }
 
-        stage('Deploy Kafka to DEV') {
-            steps {
-                dir('charts/kafka') {
-                    sh '''
-                    helm install kafka . --namespace kafka-dev --create-namespace -f values-dev.yaml --set kafka.replicaCount=1
-                    '''
-                }
-            }
-        }
-
-        stage('Verify Kafka Deployment') {
-            steps {
-                script {
-                    echo "Waiting for Kafka to be ready..."
-                    sh "sleep 60"
-                    sh "kubectl rollout status statefulset/kafka-controller -n kafka-dev"
-                }
-            }
-        }
-
-        stage('Create Kafka Topics') {
-            steps {
-                sh """
-                kubectl wait --for=condition=ready pod/kafka-controller-0 -n ${NAMESPACE_DEV} --timeout=3m
-
-                create_topic_if_not_exists() {
-                    local topic=\$1
-                    if ! kubectl exec -n ${NAMESPACE_DEV} kafka-controller-0 -- kafka-topics.sh --bootstrap-server kafka:9092 --list | grep -q \"^\${topic}\$\"; then
-                        echo "Creating topic: \${topic}"
-                        kubectl exec -n ${NAMESPACE_DEV} kafka-controller-0 -- kafka-topics.sh --bootstrap-server kafka:9092 --create --topic \${topic} --partitions 1 --replication-factor 1
-                    else
-                        echo "Topic '\${topic}' already exists. Skipping."
-                    fi
-                }
-
-                create_topic_if_not_exists "notifications.requests"
-                create_topic_if_not_exists "notifications.responses"
-                """
-            }
-        }
-    }
 
     post {
         success {
