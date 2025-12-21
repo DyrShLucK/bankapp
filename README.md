@@ -177,3 +177,22 @@ kubectl port-forward -n bankapp-dev svc/keycloak 8081:8080
 - Kafka разворачивается в Kubernetes через Helm-чарт Bitnami в namespace kafka-dev
 - Топики создаются автоматически в CI/CD-пайплайне после установки Kafka
 - Данные Kafka сохраняются на персистентных томах (PersistentVolume) и не теряются при перезапуске подов
+
+
+# Интеграция с логированием
+### Реализован Zipkin elk стек а также prometheus с визуализацией в grafana
+# Команды для пробрасывания портов
+
+kubectl port-forward svc/prometheus-operated 9090:80 -n monitoring-dev
+
+kubectl port-forward -n monitoring-dev svc/monitoring-grafana 3000:80
+
+kubectl port-forward svc/zipkin 9411:9411 -n monitoring-dev
+
+kubectl port-forward svc/kibana-kibana 5601:5601 -n log
+
+последний день дедлайна, пушу то что есть(исправно работает zipkin)
+
+
+
+
