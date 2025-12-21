@@ -59,14 +59,14 @@ pipeline {
                             --namespace log --create-namespace \
                             -f elasticsearch/values-dev.yaml
 
-                            helm upgrade --install logstash logstash ./logstash  \
+                            helm upgrade --install logstash ./logstash  \
                             --namespace log \
                             -f logstash/values-dev.yaml \
                             --set enabled=true \
                             --set kafka.bootstrapServers="kafka.prod.svc.cluster.local:9092" \
                             --set elasticsearch.hosts="http://elasticsearch-elasticsearch.logging.svc.cluster.local:9200"
 
-                            helm upgrade --install kibana kibana ./kibana \
+                            helm upgrade --install kibana ./kibana \
                             --namespace log \
                             -f kibana/values-dev.yaml \
                             --set enabled=true \
