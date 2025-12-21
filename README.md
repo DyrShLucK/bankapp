@@ -192,7 +192,7 @@ kubectl port-forward svc/zipkin 9411:9411 -n monitoring-dev
 kubectl port-forward svc/kibana-kibana 5601:5601 -n log
 
 последний день дедлайна, пушу то что есть(исправно работает zipkin)
-
+сложности с ресурсами, много требует
 
 
 
