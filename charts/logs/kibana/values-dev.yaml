@@ -1,11 +1,25 @@
-replicas: 1
+enabled: true
 
+image: "docker.elastic.co/kibana/kibana"
+imageTag: "8.5.1"
+imagePullPolicy: "IfNotPresent"
+
+resources:
+  limits:
+    cpu: 1000m
+    memory: 1Gi
+  requests:
+    cpu: 100m
+    memory: 512Mi
+probes:
+  livenessInitialDelaySeconds: 120
+  readinessInitialDelaySeconds: 60
 service:
-  type: NodePort
-  nodePort: 30601
+  type: ClusterIP
+  port: 5601
 
-# Указываем адрес Elasticsearch
-elasticsearchHosts: "https://elasticsearch-es-http.log.svc.cluster.local:9200"
 elasticsearch:
+  hosts: "http://elasticsearch-es-http.log.svc.cluster.local:9200"
+  protocol: "http"
   username: "admin"
   password: "admin"
