@@ -55,7 +55,7 @@ pipeline {
                         dir('charts/logs') {
                             sh '''
 
-                            helm upgrade --install elasticsearch ./elasticsearch . \
+                            helm upgrade --install elasticsearch ./elasticsearch \
                             --namespace log --create-namespace \
                             -f values-dev.yaml
 
