@@ -44,7 +44,7 @@ logstashPipeline:
 
     output {
       elasticsearch {
-        hosts => ["http://elasticsearch-es-http.log.svc.cluster.local:9200"] 
+        hosts => ["http://elasticsearch-master.log.svc.cluster.local:9200"] 
         index => "bank-logs-%{+YYYY.MM.dd}" 
         manage_template => false 
       }
