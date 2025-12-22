@@ -10,6 +10,9 @@ metadata:
     heritage: {{ .Release.Service | quote }}
     release: {{ .Release.Name | quote }}
 data:
+  logstash.yml: |
+    http.host: "0.0.0.0"
+    xpack.monitoring.enabled: false
 {{- range $path, $config := .Values.logstashConfig }}
   {{ $path }}: |
 {{ tpl $config $ | indent 4 -}}
