@@ -118,7 +118,7 @@ pipeline {
                             --namespace log \
                             -f logstash/values-dev.yaml \
                             --set enabled=true \
-                            --set kafka.bootstrapServers="kafka.prod.svc.cluster.local:9092" \
+                            --set kafka.bootstrapServers="kafka.kafka-dev.svc.cluster.local:9092" \
                             --set elasticsearch.hosts="http://elasticsearch-elasticsearch.log.svc.cluster.local:9200"
 
                             helm dependency update kibana

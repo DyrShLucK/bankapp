@@ -20,7 +20,7 @@ logstashPipeline:
   logstash.conf: |
     input {
       kafka {
-        bootstrap_servers => "kafka.prod.svc.cluster.local:9092" # Адрес Kafka-сервера в кластере
+        bootstrap_servers => "kafka.kafka-dev.svc.cluster.local:9092" # Адрес Kafka-сервера в кластере
         topics => ["bank-app-logs"] # Название топика
         group_id => "logstash-consumer-group" # Consumer Group ID
         codec => json # Предполагается, что логи в JSON
@@ -29,7 +29,6 @@ logstashPipeline:
     }
 
     filter {
-      # Пример фильтрации и парсинга JSON
       if [message] {
         json {
           source => "message"
@@ -45,8 +44,8 @@ logstashPipeline:
 
     output {
       elasticsearch {
-        hosts => ["http://elasticsearch-es-http.logging.svc.cluster.local:9200"] # Адрес ES в кластере
-        index => "bank-logs-%{+YYYY.MM.dd}" # Индекс с временным шаблоном
-        manage_template => false # Управление шаблонами через Kibana или отдельный Job
+        hosts => ["http://elasticsearch-es-http.log.svc.cluster.local:9200"] 
+        index => "bank-logs-%{+YYYY.MM.dd}" 
+        manage_template => false 
       }
     }
