@@ -1,11 +1,17 @@
-
 clusterName: "elasticsearch"
 nodeGroup: "master"
-
 replicas: 1
 minimumMasterNodes: 1
 
 esJavaOpts: "-Xmx512m -Xms512m"
+
+resources:
+  requests:
+    memory: "1Gi"
+    cpu: "500m"
+  limits:
+    memory: "1.5Gi"
+    cpu: "1"
 
 persistence:
   enabled: false

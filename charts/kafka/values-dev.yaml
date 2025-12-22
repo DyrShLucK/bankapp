@@ -13,10 +13,10 @@ kafka:
     replicaCount: 1
   resources:
     requests:
-      memory: "128Mi"
-      cpu: "100m"
+      memory: "512Mi"
+      cpu: "1000m"
     limits:
-      memory: "256Mi"
+      memory: "2Gi"
   enabled: true
   replicaCount: 1
   image:
