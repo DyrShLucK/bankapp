@@ -110,6 +110,7 @@ pipeline {
                             kubectl delete namespace log || true
                             helm dependency update elasticsearch
                             helm upgrade --install elasticsearch ./elasticsearch \
+                            --set enabled=true --set replicas=1 \
                             --namespace log --create-namespace \
                             -f elasticsearch/values-dev.yaml
 

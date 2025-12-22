@@ -15,7 +15,7 @@ volumeClaimTemplate:
       storage: 512Mi
 metadata:
   name: logstash-pipeline
-  namespace: logging
+  namespace: log
 logstashPipeline:
   logstash.conf: |
     input {
@@ -29,17 +29,12 @@ logstashPipeline:
     }
 
     filter {
-      if [message] {
+      if [message] =~ /^{.*}$/ {
         json {
           source => "message"
+          target => "parsed_json"
         }
       }
-      # Пример маскировки чувствительных данных (не идеальное решение, лучше на уровне микросервиса)
-      # mutate {
-      #   gsub => [
-      #     "[some_field]", "(\d{4})\d{4}(\d{4})", "\1****\2"
-      #   ]
-      # }
     }
 
     output {

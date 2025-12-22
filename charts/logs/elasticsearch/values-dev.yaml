@@ -1,26 +1,39 @@
+# Default values for elasticsearch
+enabled: true
+# Elasticsearch cluster name
+clusterName: "elasticsearch"
+# Elasticsearch replica count
 replicas: 1
-minimumMasterNodes: 1
+# Elasticsearch image
+image: "docker.elastic.co/elasticsearch/elasticsearch"
+imageTag: "8.5.1"
+imagePullPolicy: "IfNotPresent"
+# Resource limits and requests for the elasticsearch container
 
-esJavaOpts: "-Xmx512m -Xms512m"
+minimumMasterNodes: 1
 esConfig:
   elasticsearch.yml: |
     xpack.security.enabled: false
-    xpack.security.http.ssl.enabled: true
+    xpack.security.http.ssl.enabled: false
     xpack.security.transport.ssl.enabled: false
     xpack.monitoring.collection.enabled: false
+    xpack.security.transport.ssl.verification_mode: none
+probes:
+  livenessInitialDelaySeconds: 90
+  readinessInitialDelaySeconds: 60
 resources:
   requests:
-    memory: "1Gi"
-    cpu: "500m"
+    cpu: 100m
+    memory: 1Gi
   limits:
-    memory: "1.5Gi"
-    cpu: "1"
-
+    cpu: 1000m
+    memory: 1.5Gi
+networkPolicy:
+  http:
+    enabled: false
 persistence:
   enabled: false
 
 service:
   type: ClusterIP
-  ports:
-    - port: 9200
-      name: http
+  port: 9200

@@ -16,7 +16,12 @@
             <topic>bank-app-logs</topic>
             <keyingStrategy class="com.github.danielwegener.logback.kafka.keying.HostNameKeyingStrategy"/>
             <deliveryStrategy class="com.github.danielwegener.logback.kafka.delivery.AsynchronousDeliveryStrategy"/>
+
             <producerConfig>bootstrap.servers=${KAFKA_BOOTSTRAP_SERVERS:-localhost:9092}</producerConfig>
+            <producerConfig>key.serializer=org.apache.kafka.common.serialization.StringSerializer</producerConfig>
+            <producerConfig>value.serializer=org.apache.kafka.common.serialization.StringSerializer</producerConfig>
+
+            <producerConfig>max.block.ms=5000</producerConfig>
         </appender>
     </springProfile>
 

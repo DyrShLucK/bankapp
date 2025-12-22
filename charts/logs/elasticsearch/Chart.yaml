@@ -1,12 +1,6 @@
-apiVersion: v1
-description: Official Elastic helm chart for Elasticsearch
-home: https://github.com/elastic/helm-charts
-maintainers:
-  - email: helm-charts@elastic.co
-    name: Elastic
+apiVersion: v2
 name: elasticsearch
-version: 8.5.1
-appVersion: 8.5.1
-sources:
-  - https://github.com/elastic/elasticsearch
-icon: https://helm.elastic.co/icons/elasticsearch.png
+description: Elasticsearch for log storage
+type: application
+version: 0.1.0
+appVersion: "8.5.1"
