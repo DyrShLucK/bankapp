@@ -1,6 +1,10 @@
 {{- if .Values.infrastructure.ingress.enabled }}
 apiVersion: networking.k8s.io/v1
 kind: Ingress
+
+controller:
+  config:
+    allow-snippet-annotations: "true"
 metadata:
   name: bankapp-ingress
   namespace: {{ .Values.global.namespace }}
