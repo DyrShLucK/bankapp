@@ -3,13 +3,13 @@ enabled: true
 image: "docker.elastic.co/kibana/kibana"
 imageTag: "8.5.1"
 imagePullPolicy: "IfNotPresent"
-
+protocol: http
 resources:
   limits:
     cpu: 1000m
-    memory: 2Gi
+    memory: 1Gi
   requests:
-    cpu: 200Mi
+    cpu: 100Mi
     memory: 512Mi
 probes:
   livenessInitialDelaySeconds: 120
@@ -17,9 +17,13 @@ probes:
 service:
   type: ClusterIP
   port: 5601
-
+elasticsearch.ssl.verificationMode: none
+elasticsearch.ssl.enabled: false
 elasticsearch:
-  hosts: "http://elasticsearch-es-http.log.svc.cluster.local:9200"
+  hosts: "http://elasticsearch-master.log.svc.cluster.local:9200"
   protocol: "http"
   username: "admin"
   password: "admin"
+kibanaConfig:
+  kibana.yml: |
+    server.ssl.enabled: false

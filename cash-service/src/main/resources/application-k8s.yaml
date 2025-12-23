@@ -23,5 +23,5 @@ management:
       show-details: always
   metrics:
     tags:
-      application: account-service
+      application: cash-service
       env: dev

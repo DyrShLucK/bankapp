@@ -29,5 +29,5 @@ management:
       show-details: always
   metrics:
     tags:
-      application: account-service
+      application: notification-service
       env: dev
