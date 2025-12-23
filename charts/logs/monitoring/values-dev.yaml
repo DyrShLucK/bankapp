@@ -1,6 +1,58 @@
+# Файл: .\charts\monitoring\values-dev.yaml (корректированный)
+prometheus:
+  prometheusSpec:
+    serviceMonitorSelectorNilUsesHelmValues: false
+    podMonitorSelectorNilUsesHelmValues: false
+    ruleSelectorNilUsesHelmValues: false
+    resources:
+      requests:
+        memory: 400Mi
+        cpu: 100m
+      limits:
+        memory: 1Gi
+        cpu: 500m
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: standard
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 1Gi
+serviceMonitors:
+  - name: microservices
+    selector:
+      matchLabels:
+        app: microservice
+    namespaceSelector:
+      any: true
+    endpoints:
+      - port: http
+        path: /actuator/prometheus
+        interval: 15s
+        scrapeTimeout: 10s
+
+  - name: front-service
+    selector:
+      matchLabels:
+        app: front-service
+    namespaceSelector:
+      matchNames:
+        - bankapp-dev
+    endpoints:
+      - port: http
+        path: /actuator/prometheus
+        interval: 15s
 grafana:
   enabled: true
   adminPassword: "admin"
+  resources:
+    requests:
+      cpu: 100m
+      memory: 256Mi
+    limits:
+      cpu: 500m
+      memory: 1Gi
   persistence:
     enabled: false
   ingress:
@@ -12,79 +64,3 @@ grafana:
       - secretName: grafana-tls
         hosts:
           - grafana.dev.bankapp.com
-server:
-  serverFiles:
-    prometheus.yml:
-      global:
-        scrape_interval: 15s
-      scrape_configs:
-        - job_name: "front-service"
-          metrics_path: "/actuator/prometheus"
-          static_configs:
-            - targets: [ "bankapp-dev-front-service.bankapp-dev.svc.cluster.local:8083" ]
-              labels:
-                app: "front-service"
-  grafana:
-    enabled: true
-    adminPassword: "admin"
-    resources:
-      requests:
-        cpu: 100m
-        memory: 128Mi
-      limits:
-        cpu: 500m
-        memory: 256Mi
-    persistence:
-      enabled: false
-    ingress:
-      enabled: true
-      className: "nginx"
-      hosts:
-        - grafana.dev.bankapp.com
-      tls:
-        - secretName: grafana-tls
-          hosts:
-            - grafana.dev.bankapp.com
-  global:
-    scrape_interval: 15s
-  scrape_configs:
-    - job_name: front-service
-      metrics_path: /actuator/prometheus
-      scrape_interval: 15s
-      static_configs:
-        - targets: [ 'bankapp-dev-front-service.bankapp-dev.svc.cluster.local:8083' ]
-          labels:
-            app: 'front-service'
-scrape_configs:
-  - job_name: front-service
-    metrics_path: /actuator/prometheus
-    scrape_interval: 15s
-    static_configs:
-      - targets: [ 'bankapp-dev-front-service.bankapp-dev.svc.cluster.local:8083' ]
-        labels:
-          app: 'front-service'
-serverFiles:
-  prometheus.yml:
-    global:
-      scrape_interval: 15s
-    scrape_configs:
-      - job_name: "front-service"
-        metrics_path: "/actuator/prometheus"
-        static_configs:
-          - targets: ["bankapp-dev-front-service.bankapp-dev.svc.cluster.local:8083"]
-            labels:
-              app: "front-service"
-  #rule_files:
-  # Убедитесь, что rules.yml также находится в доступном месте и правильно смонтирован
-  # - "rules.yml" # Пример, если у вас есть правила
-
-  #alerting:
-  #  alertmanagers:
-  #    - static_configs:
-  #        - targets:
-  #            - alertmanager:9093
-
-
-
-
-

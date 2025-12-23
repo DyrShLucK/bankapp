@@ -84,9 +84,12 @@ pipeline {
                       --namespace ${MONITORING_NAMESPACE} \
                       --create-namespace \
                       -f zipkin/values-dev.yaml
-                    helm upgrade --install prometheus prometheus-community/prometheus \
+
+                    helm upgrade --install prometheus-stack prometheus-community/kube-prometheus-stack \
                       --namespace ${MONITORING_NAMESPACE} \
-                      --create-namespace
+                      --create-namespace \
+                      -set grafana.adminUser=admin \
+                      --set grafana.adminPassword=admin
                     '''
                 }
             }
@@ -119,14 +122,14 @@ pipeline {
                             -f logstash/values-dev.yaml \
                             --set enabled=true \
                             --set kafka.bootstrapServers="kafka.kafka-dev.svc.cluster.local:9092" \
-                            --set elasticsearch.hosts="http://elasticsearch-elasticsearch.log.svc.cluster.local:9200"
+                            --set elasticsearch.hosts="http://elasticsearch-master.log.svc.cluster.local:9200"
 
                             helm dependency update kibana
                             helm upgrade --install kibana ./kibana \
                             --namespace log \
                             -f kibana/values-dev.yaml \
                             --set enabled=true \
-                            --set elasticsearch.hosts="https://elasticsearch-elasticsearch.log.svc.cluster.local:9200"
+                            --set elasticsearch.hosts="https://elasticsearch-master.log.svc.cluster.local:9200"
                             '''
                         }
                     }
