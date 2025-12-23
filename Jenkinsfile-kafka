@@ -88,7 +88,7 @@ pipeline {
                     helm upgrade --install prometheus-stack prometheus-community/kube-prometheus-stack \
                       --namespace ${MONITORING_NAMESPACE} \
                       --create-namespace \
-                      -set grafana.adminUser=admin \
+                      --set grafana.adminUser=admin \
                       --set grafana.adminPassword=admin
                     '''
                 }
