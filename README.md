@@ -32,12 +32,21 @@
 - PostgreSQL
 - Docker
 - Docker Compose
+- Apache Kafka
+- Micrometer Tracing
+- Prometheus
+- Grafana
+- Zipkin
+- ELK Stack (Elasticsearch, Logstash, Kibana)
 
 ## Требования к системе
 - Java 21
 - Docker и Docker Compose
 - PostgreSQL (через Docker)
 - Доступ к интернету для загрузки зависимостей
+- Minikube (для Kubernetes-развертывания)
+- kubectl
+- Helm
 
 ## Запуск приложения
 соберите все вместе
@@ -152,6 +161,7 @@ kubectl port-forward -n bankapp-dev svc/keycloak 8081:8080
 # Для з работы пропишите minikube tunnel и зайдите на bankapp.local
 
 ## Схема CI/CD пайплайна
+- Развертывание инфраструктуры - Установка Kafka, Zipkin, Prometheus, Grafana, ELK
 - Сборка и тестирование - Gradle собирает проект и выполняет тесты
 - Сборка Docker-образов - Сборка образов для всех микросервисов
 - Загрузка в registry - Загрузка образов в GitHub Container Registry
@@ -179,20 +189,79 @@ kubectl port-forward -n bankapp-dev svc/keycloak 8081:8080
 - Данные Kafka сохраняются на персистентных томах (PersistentVolume) и не теряются при перезапуске подов
 
 
-# Интеграция с логированием
-### Реализован Zipkin elk стек а также prometheus с визуализацией в grafana
-# Команды для пробрасывания портов
+# Мониторинг и трассировка
+Распределенная трассировка с Zipkin
 
-kubectl port-forward svc/prometheus-operated 9090:80 -n monitoring-dev
+Приложение использует Zipkin для распределенной трассировки. Все микросервисы настроены на отправку трассировок в Zipkin через Micrometer Tracing.
 
-kubectl port-forward -n monitoring-dev svc/monitoring-grafana 3000:80
+# Доступ к Zipkin:
 
+```bash
 kubectl port-forward svc/zipkin 9411:9411 -n monitoring-dev
+```
+Затем откройте браузер по адресу: http://localhost:9411
 
+# Сбор метрик с Prometheus
+Prometheus используется для сбора метрик со всех микросервисов. В приложении настроены:
+
+- Метрики HTTP-запросов (RPS, 4xx, 5xx, персентили таймингов)
+
+- JVM-метрики (потребление памяти, CPU)
+
+Бизнес-метрики:
+
+- Успешные/неуспешные логины пользователей
+
+- Количество неуспешных попыток переводов
+
+- Блокировка подозрительных операций
+
+- Ошибки отправки уведомлений
+
+- Отсутствие обновления курсов валют
+
+Доступ к Prometheus:
+
+```bash
+ kubectl port-forward  svc/prometheus-stack-kube-prom-prometheus 9090:9090 -n monitoring-dev
+```
+Затем откройте браузер по адресу: http://localhost:9090
+
+# Визуализация метрик в Grafana
+Grafana настроена для визуализации метрик из Prometheus. Включены дашборды:
+
+- Графики критических HTTP-метрик
+- Графики JVM-метрик
+- Графики бизнес-метрик
+
+Кастомные алерты:
+
+- Высокая частота операций пополнения (подозрительная активность)
+- Ошибки при работе с отключенными аккаунтами
+- Высокое время выполнения операций пополнения
+- Высокий процент ошибок при пополнении счета
+
+Доступ к Grafana:
+
+```bash
+ kubectl port-forward  svc/prometheus-stack-grafana 3000:80 -n monitoring-dev
+```
+Затем откройте браузер по адресу: http://localhost:3000
+
+Логин: admin, пароль: admin 
+
+# Централизованное логирование с ELK Stack
+
+Приложение использует ELK стек для сбора, хранения и анализа логов:
+
+- Elasticsearch - хранение и индексация логов
+- Logstash - обработка и фильтрация логов
+- Kibana - визуализация и анализ логов
+
+
+Доступ к Kibana:
+```bash
 kubectl port-forward svc/kibana-kibana 5601:5601 -n log
-
-последний день дедлайна, пушу то что есть(исправно работает zipkin)
-сложности с ресурсами, много требует
-
-
+```
+Затем откройте браузер по адресу: http://localhost:5601
 
