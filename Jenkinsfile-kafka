@@ -91,7 +91,7 @@ pipeline {
                       --set grafana.adminUser=admin \
                       --set grafana.adminPassword=admin
 
-                    kubectl apply -f .\monitoring\alertsRules.yaml
+                    kubectl apply -f monitoring\alertsRules.yaml
                     '''
                 }
             }
