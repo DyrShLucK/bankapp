@@ -9,6 +9,64 @@ spec:
   groups:
     - name: bankapp.rules
       rules:
+        # Алерт: Высокий процент ошибок при пополнении счета
+        - alert: HighCashOperationErrorRate
+          expr: |
+            100 * (
+              sum(rate(account_cash_operations_total{status="error"}[5m])) 
+              / 
+              sum(rate(account_cash_operations_total[5m]))
+            ) > 10
+          for: 3m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Высокий процент ошибок при операциях пополнения счета"
+            description: "Процент ошибок операций пополнения счета превышает 10% за последние 5 минут."
+
+        # Алерт: Высокое время выполнения операций пополнения
+        - alert: HighCashOperationLatency
+          expr: |
+            histogram_quantile(0.95, sum(rate(account_cash_operation_duration_seconds_bucket[5m])) by (le)) > 5
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Высокое время выполнения операций пополнения"
+            description: "95-й перцентиль времени выполнения операций пополнения превышает 5 секунд."
+
+        # Алерт: Частые ошибки "недостаточно средств" при снятии (GET операции)
+        - alert: FrequentInsufficientFunds
+          expr: |
+            sum(rate(account_cash_operations_total{action="GET", result="insufficient_funds"}[5m])) > 5
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Частые ошибки 'недостаточно средств'"
+            description: "Более 5 операций снятия со статусом 'недостаточно средств' в минуту за последние 2 минуты."
+
+        # Алерт: Ошибки при работе с отключенными аккаунтами
+        - alert: DisabledAccountCashOperations
+          expr: sum(rate(account_cash_operations_total{result="account_disabled"}[5m])) > 0
+          for: 1m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Операции с отключенными аккаунтами"
+            description: "Обнаружены попытки операций с отключенными аккаунтами."
+
+        # Алерт: Высокая частота операций пополнения (подозрительная активность)
+        - alert: SuspiciousCashOperationVolume
+          expr: sum(rate(account_cash_operations_total{action="PUT"}[1m])) > 50
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Подозрительная активность - высокий объем пополнений"
+            description: "Обнаружено более 50 операций пополнения в минуту - возможная подозрительная активность."
+
+        # Алерт: Высокое время ответа API
         - alert: HighAPIResponseTime
           expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job="front-service"}[5m])) by (le)) > 2
           for: 2m

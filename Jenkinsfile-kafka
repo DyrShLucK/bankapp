@@ -24,7 +24,6 @@ pipeline {
         stage('Clean Up Previous Kafka Installation') {
                     steps {
                         sh '''
-                        kubectl delete namespace kafka-dev | true
                         helm uninstall kafka --namespace kafka-dev || true
                         sleep 10
                         kubectl delete pvc -n kafka-dev data-kafka-controller-0 data-kafka-controller-1 data-kafka-controller-2 || true
@@ -111,7 +110,6 @@ pipeline {
                     steps {
                         dir('charts/logs') {
                             sh '''
-                            kubectl delete namespace log || true
                             helm dependency update elasticsearch
                             helm upgrade --install elasticsearch ./elasticsearch \
                             --set enabled=true --set replicas=1 \
@@ -131,7 +129,7 @@ pipeline {
                             --namespace log \
                             -f kibana/values-dev.yaml \
                             --set enabled=true \
-                            --set elasticsearch.hosts="https://elasticsearch-master.log.svc.cluster.local:9200"
+                            --set elasticsearch.hosts="http://elasticsearch-master.log.svc.cluster.local:9200"
                             '''
                         }
                     }
