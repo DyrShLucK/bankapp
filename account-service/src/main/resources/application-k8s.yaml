@@ -18,6 +18,9 @@ management:
     tags:
       application: account-service
       env: dev
+    export:
+      prometheus:
+        enabled:  true
 spring:
   cloud:
     config:

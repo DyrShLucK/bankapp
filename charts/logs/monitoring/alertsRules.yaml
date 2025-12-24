@@ -1,0 +1,79 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: bankapp-alerts
+  namespace: monitoring-dev
+  labels:
+    release: prometheus-stack
+spec:
+  groups:
+    - name: bankapp.rules
+      rules:
+        - alert: HighAPIResponseTime
+          expr: histogram_quantile(0.95, sum(rate(http_server_requests_seconds_bucket{job="front-service"}[5m])) by (le)) > 2
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Высокое время ответа API"
+            description: "95-й перцентиль времени ответа API превышает 2 секунды в течение последних 2 минут."
+
+        # Алерт: Падение сервиса
+        - alert: ServiceDown
+          expr: up{job="front-service"} == 0
+          for: 1m
+          labels:
+            severity: critical
+          annotations:
+            summary: "Сервис недоступен"
+            description: "Сервис {{ $labels.instance }} недоступен более 1 минуты."
+
+        # Алерт: Высокий процент ошибок API
+        - alert: HighAPIErrorRate
+          expr: 100 * (sum(rate(http_server_requests_seconds_count{status=~"5..", job="front-service"}[5m])) / sum(rate(http_server_requests_seconds_count{job="front-service"}[5m]))) > 5
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Высокий процент ошибок API"
+            description: "Процент ошибок API превышает 5% в течение последних 2 минут."
+
+        # Алерт: Низкая активность транзакций (для банковского приложения)
+        - alert: LowTransactionActivity
+          expr: sum(rate(bankapp_transactions_total[5m])) < 1
+          for: 5m
+          labels:
+            severity: info
+          annotations:
+            summary: "Низкая активность транзакций"
+            description: "Количество транзакций в минуту снизилось до менее 1 за последние 5 минут."
+
+        # Алерт: Проблемы с Kafka
+        - alert: KafkaConsumerLag
+          expr: kafka_consumer_lag > 100
+          for: 3m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Задержка в обработке сообщений Kafka"
+            description: "Задержка обработки сообщений Kafka превышает 100 записей в течение 3 минут."
+
+        # Алерт: Мало свободной памяти
+        - alert: LowMemory
+          expr: 100 * (1 - (jvm_memory_used_bytes{area="heap"} / jvm_memory_max_bytes{area="heap"})) < 10
+          for: 2m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Мало свободной памяти JVM"
+            description: "Менее 10% свободной памяти в heap JVM на {{ $labels.instance }}."
+
+        # Алерт: Высокая загрузка CPU
+        - alert: HighCPUUsage
+          expr: 100 * (1 - avg(rate(process_cpu_seconds_total[5m])) by (instance)) > 80
+          for: 3m
+          labels:
+            severity: warning
+          annotations:
+            summary: "Высокая загрузка CPU"
+            description: "Загрузка CPU превышает 80% в течение последних 3 минут на {{ $labels.instance }}."

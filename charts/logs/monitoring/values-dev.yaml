@@ -1,66 +1,13 @@
-# Файл: .\charts\monitoring\values-dev.yaml (корректированный)
 prometheus:
-  prometheusSpec:
-    serviceMonitorSelectorNilUsesHelmValues: false
-    podMonitorSelectorNilUsesHelmValues: false
-    ruleSelectorNilUsesHelmValues: false
-    resources:
-      requests:
-        memory: 400Mi
-        cpu: 100m
-      limits:
-        memory: 1Gi
-        cpu: 500m
-    storageSpec:
-      volumeClaimTemplate:
-        spec:
-          storageClassName: standard
-          accessModes: ["ReadWriteOnce"]
-          resources:
-            requests:
-              storage: 1Gi
-serviceMonitors:
-  - name: microservices
-    selector:
-      matchLabels:
-        app: microservice
-    namespaceSelector:
-      any: true
-    endpoints:
-      - port: http
-        path: /actuator/prometheus
-        interval: 15s
-        scrapeTimeout: 10s
-
-  - name: front-service
-    selector:
-      matchLabels:
-        app: front-service
-    namespaceSelector:
-      matchNames:
-        - bankapp-dev
-    endpoints:
-      - port: http
-        path: /actuator/prometheus
-        interval: 15s
-grafana:
-  enabled: true
-  adminPassword: "admin"
+  storage:
+  volumeClaimTemplate:
+  spec:
+  accessModes: [ “ReadWriteOnce” ]
   resources:
-    requests:
-      cpu: 100m
-      memory: 256Mi
-    limits:
-      cpu: 500m
-      memory: 1Gi
+  requests:
+  size:  1Gi
+grafana:
   persistence:
-    enabled: false
-  ingress:
-    enabled: true
-    className: "nginx"
-    hosts:
-      - grafana.dev.bankapp.com
-    tls:
-      - secretName: grafana-tls
-        hosts:
-          - grafana.dev.bankapp.com
+  enabled:  true
+  accessModes: [ “ReadWriteOnce” ]
+  size:  1Gi

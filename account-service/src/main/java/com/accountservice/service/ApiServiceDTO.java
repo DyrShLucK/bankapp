@@ -6,6 +6,9 @@ import com.accountservice.model.Notification;
 import com.accountservice.model.Account;
 import com.accountservice.model.User;
 import com.accountservice.repository.UserRepository;
+import io.micrometer.core.instrument.Counter;
+import io.micrometer.core.instrument.MeterRegistry;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.security.core.Authentication;
@@ -18,6 +21,7 @@ import reactor.core.scheduler.Schedulers;
 import java.io.ByteArrayInputStream;
 import java.io.ObjectInputStream;
 import java.math.BigDecimal;
+import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -30,7 +34,8 @@ public class ApiServiceDTO {
     private final AccountService accountService;
     private final UserRepository userRepository;
     private final KafkaTemplate<String, Object> kafkaTemplate;
-
+    @Autowired
+    private MeterRegistry meterRegistry;
     public ApiServiceDTO(AccountService accountService, UserRepository userRepository, KafkaTemplate kafkaTemplate) {
         this.accountService = accountService;
         this.userRepository = userRepository;
@@ -312,6 +317,7 @@ public class ApiServiceDTO {
 
 
     public Mono<AccountCashResponse> cash(Mono<CashTransfer> cashTransfer, String username) {
+        Instant startTime = Instant.now();
         return cashTransfer.flatMap(transferData -> {
             String currencyCode = transferData.getCurrencyTo();
             Double value = transferData.getValue();
@@ -323,7 +329,15 @@ public class ApiServiceDTO {
             if (value == null || value <= 0) {
                 initialValidationResponse.setSuccess(false);
                 initialValidationResponse.setCause(List.of("Сумма должна быть положительным числом"));
+                Counter.builder("account_cash_operations_total")
+                        .tag("action", action)
+                        .tag("status", "error")
+                        .tag("currency", currencyCode)
+                        .tag("result", "validation_error")
+                        .register(meterRegistry)
+                        .increment();
                 return Mono.just(initialValidationResponse);
+
             }
 
             return accountService.findOrCreateAccounts(username)
@@ -335,6 +349,13 @@ public class ApiServiceDTO {
                         if (!account.getIsExists()) {
                             response.setSuccess(false);
                             response.setCause(List.of("Аккаунт с валютой " + currencyCode + " отключен"));
+                            Counter.builder("account_cash_operations_total")
+                                    .tag("action", action)
+                                    .tag("status", "error")
+                                    .tag("currency", currencyCode)
+                                    .tag("result", "account_disabled")
+                                    .register(meterRegistry)
+                                    .increment();
                             return Mono.just(response);
                         }
 
@@ -347,6 +368,13 @@ public class ApiServiceDTO {
                             if (account.getBalance().compareTo(amount) < 0) {
                                 response.setSuccess(false);
                                 response.setCause(List.of("Недостаточно денег для снятия. Баланс: " + account.getBalance() + ", Запрошено: " + amount));
+                                Counter.builder("account_cash_operations_total")
+                                        .tag("action", action)
+                                        .tag("status", "error")
+                                        .tag("currency", currencyCode)
+                                        .tag("result", "insufficient_funds")
+                                        .register(meterRegistry)
+                                        .increment();
                                 return Mono.just(response);
                             } else {
                                 account.setBalance(account.getBalance().subtract(amount));
@@ -355,11 +383,31 @@ public class ApiServiceDTO {
 
                         return accountService.saveAccount(account)
                                 .then(Mono.fromCallable(() -> {
+                                    Counter.builder("account_cash_operations_total")
+                                            .tag("action", action)
+                                            .tag("status", "success")
+                                            .tag("currency", currencyCode)
+                                            .tag("result", "completed")
+                                            .register(meterRegistry)
+                                            .increment();
+
+                                    io.micrometer.core.instrument.Timer.Sample sample = io.micrometer.core.instrument.Timer.start(meterRegistry);
+                                    sample.stop(io.micrometer.core.instrument.Timer.builder("account_cash_operation_duration_seconds")
+                                            .tag("action", action)
+                                            .tag("currency", currencyCode)
+                                            .register(meterRegistry));
                                     response.setSuccess(true);
                                     response.setCause(new ArrayList<>()); ;
                                     return response;
                                 }))
                                 .onErrorResume(throwable -> {
+                                    Counter.builder("account_cash_operations_total")
+                                            .tag("action", action)
+                                            .tag("status", "error")
+                                            .tag("currency", currencyCode)
+                                            .tag("result", "save_error")
+                                            .register(meterRegistry)
+                                            .increment();
                                     System.err.println("Ошибка при сохранении аккаунта: " + throwable.getMessage());
                                     AccountCashResponse errorResponse = new AccountCashResponse();
                                     errorResponse.setSuccess(false);
@@ -370,6 +418,13 @@ public class ApiServiceDTO {
                         AccountCashResponse errorResponse = new AccountCashResponse();
                         errorResponse.setSuccess(false);
                         errorResponse.setCause(List.of("Аккаунт с валютой " + currencyCode + " не найден для пользователя " + username));
+                        Counter.builder("account_cash_operations_total")
+                                .tag("action", action)
+                                .tag("status", "error")
+                                .tag("currency", currencyCode)
+                                .tag("result", "account_not_found")
+                                .register(meterRegistry)
+                                .increment();
                         return Mono.just(errorResponse);
                     }));
         });
