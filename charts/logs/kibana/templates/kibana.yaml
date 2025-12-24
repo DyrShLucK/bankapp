@@ -43,6 +43,8 @@ spec:
         image: "{{ .Values.image }}:{{ .Values.imageTag }}"
         imagePullPolicy: {{ .Values.imagePullPolicy | default "IfNotPresent" }}
         env:
+        - name: ES_JAVA_OPTS
+          value: "-Xms1g -Xmx1g"
         - name: ELASTICSEARCH_HOSTS
           value: "{{ .Values.elasticsearch.hosts }}"
         - name: SERVER_HOST

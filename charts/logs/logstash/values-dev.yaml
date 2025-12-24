@@ -23,7 +23,6 @@ metadata:
   namespace: log
 logstashPipeline:
   logstash.conf: |
-    
     input {
       kafka {
         bootstrap_servers => "kafka.kafka-dev.svc.cluster.local:9092" # Адрес Kafka-сервера в кластере
